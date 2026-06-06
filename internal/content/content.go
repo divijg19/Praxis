@@ -11,5 +11,14 @@ func All() []challenge.Challenge {
 				"Move your cursor to the star ★",
 			},
 		},
+		{
+			ID:   "grid_rush",
+			Name: "Grid Rush",
+			Content: []string{
+				". . . . .",
+				". . . ★ .",
+				". . . . .",
+			},
+		},
 	}
 }
