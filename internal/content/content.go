@@ -20,5 +20,14 @@ func All() []challenge.Challenge {
 				". . . . .",
 			},
 		},
+		{
+			ID:   "find_hunter",
+			Name: "Find Hunter",
+			Content: []string{
+				"find motions are fast",
+				"",
+				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★",
+			},
+		},
 	}
 }
