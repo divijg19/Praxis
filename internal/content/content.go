@@ -29,5 +29,14 @@ func All() []challenge.Challenge {
 				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★",
 			},
 		},
+		{
+			ID:   "word_hunter",
+			Name: "Word Hunter",
+			Content: []string{
+				"word motions are fast",
+				"",
+				"alpha beta gamma delta epsilon ★",
+			},
+		},
 	}
 }
