@@ -52,5 +52,42 @@ func All() []challenge.Challenge {
 				".......................@",
 			},
 		},
+		{
+			ID:     "line_hunter",
+			Name:   "Line Hunter",
+			Target: "★",
+			Content: []string{
+				"Move to the line with the star",
+				"",
+				"line one",
+				"line two",
+				"line three",
+				"line four",
+				"line five",
+				"★ line six",
+			},
+		},
+		{
+			ID:     "paren_hunter",
+			Name:   "Paren Hunter",
+			Target: "★",
+			Content: []string{
+				"Jump to the matching paren",
+				"",
+				"(                         )★",
+			},
+		},
+		{
+			ID:     "sentence_hunter",
+			Name:   "Sentence Hunter",
+			Target: "★",
+			Content: []string{
+				"Jump between sentences",
+				"",
+				"First sentence ends here.",
+				"Second. Third.",
+				"★ Fourth. Fifth.",
+			},
+		},
 	}
 }
