@@ -18,6 +18,11 @@ func main() {
 				challenge(os.Args[2])
 				return
 			}
+		case "target":
+			if len(os.Args) > 2 {
+				target(os.Args[2])
+				return
+			}
 		}
 	}
 	fmt.Println("Praxis")
@@ -36,6 +41,17 @@ func challenge(id string) {
 			for _, line := range c.Content {
 				fmt.Println(line)
 			}
+			return
+		}
+	}
+	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+	os.Exit(1)
+}
+
+func target(id string) {
+	for _, c := range content.All() {
+		if c.ID == id {
+			fmt.Println(c.Target)
 			return
 		}
 	}
