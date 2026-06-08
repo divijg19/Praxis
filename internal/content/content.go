@@ -136,5 +136,89 @@ func All() []challenge.Challenge {
 				"★  ★  ★  ★  ★  ★  ★  ★  @",
 			},
 		},
+		{
+			ID:     "inner_paren_hunter",
+			Name:   "Inner Paren Hunter",
+			Target: "★",
+			Content: []string{
+				"Select inside the parentheses",
+				"",
+				"(hello★)",
+			},
+		},
+		{
+			ID:     "around_paren_hunter",
+			Name:   "Around Paren Hunter",
+			Target: ")",
+			Content: []string{
+				"Select around the parentheses",
+				"",
+				"(hello)★",
+			},
+		},
+		{
+			ID:     "inner_bracket_hunter",
+			Name:   "Inner Bracket Hunter",
+			Target: "★",
+			Content: []string{
+				"Select inside the brackets",
+				"",
+				"[hello★]",
+			},
+		},
+		{
+			ID:     "around_bracket_hunter",
+			Name:   "Around Bracket Hunter",
+			Target: "]",
+			Content: []string{
+				"Select around the brackets",
+				"",
+				"[hello]★",
+			},
+		},
+		{
+			ID:     "inner_quote_hunter",
+			Name:   "Inner Quote Hunter",
+			Target: "★",
+			Content: []string{
+				"Select inside the quotes",
+				"",
+				"x\"magnificent★\"",
+			},
+		},
+		{
+			ID:     "around_quote_hunter",
+			Name:   "Around Quote Hunter",
+			Target: "★",
+			Content: []string{
+				"Select around the quotes",
+				"",
+				"x\"magnificent\"★",
+			},
+		},
+		{
+			ID:     "paragraph_hunter",
+			Name:   "Paragraph Hunter",
+			Target: "Z",
+			Content: []string{
+				"Jump to the last paragraph",
+				"",
+				"first paragraph",
+				"",
+				"second paragraph",
+				"",
+				"third Z",
+			},
+		},
+		{
+			ID:     "match_hunter",
+			Name:   "Match Hunter",
+			Target: "★",
+			Content: []string{
+				"Jump to the matching delimiter",
+				"",
+				"[         ]★",
+			},
+		},
 	}
 }
