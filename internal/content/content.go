@@ -7,6 +7,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "motion_rush",
 			Name:   "Motion Rush",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Move your cursor to the star ★",
@@ -15,6 +16,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "grid_rush",
 			Name:   "Grid Rush",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				". . . . .",
@@ -25,6 +27,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "find_hunter",
 			Name:   "Find Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"find motions are fast",
@@ -35,6 +38,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "word_hunter",
 			Name:   "Word Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"word motions are fast",
@@ -45,6 +49,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "symbol_hunter",
 			Name:   "Symbol Hunter",
+			Verify: "cursor",
 			Target: "@",
 			Content: []string{
 				"find the target symbol",
@@ -55,6 +60,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "line_hunter",
 			Name:   "Line Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Move to the line with the star",
@@ -70,6 +76,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "paren_hunter",
 			Name:   "Paren Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Jump to the matching paren",
@@ -80,6 +87,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "sentence_hunter",
 			Name:   "Sentence Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Jump between sentences",
@@ -92,6 +100,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "slash_hunter",
 			Name:   "Slash Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Search forward to find the target",
@@ -102,6 +111,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "question_hunter",
 			Name:   "Question Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Search backward to find the target",
@@ -129,6 +139,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "repeat_hunter",
 			Name:   "Repeat Hunter",
+			Verify: "cursor",
 			Target: "@",
 			Content: []string{
 				"Search for ★, then repeat to find @",
@@ -139,6 +150,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "inner_paren_hunter",
 			Name:   "Inner Paren Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Select inside the parentheses",
@@ -149,6 +161,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "around_paren_hunter",
 			Name:   "Around Paren Hunter",
+			Verify: "cursor",
 			Target: ")",
 			Content: []string{
 				"Select around the parentheses",
@@ -159,6 +172,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "inner_bracket_hunter",
 			Name:   "Inner Bracket Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Select inside the brackets",
@@ -169,6 +183,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "around_bracket_hunter",
 			Name:   "Around Bracket Hunter",
+			Verify: "cursor",
 			Target: "]",
 			Content: []string{
 				"Select around the brackets",
@@ -179,6 +194,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "inner_quote_hunter",
 			Name:   "Inner Quote Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Select inside the quotes",
@@ -189,6 +205,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "around_quote_hunter",
 			Name:   "Around Quote Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Select around the quotes",
@@ -199,6 +216,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "paragraph_hunter",
 			Name:   "Paragraph Hunter",
+			Verify: "cursor",
 			Target: "Z",
 			Content: []string{
 				"Jump to the last paragraph",
@@ -213,6 +231,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "match_hunter",
 			Name:   "Match Hunter",
+			Verify: "cursor",
 			Target: "★",
 			Content: []string{
 				"Jump to the matching delimiter",

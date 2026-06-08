@@ -21,12 +21,19 @@ function M.show(opts)
 
 	if is_challenge then
 		local target = vim.fn.systemlist({ "praxis", "target", opts.args })[1]
+		local verify = vim.fn.systemlist({ "praxis", "verify", opts.args })[1] or ""
+
+		local function byte_to_char(line, bytecol)
+			return vim.fn.strchars(string.sub(line, 1, bytecol + 1)) - 1
+		end
+
 		local state = {
 			done            = false,
 			moves           = 0,
 			start_ns        = vim.uv.hrtime(),
 			challenge_lines = lines,
 			target          = target,
+			verify          = verify,
 		}
 
 		local function render_result()
@@ -58,10 +65,13 @@ function M.show(opts)
 				state.moves = state.moves + 1
 				local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
 				local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-				if line and vim.fn.strcharpart(line, col0, 1) == state.target then
-					state.done = true
-					vim.api.nvim_echo({ { "Success" } }, false, {})
-					render_result()
+				if line and state.verify == "cursor" then
+					local charcol = byte_to_char(line, col0)
+					if vim.fn.strcharpart(line, charcol, 1) == state.target then
+						state.done = true
+						vim.api.nvim_echo({ { "Success" } }, false, {})
+						render_result()
+					end
 				end
 			end,
 		})
