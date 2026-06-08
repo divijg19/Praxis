@@ -28,3 +28,19 @@ func TestAllChallengesHaveValidVerify(t *testing.T) {
 		}
 	}
 }
+
+func TestExistsBuffer(t *testing.T) {
+	if !Exists("buffer") {
+		t.Error("Exists(\"buffer\") should be true")
+	}
+}
+
+func TestBufferChallengesHaveResult(t *testing.T) {
+	for _, c := range content.All() {
+		if c.Verify == "buffer" {
+			if len(c.Result) == 0 {
+				t.Errorf("buffer challenge %s has empty Result", c.ID)
+			}
+		}
+	}
+}

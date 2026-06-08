@@ -5,5 +5,6 @@ type Challenge struct {
 	Name    string
 	Verify  string
 	Content []string
+	Result  []string
 	Target  string
 }

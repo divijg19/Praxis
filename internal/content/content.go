@@ -239,5 +239,96 @@ func All() []challenge.Challenge {
 				"[         ]★",
 			},
 		},
+		{
+			ID:     "delete_character_hunter",
+			Name:   "Delete Character Hunter",
+			Verify: "buffer",
+			Target: "",
+			Content: []string{
+				"Delete the extra letter",
+				"",
+				"helllo",
+			},
+			Result: []string{
+				"Delete the extra letter",
+				"",
+				"hello",
+			},
+		},
+		{
+			ID:     "replace_character_hunter",
+			Name:   "Replace Character Hunter",
+			Verify: "buffer",
+			Target: "",
+			Content: []string{
+				"Replace the wrong letter",
+				"",
+				"hallo",
+			},
+			Result: []string{
+				"Replace the wrong letter",
+				"",
+				"hello",
+			},
+		},
+		{
+			ID:     "toggle_case_hunter",
+			Name:   "Toggle Case Hunter",
+			Verify: "buffer",
+			Target: "",
+			Content: []string{
+				"Toggle the case of each letter",
+				"",
+				"HELLO",
+			},
+			Result: []string{
+				"Toggle the case of each letter",
+				"",
+				"hello",
+			},
+		},
+		{
+			ID:     "delete_word_hunter",
+			Name:   "Delete Word Hunter",
+			Verify: "buffer",
+			Target: "",
+			Content: []string{
+				"Delete the middle word",
+				"",
+				"keep lose keep",
+			},
+			Result: []string{
+				"Delete the middle word",
+				"",
+				"keep  keep",
+			},
+		},
+		{
+			ID:     "change_word_hunter",
+			Name:   "Change Word Hunter",
+			Verify: "buffer",
+			Target: "",
+			Content: []string{
+				"Change the word using ciw",
+				"",
+				"foo",
+			},
+			Result: []string{
+				"Change the word using ciw",
+				"",
+				"bar",
+			},
+		},
+		{
+			ID:     "utf8_cursor_hunter",
+			Name:   "UTF-8 Cursor Hunter",
+			Verify: "cursor",
+			Target: "★",
+			Content: []string{
+				"Navigate past multi-byte characters to the star",
+				"",
+				"α β γ ★",
+			},
+		},
 	}
 }
