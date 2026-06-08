@@ -2,6 +2,7 @@ package validator
 
 var valid = map[string]bool{
 	"cursor": true,
+	"buffer": true,
 }
 
 func Exists(name string) bool {

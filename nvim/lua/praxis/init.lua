@@ -4,8 +4,10 @@ function M.show(opts)
 	local lines
 	local is_challenge = opts and opts.args and opts.args ~= ""
 
+	local verify = ""
 	if is_challenge then
 		lines = vim.fn.systemlist({ "praxis", "challenge", opts.args })
+		verify = vim.fn.systemlist({ "praxis", "verify", opts.args })[1] or ""
 	else
 		lines = vim.fn.systemlist({ "praxis" })
 		table.insert(lines, "")
@@ -14,17 +16,36 @@ function M.show(opts)
 
 	local buf = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-	vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+	if verify == "buffer" then
+		vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+	else
+		vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+	end
 	vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
 	vim.api.nvim_buf_set_name(buf, "Praxis")
 	vim.api.nvim_set_current_buf(buf)
 
 	if is_challenge then
 		local target = vim.fn.systemlist({ "praxis", "target", opts.args })[1]
-		local verify = vim.fn.systemlist({ "praxis", "verify", opts.args })[1] or ""
+		local result = vim.fn.systemlist({ "praxis", "result", opts.args }) or {}
 
 		local function byte_to_char(line, bytecol)
-			return vim.fn.strchars(string.sub(line, 1, bytecol + 1)) - 1
+			return vim.fn.strchars(string.sub(line, 1, bytecol))
+		end
+
+		local function check_buffer()
+			local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+			if #current ~= #result then
+				return
+			end
+			for i = 1, #current do
+				if current[i] ~= result[i] then
+					return
+				end
+			end
+			state.done = true
+			vim.api.nvim_echo({ { "Success" } }, false, {})
+			render_result()
 		end
 
 		local state = {
@@ -34,6 +55,7 @@ function M.show(opts)
 			challenge_lines = lines,
 			target          = target,
 			verify          = verify,
+			result_lines    = result,
 		}
 
 		local function render_result()
@@ -54,7 +76,9 @@ function M.show(opts)
 			state.start_ns = vim.uv.hrtime()
 			vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
 			vim.api.nvim_buf_set_lines(buf, 0, -1, false, state.challenge_lines)
-			vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+			if state.verify ~= "buffer" then
+				vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+			end
 			vim.api.nvim_win_set_cursor(0, { 1, 0 })
 		end
 
@@ -63,15 +87,38 @@ function M.show(opts)
 			callback = function()
 				if state.done then return end
 				state.moves = state.moves + 1
-				local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
-				local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-				if line and state.verify == "cursor" then
-					local charcol = byte_to_char(line, col0)
-					if vim.fn.strcharpart(line, charcol, 1) == state.target then
-						state.done = true
-						vim.api.nvim_echo({ { "Success" } }, false, {})
-						render_result()
+				if state.verify == "cursor" then
+					local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+					local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
+					if line then
+						local charcol = byte_to_char(line, col0)
+						if vim.fn.strcharpart(line, charcol, 1) == state.target then
+							state.done = true
+							vim.api.nvim_echo({ { "Success" } }, false, {})
+							render_result()
+						end
 					end
+				end
+			end,
+		})
+
+		vim.api.nvim_create_autocmd("TextChanged", {
+			buffer = buf,
+			callback = function()
+				if state.done then return end
+				state.moves = state.moves + 1
+				if state.verify == "buffer" then
+					check_buffer()
+				end
+			end,
+		})
+
+		vim.api.nvim_create_autocmd("TextChangedI", {
+			buffer = buf,
+			callback = function()
+				if state.done then return end
+				if state.verify == "buffer" then
+					check_buffer()
 				end
 			end,
 		})

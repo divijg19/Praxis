@@ -28,6 +28,11 @@ func main() {
 				verify(os.Args[2])
 				return
 			}
+		case "result":
+			if len(os.Args) > 2 {
+				result(os.Args[2])
+				return
+			}
 		}
 	}
 	fmt.Println("Praxis")
@@ -68,6 +73,19 @@ func verify(id string) {
 	for _, c := range content.All() {
 		if c.ID == id {
 			fmt.Println(c.Verify)
+			return
+		}
+	}
+	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+	os.Exit(1)
+}
+
+func result(id string) {
+	for _, c := range content.All() {
+		if c.ID == id {
+			for _, line := range c.Result {
+				fmt.Println(line)
+			}
 			return
 		}
 	}
