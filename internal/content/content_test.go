@@ -255,3 +255,50 @@ func TestCursorChallengeLayout(t *testing.T) {
 		}
 	}
 }
+
+func TestNoValidatorDrift(t *testing.T) {
+	used := make(map[string]bool)
+	for _, c := range All() {
+		used[c.Verify] = true
+	}
+	for _, name := range []string{"cursor", "buffer"} {
+		if !used[name] {
+			t.Errorf("validator %q is registered but unused by any challenge", name)
+		}
+	}
+}
+
+func TestResultShapeMatchesVerify(t *testing.T) {
+	for _, c := range All() {
+		switch c.Verify {
+		case "cursor":
+			if c.Target == "" {
+				t.Errorf("cursor challenge %s has empty Target", c.ID)
+			}
+			if len(c.Result) > 0 {
+				t.Errorf("cursor challenge %s has unexpected Result", c.ID)
+			}
+		case "buffer":
+			if c.Target != "" {
+				t.Errorf("buffer challenge %s has non-empty Target: %q", c.ID, c.Target)
+			}
+			if len(c.Result) == 0 {
+				t.Errorf("buffer challenge %s has empty Result", c.ID)
+			}
+		}
+	}
+}
+
+func TestContentResultLineCountReasonable(t *testing.T) {
+	for _, c := range All() {
+		if c.Verify != "buffer" {
+			continue
+		}
+		n := len(c.Result)
+		m := len(c.Content)
+		if n < m-1 || n > m+1 {
+			t.Errorf("buffer challenge %s: Result has %d lines, Content has %d (reasonable range: %d–%d)",
+				c.ID, n, m, m-1, m+1)
+		}
+	}
+}

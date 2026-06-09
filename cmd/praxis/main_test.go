@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/divijg19/Praxis/internal/content"
 )
 
 var binPath string
@@ -111,5 +113,45 @@ func TestUnknownVerifyFails(t *testing.T) {
 	_, code := runPraxis(t, "verify", "nope")
 	if code != 1 {
 		t.Errorf("expected exit code 1, got %d", code)
+	}
+}
+
+func TestListOutputStable(t *testing.T) {
+	out, code := runPraxis(t, "list")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	expected := make([]string, len(content.All()))
+	for i, c := range content.All() {
+		expected[i] = c.Name
+	}
+	if len(lines) != len(expected) {
+		t.Fatalf("got %d lines, want %d", len(lines), len(expected))
+	}
+	for i := range lines {
+		if lines[i] != expected[i] {
+			t.Errorf("line[%d] = %q, want %q", i, lines[i], expected[i])
+		}
+	}
+}
+
+func TestTargetOutputStable(t *testing.T) {
+	out, code := runPraxis(t, "target", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "★\n" {
+		t.Errorf("target output: got %q, want \"★\\n\"", out)
+	}
+}
+
+func TestVerifyOutputStable(t *testing.T) {
+	out, code := runPraxis(t, "verify", "delete_word_hunter")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "buffer\n" {
+		t.Errorf("verify output: got %q, want \"buffer\\n\"", out)
 	}
 }

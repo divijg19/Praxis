@@ -79,6 +79,8 @@ When adding a new pack, ensure:
 
 ## API Contract
 
+The full API contract is documented in `docs/API_CONTRACT.md`.
+
 ```go
 Challenge.ID       // STABLE — never change after first release
 Challenge.Verify   // STABLE — "cursor" or "buffer"

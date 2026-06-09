@@ -4,7 +4,7 @@
 
 Replay verification runs every challenge through a real Neovim session, ensuring that challenge content, results, and validator behavior are consistent.
 
-This is the closest thing to an end-to-end test: it exercises the entire pipeline from Go binary to Lua frontend to Neovim buffer state.
+This is the **canonical integration verification** for Praxis. It is the single source of truth for end-to-end correctness: it exercises the entire pipeline from Go binary to Lua frontend to Neovim buffer state.
 
 ## Running
 

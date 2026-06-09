@@ -65,6 +65,10 @@ func Exists(name string) bool {
 
 The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer challenges use `TextChanged` + `TextChangedI` instead. This is handled by checking `state.verify` when setting up autocommands.
 
+## Validator Contract
+
+See `docs/VALIDATOR_CONTRACT.md` for the formal specification of cursor and buffer validator behavior, including PASS and FAIL examples.
+
 ## Future validator candidates
 
 Not yet implemented. Listed for architectural awareness:

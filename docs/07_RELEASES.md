@@ -2,7 +2,7 @@
 
 ## Versioning
 
-Praxis uses `v0.0.x` versioning during the foundation phase. Each release is tagged and pushed to GitHub with a corresponding pair of issues.
+Praxis uses `v0.0.x` versioning during the foundation phase and `v0.1.x` for the public contracts phase. Each release is tagged and pushed to GitHub with a corresponding pair of issues.
 
 ## Release Pattern
 
@@ -14,13 +14,15 @@ Every release follows a two-issue (or three-issue) pattern:
 
 ## Creating a Release
 
+See `docs/RELEASE_CHECKLIST.md` for the mandatory 10-step release process.
+
 1. Implement all changes
 2. Verify: `gofmt -l .` clean, `go build ./...`, `go vet ./...`, `go test ./...`
 3. Run replay: `tools/replay/replay.sh`
 4. Stage changes: `git add <files>`
 5. Commit with descriptive message
-6. Tag: `git tag v0.0.<N>`
-7. Push: `git push origin v0.0.x v0.0.<N>`
+6. Tag: `git tag v0.<major>.<N>`
+7. Push: `git push origin v0.<major>.x v0.<major>.<N>`
 8. Create GitHub issues for the release
 
 ## API Contract
@@ -32,7 +34,7 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 ## Release History
 
 | Tag | Title | Challenges | Tests |
-|---|---|---|---|
+|---|---|---|---|---|
 | v0.0.1 | Initial prototype | 1 | 0 |
 | v0.0.2 | Parameterize challenge content | 1 | 0 |
 | v0.0.3 | Add grid_rush challenge | 2 | 0 |
@@ -52,4 +54,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | v0.0.17 | Editing Foundations | 25 | 5 |
 | v0.0.18 | Structural Editing Foundations | 37 | 5 |
 | v0.0.19 | Register Foundations | 41 | 15 |
-| **v0.0.20** | **Foundation Freeze** | **41** | **27** |
+| v0.0.20 | Foundation Freeze | 41 | 27 |
+| **v0.1.0** | **Public Contracts & Stability** | **41** | **33** |

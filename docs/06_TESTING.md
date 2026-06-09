@@ -2,13 +2,13 @@
 
 ## Test Suite Overview
 
-Praxis has **27 tests** across 3 packages:
+Praxis has **33 tests** across 3 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 15 | Content invariants, layout, stability |
+| `internal/content` | 18 | Content invariants, layout, stability, contracts |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
-| `cmd/praxis` | 8 | CLI subprocess behavior |
+| `cmd/praxis` | 11 | CLI subprocess behavior, output format contracts |
 
 ## Running Tests
 
@@ -46,13 +46,16 @@ These are the most important tests. They protect the challenge registry from acc
 |---|---|
 | `TestAllChallengesHaveVerify` | Missing Verify field |
 | `TestValidatorCoverage` | Unknown validator type |
+| `TestNoValidatorDrift` | Registered validator unused by any challenge |
 | `TestResultMatchesVerify` | Buffer without Result / cursor with Result |
+| `TestResultShapeMatchesVerify` | Cursor challenge with Result / buffer challenge with Target |
 | `TestCursorChallengesHaveTargets` | Cursor challenge without Target |
 | `TestBufferChallengesHaveNoTargets` | Buffer challenge with incorrect Target |
 | `TestNoEmptyContent` | Completely empty Content |
 | `TestInstructionLinePresent` | Missing first-content-line instruction |
 | `TestBufferChallengeLayout` | Buffer challenge with <3 lines or missing blank |
 | `TestCursorChallengeLayout` | Cursor challenge with <1 line or empty instruction |
+| `TestContentResultLineCountReasonable` | Buffer challenge with wildly mismatched Content/Result line count |
 
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
 
@@ -70,9 +73,12 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 | Test | What it catches |
 |---|---|
 | `TestListCount` | List output not matching challenge count |
+| `TestListOutputStable` | List output names or order drift |
 | `TestChallengeLookup` | Challenge content mismatch |
 | `TestTargetLookup` | Target output mismatch |
+| `TestTargetOutputStable` | Target output format drift |
 | `TestVerifyLookup` | Verify output mismatch |
+| `TestVerifyOutputStable` | Verify output format drift |
 | `TestResultLookup` | Result output mismatch |
 | `TestUnknownChallengeFails` | Non-existent ID exits 1 |
 | `TestUnknownTargetFails` | Non-existent target exits 1 |
