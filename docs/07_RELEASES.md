@@ -34,7 +34,7 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 ## Release History
 
 | Tag | Title | Challenges | Tests |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | v0.0.1 | Initial prototype | 1 | 0 |
 | v0.0.2 | Parameterize challenge content | 1 | 0 |
 | v0.0.3 | Add grid_rush challenge | 2 | 0 |
@@ -55,4 +55,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | v0.0.18 | Structural Editing Foundations | 37 | 5 |
 | v0.0.19 | Register Foundations | 41 | 15 |
 | v0.0.20 | Foundation Freeze | 41 | 27 |
-| **v0.1.0** | **Public Contracts & Stability** | **41** | **33** |
+| v0.1.0 | Public Contracts & Stability | 41 | 33 |
+| **v0.1.1** | **Progress Tracking** | **41** | **45** |

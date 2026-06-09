@@ -115,6 +115,56 @@ Outputs the result lines for buffer challenges.
 
 Enforced by: `TestResultLookup`
 
+### `praxis record <id> <moves> <time_ms>`
+
+Records a challenge completion and updates persistent stats.
+
+- Silent on success (no stdout)
+- Exit 0 on success
+- Used internally by the Neovim frontend
+
+### `praxis stats [id]`
+
+Outputs challenge statistics.
+
+With an ID, shows per-challenge stats:
+
+```
+Attempts: 12
+Completions: 10
+Best Moves: 2
+Best Time: 180ms
+```
+
+Without arguments, shows summary:
+
+```
+Challenges Completed: 31/41
+Total Attempts: 245
+```
+
+- Exits 0 on success
+- Exits 1 on unknown challenge ID
+- Stderr: `unknown challenge: <id>` on failure
+
+## Stats Contract
+
+See `docs/STATS.md` for the full stats system documentation.
+
+Stats are stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/stats.json`).
+
+Each record:
+
+```go
+type Stats struct {
+    Attempts    int     // total completions
+    Completions int     // same as Attempts (every recorded attempt is a success)
+    BestMoves   int     // lowest moves across all completions
+    BestTimeMs  int     // fastest time across all completions
+    LastPlayed  string  // "2006-01-02" format
+}
+```
+
 ## Replay Contract
 
 The replay system is the canonical integration verification for Praxis. See `docs/REPLAY.md` for full documentation.

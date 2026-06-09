@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -153,5 +154,83 @@ func TestVerifyOutputStable(t *testing.T) {
 	}
 	if out != "buffer\n" {
 		t.Errorf("verify output: got %q, want \"buffer\\n\"", out)
+	}
+}
+
+func TestRecordStats(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "record", "motion_rush", "4", "380")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if _, err := os.Stat(filepath.Join(d, "praxis", "stats.json")); err != nil {
+		t.Fatalf("stats.json not created: %v", err)
+	}
+	_, code = runPraxis(t, "record", "motion_rush", "2", "180")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	out, code := runPraxis(t, "stats", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "Attempts: 2") {
+		t.Errorf("expected Attempts: 2, got: %s", out)
+	}
+	if !strings.Contains(out, "Best Moves: 2") {
+		t.Errorf("expected Best Moves: 2, got: %s", out)
+	}
+	if !strings.Contains(out, "Best Time: 180ms") {
+		t.Errorf("expected Best Time: 180ms, got: %s", out)
+	}
+}
+
+func TestStatsCommand(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	runPraxis(t, "record", "motion_rush", "4", "380")
+	out, code := runPraxis(t, "stats", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "Attempts: 1") {
+		t.Errorf("expected Attempts: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Completions: 1") {
+		t.Errorf("expected Completions: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Best Moves: 4") {
+		t.Errorf("expected Best Moves: 4, got: %s", out)
+	}
+	if !strings.Contains(out, "Best Time: 380ms") {
+		t.Errorf("expected Best Time: 380ms, got: %s", out)
+	}
+}
+
+func TestStatsSummary(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	runPraxis(t, "record", "motion_rush", "3", "200")
+	runPraxis(t, "record", "grid_rush", "5", "300")
+	runPraxis(t, "record", "motion_rush", "2", "150")
+	out, code := runPraxis(t, "stats")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "2/41") {
+		t.Errorf("expected 2/41 completed, got: %s", out)
+	}
+	if !strings.Contains(out, "Total Attempts: 3") {
+		t.Errorf("expected Total Attempts: 3, got: %s", out)
+	}
+}
+
+func TestStatsUnknownChallenge(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "stats", "nope")
+	if code != 1 {
+		t.Errorf("expected exit code 1, got %d", code)
 	}
 }
