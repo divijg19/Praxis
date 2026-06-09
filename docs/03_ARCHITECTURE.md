@@ -26,10 +26,11 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 ### Package layout
 
 | Package | Responsibility |
-|---|---|
-| `cmd/praxis` | CLI entry point: `list`, `challenge`, `target`, `verify`, `result` |
+|---|---|---|
+| `cmd/praxis` | CLI entry point: `list`, `challenge`, `target`, `verify`, `result`, `record`, `stats` |
 | `internal/challenge` | `Challenge` struct — the core data model |
 | `internal/content` | `All()` — the complete challenge registry |
+| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
 | `internal/validator` | `Exists(name)` — validator dispatch registry |
 
 ### Data flow
@@ -98,3 +99,5 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 | `praxis target <id>` | Neovim | Target character to stdout |
 | `praxis verify <id>` | Neovim | "cursor" or "buffer" |
 | `praxis result <id>` | Neovim | Result lines to stdout |
+| `praxis record <id> <moves> <time_ms>` | Neovim | Silent (internal) |
+| `praxis stats [id]` | CLI | Per-challenge or summary |

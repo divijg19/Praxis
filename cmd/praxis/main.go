@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/divijg19/Praxis/internal/content"
+	"github.com/divijg19/Praxis/internal/stats"
 )
 
 func main() {
@@ -33,6 +35,18 @@ func main() {
 				result(os.Args[2])
 				return
 			}
+		case "record":
+			if len(os.Args) > 4 {
+				record(os.Args[2], os.Args[3], os.Args[4])
+				return
+			}
+		case "stats":
+			if len(os.Args) > 2 {
+				statsForID(os.Args[2])
+				return
+			}
+			statsSummary()
+			return
 		}
 	}
 	fmt.Println("Praxis")
@@ -91,4 +105,47 @@ func result(id string) {
 	}
 	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
 	os.Exit(1)
+}
+
+func record(id, movesStr, timeStr string) {
+	moves, _ := strconv.Atoi(movesStr)
+	timeMs, _ := strconv.Atoi(timeStr)
+	m, _ := stats.Load()
+	stats.Update(m, id, moves, timeMs)
+	stats.Save(m)
+}
+
+func statsForID(id string) {
+	found := false
+	for _, c := range content.All() {
+		if c.ID == id {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+		os.Exit(1)
+	}
+	m, _ := stats.Load()
+	s := m[id]
+	fmt.Printf("Attempts: %d\n", s.Attempts)
+	fmt.Printf("Completions: %d\n", s.Completions)
+	fmt.Printf("Best Moves: %d\n", s.BestMoves)
+	fmt.Printf("Best Time: %dms\n", s.BestTimeMs)
+}
+
+func statsSummary() {
+	m, _ := stats.Load()
+	var completed int
+	var totalAttempts int
+	for _, c := range content.All() {
+		s := m[c.ID]
+		if s.Completions > 0 {
+			completed++
+		}
+		totalAttempts += s.Attempts
+	}
+	fmt.Printf("Challenges Completed: %d/%d\n", completed, len(content.All()))
+	fmt.Printf("Total Attempts: %d\n", totalAttempts)
 }

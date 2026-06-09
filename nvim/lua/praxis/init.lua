@@ -60,13 +60,20 @@ function M.show(opts)
 
 		local function render_result()
 			local elapsed_ms = math.floor((vim.uv.hrtime() - state.start_ns) / 1e6)
+			vim.fn.system({ "praxis", "record", opts.args, tostring(state.moves), tostring(elapsed_ms) })
+			local stats_out = vim.fn.systemlist({ "praxis", "stats", opts.args })
 			vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-			vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+			local display = {
 				"Success", "",
 				"Moves: " .. state.moves,
 				"Time: "  .. elapsed_ms .. "ms", "",
-				"Press r to replay",
-			})
+			}
+			for _, line in ipairs(stats_out) do
+				table.insert(display, line)
+			end
+			table.insert(display, "")
+			table.insert(display, "Press r to replay")
+			vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
 			vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 		end
 
