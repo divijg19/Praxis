@@ -2,13 +2,14 @@
 
 ## Test Suite Overview
 
-Praxis has **33 tests** across 3 packages:
+Praxis has **48 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 18 | Content invariants, layout, stability, contracts |
+| `internal/content` | 21 | Content invariants, layout, stability, contracts, curriculum integrity |
+| `internal/stats` | 8 | Stats persistence, update logic, best-value tracking |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
-| `cmd/praxis` | 11 | CLI subprocess behavior, output format contracts |
+| `cmd/praxis` | 15 | CLI subprocess behavior, output format contracts |
 
 ## Running Tests
 
@@ -57,6 +58,16 @@ These are the most important tests. They protect the challenge registry from acc
 | `TestCursorChallengeLayout` | Cursor challenge with <1 line or empty instruction |
 | `TestContentResultLineCountReasonable` | Buffer challenge with wildly mismatched Content/Result line count |
 
+## Integrity Tests (`internal/content/integrity_test.go`)
+
+These tests audit the curriculum itself rather than structural invariants.
+
+| Test | What it catches |
+|---|---|
+| `TestCoreConceptCoverage` | Core Vim concept accidentally removed from curriculum |
+| `TestNoDuplicateChallengeContent` | Content or buffer result duplicated across challenges |
+| `TestCurriculumMapComplete` | Challenge added without curriculum mapping, or orphaned map entry |
+
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
 
 | Test | What it catches |
@@ -87,7 +98,7 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 ## Adding a New Test
 
 1. Add the test function to the appropriate file
-2. If adding a challenge-level invariant, add it to `content_test.go`
+2. If adding a challenge-level invariant, add it to `content_test.go`. If adding a curriculum-integrity test, add it to `integrity_test.go`.
 3. If adding a CLI-level test, add it to `main_test.go`
 4. If adding a new validator, add its test to `validator_test.go` and update `utf8_test.go` if relevant
 5. Run `go test ./...` to verify

@@ -60,6 +60,12 @@ Avg Time: 74s
 | **Avg Moves** | `Moves / Completions` |
 | **Avg Time** | `Practice Time / Completions` |
 
+### Completions and Replays
+
+Completions counts every successful run, including replayed completions via the `r` key. A single challenge may contribute multiple completions within one session.
+
+This means `Completions` can exceed `Challenges` — the gap reflects replay activity, not an error.
+
 ## Design Decisions
 
 - **No persistence.** Sessions are Neovim-scoped ephemeral state. If you restart Neovim, the session starts fresh.
