@@ -2,7 +2,10 @@
 
 Total: **41 challenges** across **7 curriculum packs**.
 
-Generated from `internal/content/content.go`. Do not edit by hand.
+Challenge behavior originates from internal/content/content.go.
+
+Primary Concept annotations are curriculum documentation
+maintained alongside the challenge catalog.
 
 ## Movement
 
@@ -11,6 +14,7 @@ Generated from `internal/content/content.go`. Do not edit by hand.
 - **ID:** `motion_rush`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `hjkl`
 
 #### Content
 
@@ -25,6 +29,7 @@ Move your cursor to the star ★
 - **ID:** `grid_rush`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `hjkl`
 
 #### Content
 
@@ -43,6 +48,7 @@ Move your cursor to the star ★
 - **ID:** `find_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `f`
 
 #### Content
 
@@ -59,6 +65,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★
 - **ID:** `word_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `w`
 
 #### Content
 
@@ -75,6 +82,7 @@ alpha beta gamma delta epsilon ★
 - **ID:** `symbol_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `@`  
+- **Primary Concept:** `F`
 
 #### Content
 
@@ -91,6 +99,7 @@ find the target symbol
 - **ID:** `line_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `j`
 
 #### Content
 
@@ -114,6 +123,7 @@ line five
 - **ID:** `paren_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `%`
 
 #### Content
 
@@ -130,6 +140,7 @@ Jump to the matching paren
 - **ID:** `sentence_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `)`
 
 #### Content
 
@@ -148,6 +159,7 @@ Second. Third.
 - **ID:** `slash_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `/`
 
 #### Content
 
@@ -164,6 +176,7 @@ alpha  bravo  charlie  delta  echo  foxtrot  golf  ★
 - **ID:** `question_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `?`
 
 #### Content
 
@@ -197,6 +210,7 @@ line eighteen
 - **ID:** `repeat_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `@`  
+- **Primary Concept:** `;`
 
 #### Content
 
@@ -213,6 +227,7 @@ Search for ★, then repeat to find @
 - **ID:** `inner_paren_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `i(`
 
 #### Content
 
@@ -229,6 +244,7 @@ Select inside the parentheses
 - **ID:** `around_paren_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `)`  
+- **Primary Concept:** `a(`
 
 #### Content
 
@@ -245,6 +261,7 @@ Select around the parentheses
 - **ID:** `inner_bracket_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `i[`
 
 #### Content
 
@@ -261,6 +278,7 @@ Select inside the brackets
 - **ID:** `around_bracket_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `]`  
+- **Primary Concept:** `a[`
 
 #### Content
 
@@ -277,6 +295,7 @@ Select around the brackets
 - **ID:** `inner_quote_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `i"`
 
 #### Content
 
@@ -293,6 +312,7 @@ x"magnificent★"
 - **ID:** `around_quote_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `a"`
 
 #### Content
 
@@ -309,6 +329,7 @@ x"magnificent"★
 - **ID:** `paragraph_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `Z`  
+- **Primary Concept:** `{`
 
 #### Content
 
@@ -329,6 +350,7 @@ third Z
 - **ID:** `match_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `%`
 
 #### Content
 
@@ -346,6 +368,7 @@ Jump to the matching delimiter
 
 - **ID:** `delete_character_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `x`
 
 #### Content
 
@@ -369,6 +392,7 @@ hello
 
 - **ID:** `replace_character_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `r`
 
 #### Content
 
@@ -392,6 +416,7 @@ hello
 
 - **ID:** `toggle_case_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `~`
 
 #### Content
 
@@ -415,6 +440,7 @@ hello
 
 - **ID:** `delete_word_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `dw`
 
 #### Content
 
@@ -438,6 +464,7 @@ keep  keep
 
 - **ID:** `change_word_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `ciw`
 
 #### Content
 
@@ -464,6 +491,7 @@ bar
 - **ID:** `utf8_cursor_hunter`  
 - **Verify:** `cursor`  
 - **Target:** `★`  
+- **Primary Concept:** `f`
 
 #### Content
 
@@ -481,6 +509,7 @@ Navigate past multi-byte characters to the star
 
 - **ID:** `delete_line_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `dd`
 
 #### Content
 
@@ -507,6 +536,7 @@ keep
 
 - **ID:** `delete_to_end_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `D`
 
 #### Content
 
@@ -530,6 +560,7 @@ keep this text
 
 - **ID:** `delete_inner_word_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `diw`
 
 #### Content
 
@@ -553,6 +584,7 @@ keep  keep
 
 - **ID:** `delete_around_word_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `daw`
 
 #### Content
 
@@ -576,6 +608,7 @@ keep keep
 
 - **ID:** `delete_inner_paren_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `di(`
 
 #### Content
 
@@ -599,6 +632,7 @@ func()
 
 - **ID:** `delete_around_paren_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `da(`
 
 #### Content
 
@@ -622,6 +656,7 @@ func
 
 - **ID:** `delete_inner_quote_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `di"`
 
 #### Content
 
@@ -645,6 +680,7 @@ Delete inside quotes
 
 - **ID:** `delete_around_quote_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `da"`
 
 #### Content
 
@@ -668,6 +704,7 @@ Delete around quotes
 
 - **ID:** `change_inner_word_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `ciw`
 
 #### Content
 
@@ -691,6 +728,7 @@ hello world
 
 - **ID:** `change_inner_paren_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `ci(`
 
 #### Content
 
@@ -714,6 +752,7 @@ func(hello)
 
 - **ID:** `change_inner_quote_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `ci"`
 
 #### Content
 
@@ -737,6 +776,7 @@ Change inside quotes
 
 - **ID:** `yank_line_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `yy`
 
 #### Content
 
@@ -763,6 +803,7 @@ copy me
 
 - **ID:** `named_register_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `"a`
 
 #### Content
 
@@ -787,6 +828,7 @@ copy me
 
 - **ID:** `word_register_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `"A`
 
 #### Content
 
@@ -810,6 +852,7 @@ alpha beta alpha
 
 - **ID:** `register_replace_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `"ap`
 
 #### Content
 
@@ -835,6 +878,7 @@ correct
 
 - **ID:** `register_duplicate_hunter`  
 - **Verify:** `buffer`  
+- **Primary Concept:** `"ap`
 
 #### Content
 
