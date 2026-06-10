@@ -1,5 +1,7 @@
 local M = {}
 
+local session = nil
+
 function M.show(opts)
 	local lines
 	local is_challenge = opts and opts.args and opts.args ~= ""
@@ -28,6 +30,17 @@ function M.show(opts)
 	if is_challenge then
 		local target = vim.fn.systemlist({ "praxis", "target", opts.args })[1]
 		local result = vim.fn.systemlist({ "praxis", "result", opts.args }) or {}
+
+		if not session then
+			session = {
+				start_ns     = vim.uv.hrtime(),
+				challenges   = 0,
+				completions  = 0,
+				total_moves  = 0,
+				total_time_ms = 0,
+			}
+		end
+		session.challenges = session.challenges + 1
 
 		local function byte_to_char(line, bytecol)
 			return vim.fn.strchars(string.sub(line, 1, bytecol))
@@ -60,6 +73,9 @@ function M.show(opts)
 
 		local function render_result()
 			local elapsed_ms = math.floor((vim.uv.hrtime() - state.start_ns) / 1e6)
+			session.completions = session.completions + 1
+			session.total_moves = session.total_moves + state.moves
+			session.total_time_ms = session.total_time_ms + elapsed_ms
 			vim.fn.system({ "praxis", "record", opts.args, tostring(state.moves), tostring(elapsed_ms) })
 			local stats_out = vim.fn.systemlist({ "praxis", "stats", opts.args })
 			vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
@@ -136,6 +152,43 @@ function M.show(opts)
 	end
 end
 
+local function format_time(total_s)
+	local m = math.floor(total_s / 60)
+	local s = total_s % 60
+	if m > 0 then return string.format("%dm%ds", m, s) end
+	return string.format("%ds", s)
+end
+
+function M.show_session()
+	local completions = session and session.completions or 0
+	local challenges  = session and session.challenges or 0
+	local moves       = session and session.total_moves or 0
+	local time_ms     = session and session.total_time_ms or 0
+	local total_s     = math.floor(time_ms / 1000)
+	local avg_moves   = completions > 0 and math.floor(moves / completions) or 0
+	local avg_time_s  = completions > 0 and math.floor(time_ms / completions / 1000) or 0
+	local elapsed_s   = session and math.floor((vim.uv.hrtime() - session.start_ns) / 1e9) or 0
+
+	local buf = vim.api.nvim_create_buf(false, true)
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+		"Session", "",
+		"Challenges: " .. challenges,
+		"Completions: " .. completions, "",
+		"Session Length: " .. format_time(elapsed_s),
+		"Practice Time: " .. format_time(total_s), "",
+		"Moves: " .. moves, "",
+		"Avg Moves: " .. avg_moves,
+		"Avg Time: " .. avg_time_s .. "s",
+	})
+	vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+	vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+	vim.api.nvim_set_option_value("swapfile", false, { buf = buf })
+	vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+	vim.api.nvim_buf_set_name(buf, "Praxis Session")
+	vim.api.nvim_set_current_buf(buf)
+end
+
 vim.api.nvim_create_user_command("Praxis", M.show, { nargs = "?" })
+vim.api.nvim_create_user_command("PraxisSession", M.show_session, {})
 
 return M

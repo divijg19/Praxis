@@ -57,3 +57,4 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | v0.0.20 | Foundation Freeze | 41 | 27 |
 | v0.1.0 | Public Contracts & Stability | 41 | 33 |
 | **v0.1.1** | **Progress Tracking** | **41** | **45** |
+| **v0.1.2** | **Practice Sessions** | **41** | **45** |
