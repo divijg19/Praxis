@@ -2,12 +2,12 @@
 
 ## Test Suite Overview
 
-Praxis has **52 tests** across 4 packages:
+Praxis has **58 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
 | `internal/content` | 25 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
-| `internal/stats` | 8 | Stats persistence, update logic, best-value tracking |
+| `internal/stats` | 14 | Stats persistence, update logic, best-value tracking, mastery tiers and distribution |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
 | `cmd/praxis` | 15 | CLI subprocess behavior, output format contracts |
 
@@ -116,4 +116,38 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 
 ## Replay Verification
 
-See `docs/REPLAY.md` and `tools/replay/replay.sh` for the end-to-end Neovim replay harness that validates all 41 challenges in a real Neovim session.
+Replay verification runs every challenge through a real Neovim session, ensuring that challenge content, results, and validator behavior are consistent. This is the canonical integration verification — it exercises the entire pipeline from Go binary to Lua frontend to Neovim buffer state.
+
+### Running
+
+```bash
+tools/replay/replay.sh
+```
+
+The script:
+1. Builds the Go binary to `/tmp/praxis`
+2. Runs Neovim headless with `tools/replay/replay.lua`
+3. Prints PASS/FAIL for each challenge
+4. Reports summary: `ALL 41/41 REPLAY TESTS PASS`
+
+### Interpreting Results
+
+Each challenge reports `PASS <id>` or `FAIL <id>`.
+
+- A **cursor challenge** passes when navigating to the target character completes successfully
+- A **buffer challenge** passes when setting the buffer content to the result matches exactly
+- The **UTF-8 challenge** passes when byte-to-character normalization correctly identifies the star at bytecol=9, charcol=6
+
+The summary line shows the final count. All 41 must pass.
+
+### Adding a New Challenge
+
+1. Add its ID to the appropriate list in `tools/replay/replay.lua` (cursor challenges in `cursor_ids`, buffer challenges in `buffer_ids`)
+2. Run the replay to verify
+3. Commit the updated `replay.lua`
+
+### Limitations
+
+- Buffer challenges are verified by directly setting the buffer to the result, not by simulating keystrokes
+- This means replay tests validate that content+result pairs are consistent, not that the teaching technique works
+- Full technique validation requires manual testing within Neovim

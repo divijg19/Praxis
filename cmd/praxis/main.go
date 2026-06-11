@@ -149,4 +149,19 @@ func statsSummary() {
 	}
 	fmt.Printf("Challenges Completed: %d/%d\n", completed, len(content.All()))
 	fmt.Printf("Total Attempts: %d\n", totalAttempts)
+	fmt.Println()
+	dist := stats.MasteryDistribution(m, len(content.All()))
+	fmt.Println("Mastery:")
+	fmt.Printf("  Unseen: %d\n", dist["Unseen"])
+	fmt.Printf("  Learning: %d\n", dist["Learning"])
+	fmt.Printf("  Practiced: %d\n", dist["Practiced"])
+	fmt.Printf("  Experienced: %d\n", dist["Experienced"])
+	tiers := []string{"Unseen", "Learning", "Practiced", "Experienced"}
+	highest := "Unseen"
+	for _, t := range tiers {
+		if dist[t] > 0 {
+			highest = t
+		}
+	}
+	fmt.Printf("\nHighest Tier: %s\n", highest)
 }

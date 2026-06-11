@@ -102,3 +102,16 @@ func MasteryTier(s Stats) string {
 		return "Unseen"
 	}
 }
+
+func MasteryDistribution(m map[string]Stats, totalChallenges int) map[string]int {
+	dist := map[string]int{
+		"Unseen":      totalChallenges - len(m),
+		"Learning":    0,
+		"Practiced":   0,
+		"Experienced": 0,
+	}
+	for _, s := range m {
+		dist[MasteryTier(s)]++
+	}
+	return dist
+}

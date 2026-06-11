@@ -230,6 +230,18 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Total Attempts: 3") {
 		t.Errorf("expected Total Attempts: 3, got: %s", out)
 	}
+	if !strings.Contains(out, "Mastery:") {
+		t.Errorf("expected Mastery header, got: %s", out)
+	}
+	if !strings.Contains(out, "Unseen: 39") {
+		t.Errorf("expected Unseen: 39, got: %s", out)
+	}
+	if !strings.Contains(out, "Learning: 2") {
+		t.Errorf("expected Learning: 2, got: %s", out)
+	}
+	if !strings.Contains(out, "Highest Tier: Learning") {
+		t.Errorf("expected Highest Tier: Learning, got: %s", out)
+	}
 }
 
 func TestStatsUnknownChallenge(t *testing.T) {

@@ -144,3 +144,42 @@ func TestMasteryExperienced(t *testing.T) {
 		t.Errorf("MasteryTier(%+v) = %q, want Experienced", s, got)
 	}
 }
+
+func TestMasteryDistributionEmpty(t *testing.T) {
+	m := make(map[string]Stats)
+	d := MasteryDistribution(m, 41)
+	if d["Unseen"] != 41 {
+		t.Errorf("Unseen = %d, want 41", d["Unseen"])
+	}
+	if d["Learning"] != 0 {
+		t.Errorf("Learning = %d, want 0", d["Learning"])
+	}
+	if d["Practiced"] != 0 {
+		t.Errorf("Practiced = %d, want 0", d["Practiced"])
+	}
+	if d["Experienced"] != 0 {
+		t.Errorf("Experienced = %d, want 0", d["Experienced"])
+	}
+}
+
+func TestMasteryDistributionMixed(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 1},
+		"b": {Completions: 2},
+		"c": {Completions: 5},
+		"d": {Completions: 10},
+	}
+	d := MasteryDistribution(m, 41)
+	if d["Unseen"] != 37 {
+		t.Errorf("Unseen = %d, want 37", d["Unseen"])
+	}
+	if d["Learning"] != 2 {
+		t.Errorf("Learning = %d, want 2", d["Learning"])
+	}
+	if d["Practiced"] != 1 {
+		t.Errorf("Practiced = %d, want 1", d["Practiced"])
+	}
+	if d["Experienced"] != 1 {
+		t.Errorf("Experienced = %d, want 1", d["Experienced"])
+	}
+}

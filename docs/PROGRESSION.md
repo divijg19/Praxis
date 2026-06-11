@@ -116,3 +116,13 @@ Yanking, named registers, appending, and register-based replacement and duplicat
 | Text Objects | 9 |
 | Registers | 5 |
 | **Total** | **41** |
+
+---
+
+## Future Mastery System (Not Implemented)
+
+Future releases may map mastery signals onto visible ranks:
+
+    Bronze → Silver → Gold → Platinum → Diamond → Master → Grandmaster
+
+No thresholds, algorithms, or schemas are defined. This is a design anchor, not a commitment.
