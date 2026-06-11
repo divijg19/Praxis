@@ -6,15 +6,14 @@ Praxis uses `v0.0.x` versioning during the foundation phase and `v0.1.x` for the
 
 ## Release Pattern
 
-Every release follows a two-issue (or three-issue) pattern:
+Every release follows a two-issue pattern:
 
 1. **Release issue** — tracks the content/feature scope
 2. **Verification issue** — checklist for testing and regression
-3. **Archive issue** (occasional) — documents major decisions or migrations
 
 ## Creating a Release
 
-See `docs/RELEASE_CHECKLIST.md` for the mandatory 10-step release process.
+See `REFERENCE.md` (Release Procedure section) for the mandatory process.
 
 1. Implement all changes
 2. Verify: `gofmt -l .` clean, `go build ./...`, `go vet ./...`, `go test ./...`
@@ -60,3 +59,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.2** | **Practice Sessions** | **41** | **45** |
 | **v0.1.3** | **Curriculum Integrity & Audit** | **41** | **48** |
 | **v0.1.4** | **Curriculum Taxonomy & Progression** | **41** | **52** |
+| **v0.1.5** | **Mastery Labels** | **41** | **56** |
+| **v0.1.6** | **Documentation Consolidation & Mastery Surfacing** | **41** | **58** |
