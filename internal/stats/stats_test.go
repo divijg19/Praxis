@@ -104,3 +104,43 @@ func TestUpdateReturnsUpdated(t *testing.T) {
 		t.Errorf("returned %+v", s)
 	}
 }
+
+func TestMasteryUnseen(t *testing.T) {
+	s := Stats{}
+	if got := MasteryTier(s); got != "Unseen" {
+		t.Errorf("MasteryTier(%+v) = %q, want Unseen", s, got)
+	}
+}
+
+func TestMasteryLearning(t *testing.T) {
+	s := Stats{Completions: 1}
+	if got := MasteryTier(s); got != "Learning" {
+		t.Errorf("MasteryTier(%+v) = %q, want Learning", s, got)
+	}
+	s.Completions = 2
+	if got := MasteryTier(s); got != "Learning" {
+		t.Errorf("MasteryTier(%+v) = %q, want Learning", s, got)
+	}
+}
+
+func TestMasteryPracticed(t *testing.T) {
+	s := Stats{Completions: 3}
+	if got := MasteryTier(s); got != "Practiced" {
+		t.Errorf("MasteryTier(%+v) = %q, want Practiced", s, got)
+	}
+	s.Completions = 7
+	if got := MasteryTier(s); got != "Practiced" {
+		t.Errorf("MasteryTier(%+v) = %q, want Practiced", s, got)
+	}
+}
+
+func TestMasteryExperienced(t *testing.T) {
+	s := Stats{Completions: 8}
+	if got := MasteryTier(s); got != "Experienced" {
+		t.Errorf("MasteryTier(%+v) = %q, want Experienced", s, got)
+	}
+	s.Completions = 20
+	if got := MasteryTier(s); got != "Experienced" {
+		t.Errorf("MasteryTier(%+v) = %q, want Experienced", s, got)
+	}
+}

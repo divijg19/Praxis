@@ -133,6 +133,7 @@ func statsForID(id string) {
 	fmt.Printf("Completions: %d\n", s.Completions)
 	fmt.Printf("Best Moves: %d\n", s.BestMoves)
 	fmt.Printf("Best Time: %dms\n", s.BestTimeMs)
+	fmt.Printf("Mastery: %s\n", stats.MasteryTier(s))
 }
 
 func statsSummary() {

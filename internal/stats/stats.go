@@ -83,3 +83,22 @@ func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
 	m[id] = s
 	return s
 }
+
+const (
+	LearningMax    = 2
+	PracticedMax   = 7
+	ExperiencedMin = 8
+)
+
+func MasteryTier(s Stats) string {
+	switch {
+	case s.Completions >= ExperiencedMin:
+		return "Experienced"
+	case s.Completions > LearningMax:
+		return "Practiced"
+	case s.Completions >= 1:
+		return "Learning"
+	default:
+		return "Unseen"
+	}
+}
