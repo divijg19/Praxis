@@ -2,11 +2,11 @@
 
 ## Test Suite Overview
 
-Praxis has **48 tests** across 4 packages:
+Praxis has **52 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 21 | Content invariants, layout, stability, contracts, curriculum integrity |
+| `internal/content` | 25 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
 | `internal/stats` | 8 | Stats persistence, update logic, best-value tracking |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
 | `cmd/praxis` | 15 | CLI subprocess behavior, output format contracts |
@@ -68,6 +68,17 @@ These tests audit the curriculum itself rather than structural invariants.
 | `TestNoDuplicateChallengeContent` | Content or buffer result duplicated across challenges |
 | `TestCurriculumMapComplete` | Challenge added without curriculum mapping, or orphaned map entry |
 
+## Taxonomy Tests (`internal/content/taxonomy_test.go`)
+
+These tests enforce the Concept–Context–Stage metadata model, which is the single source of truth for curriculum documentation.
+
+| Test | What it catches |
+|---|---|
+| `TestCurriculumContextsComplete` | Challenge missing Concept, Context, or Stage |
+| `TestConceptContextPairsUnique` | Two challenges with identical (Concept, Context) |
+| `TestProgressionCoverage` | Progression stage with zero challenges |
+| `TestStageIntroductionOrder` | Stages introduced out of pedagogical order |
+
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
 
 | Test | What it catches |
@@ -98,7 +109,7 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 ## Adding a New Test
 
 1. Add the test function to the appropriate file
-2. If adding a challenge-level invariant, add it to `content_test.go`. If adding a curriculum-integrity test, add it to `integrity_test.go`.
+2. If adding a challenge-level invariant, add it to `content_test.go`. If adding a curriculum-integrity test, add it to `integrity_test.go`. If adding a taxonomy test, add it to `taxonomy_test.go`.
 3. If adding a CLI-level test, add it to `main_test.go`
 4. If adding a new validator, add its test to `validator_test.go` and update `utf8_test.go` if relevant
 5. Run `go test ./...` to verify

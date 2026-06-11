@@ -59,3 +59,4 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.1** | **Progress Tracking** | **41** | **45** |
 | **v0.1.2** | **Practice Sessions** | **41** | **45** |
 | **v0.1.3** | **Curriculum Integrity & Audit** | **41** | **48** |
+| **v0.1.4** | **Curriculum Taxonomy & Progression** | **41** | **52** |

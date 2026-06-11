@@ -2,7 +2,7 @@
 
 ## Principles
 
-1. **One concept per challenge.** Every challenge teaches one primary Vim technique. The curriculum map in `internal/content/integrity_test.go` documents this taxonomy and is enforced by test.
+1. **One concept per challenge.** Every challenge has a documented primary Concept, Context, and Stage. The curriculum metadata in `internal/content/taxonomy_test.go` is the single source of truth, enforced by `TestCurriculumContextsComplete` and `TestCurriculumMapComplete`.
 
 2. **IDs are permanent.** Challenge identifiers must never be renamed or removed. This is enforced by `TestChallengeIDsStable`.
 
@@ -25,6 +25,10 @@
 | `TestChallengeCount` | No accidental addition/removal |
 | `TestNoValidatorDrift` | Validator usage stays current |
 | `TestChallengeIDsStable` | IDs never renamed |
+| `TestCurriculumContextsComplete` | Every challenge has Concept, Context, Stage |
+| `TestConceptContextPairsUnique` | No duplicate (Concept, Context) pairs |
+| `TestProgressionCoverage` | All progression stages have challenges |
+| `TestStageIntroductionOrder` | Stages introduced in pedagogical order |
 
 ## Anti-Goals
 
