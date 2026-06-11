@@ -15,6 +15,8 @@ maintained alongside the challenge catalog.
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `hjkl`
+- **Context:** `basic navigation`
+- **Stage:** `Movement`
 
 #### Content
 
@@ -30,6 +32,8 @@ Move your cursor to the star ★
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `hjkl`
+- **Context:** `grid navigation`
+- **Stage:** `Movement`
 
 #### Content
 
@@ -49,6 +53,8 @@ Move your cursor to the star ★
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `f`
+- **Context:** `character search`
+- **Stage:** `Search`
 
 #### Content
 
@@ -66,6 +72,8 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `w`
+- **Context:** `word motion`
+- **Stage:** `Search`
 
 #### Content
 
@@ -83,6 +91,8 @@ alpha beta gamma delta epsilon ★
 - **Verify:** `cursor`  
 - **Target:** `@`  
 - **Primary Concept:** `F`
+- **Context:** `backward symbol search`
+- **Stage:** `Search`
 
 #### Content
 
@@ -100,6 +110,8 @@ find the target symbol
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `j`
+- **Context:** `line navigation`
+- **Stage:** `Search`
 
 #### Content
 
@@ -124,6 +136,8 @@ line five
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `%`
+- **Context:** `matching delimiters navigation`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -141,6 +155,8 @@ Jump to the matching paren
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `)`
+- **Context:** `sentence navigation`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -160,6 +176,8 @@ Second. Third.
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `/`
+- **Context:** `forward search`
+- **Stage:** `Search`
 
 #### Content
 
@@ -177,6 +195,8 @@ alpha  bravo  charlie  delta  echo  foxtrot  golf  ★
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `?`
+- **Context:** `backward search`
+- **Stage:** `Search`
 
 #### Content
 
@@ -211,6 +231,8 @@ line eighteen
 - **Verify:** `cursor`  
 - **Target:** `@`  
 - **Primary Concept:** `;`
+- **Context:** `repeat motion`
+- **Stage:** `Search`
 
 #### Content
 
@@ -228,6 +250,8 @@ Search for ★, then repeat to find @
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `i(`
+- **Context:** `select inside parentheses`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -245,6 +269,8 @@ Select inside the parentheses
 - **Verify:** `cursor`  
 - **Target:** `)`  
 - **Primary Concept:** `a(`
+- **Context:** `select around parentheses`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -262,6 +288,8 @@ Select around the parentheses
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `i[`
+- **Context:** `select inside brackets`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -279,6 +307,8 @@ Select inside the brackets
 - **Verify:** `cursor`  
 - **Target:** `]`  
 - **Primary Concept:** `a[`
+- **Context:** `select around brackets`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -296,6 +326,8 @@ Select around the brackets
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `i"`
+- **Context:** `select inside quotes`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -313,6 +345,8 @@ x"magnificent★"
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `a"`
+- **Context:** `select around quotes`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -330,6 +364,8 @@ x"magnificent"★
 - **Verify:** `cursor`  
 - **Target:** `Z`  
 - **Primary Concept:** `{`
+- **Context:** `paragraph navigation`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -351,6 +387,8 @@ third Z
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `%`
+- **Context:** `nested delimiter matching`
+- **Stage:** `Structural Navigation`
 
 #### Content
 
@@ -369,6 +407,8 @@ Jump to the matching delimiter
 - **ID:** `delete_character_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `x`
+- **Context:** `delete character`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -393,6 +433,8 @@ hello
 - **ID:** `replace_character_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `r`
+- **Context:** `replace character`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -417,6 +459,8 @@ hello
 - **ID:** `toggle_case_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `~`
+- **Context:** `toggle case`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -441,6 +485,8 @@ hello
 - **ID:** `delete_word_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `dw`
+- **Context:** `delete word`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -465,6 +511,8 @@ keep  keep
 - **ID:** `change_word_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `ciw`
+- **Context:** `simple word replacement`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -492,6 +540,8 @@ bar
 - **Verify:** `cursor`  
 - **Target:** `★`  
 - **Primary Concept:** `f`
+- **Context:** `multi-byte search`
+- **Stage:** `Movement`
 
 #### Content
 
@@ -510,6 +560,8 @@ Navigate past multi-byte characters to the star
 - **ID:** `delete_line_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `dd`
+- **Context:** `delete line`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -537,6 +589,8 @@ keep
 - **ID:** `delete_to_end_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `D`
+- **Context:** `delete to end of line`
+- **Stage:** `Editing`
 
 #### Content
 
@@ -561,6 +615,8 @@ keep this text
 - **ID:** `delete_inner_word_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `diw`
+- **Context:** `delete inside word`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -585,6 +641,8 @@ keep  keep
 - **ID:** `delete_around_word_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `daw`
+- **Context:** `delete around word`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -609,6 +667,8 @@ keep keep
 - **ID:** `delete_inner_paren_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `di(`
+- **Context:** `delete inside parentheses`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -633,6 +693,8 @@ func()
 - **ID:** `delete_around_paren_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `da(`
+- **Context:** `delete around parentheses`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -657,6 +719,8 @@ func
 - **ID:** `delete_inner_quote_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `di"`
+- **Context:** `delete inside quotes`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -681,6 +745,8 @@ Delete inside quotes
 - **ID:** `delete_around_quote_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `da"`
+- **Context:** `delete around quotes`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -705,6 +771,8 @@ Delete around quotes
 - **ID:** `change_inner_word_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `ciw`
+- **Context:** `word replacement within structural editing`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -729,6 +797,8 @@ hello world
 - **ID:** `change_inner_paren_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `ci(`
+- **Context:** `change inside parentheses`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -753,6 +823,8 @@ func(hello)
 - **ID:** `change_inner_quote_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `ci"`
+- **Context:** `change inside quotes`
+- **Stage:** `Text Objects`
 
 #### Content
 
@@ -777,6 +849,8 @@ Change inside quotes
 - **ID:** `yank_line_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `yy`
+- **Context:** `yank line`
+- **Stage:** `Registers`
 
 #### Content
 
@@ -804,6 +878,8 @@ copy me
 - **ID:** `named_register_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `"a`
+- **Context:** `named register`
+- **Stage:** `Registers`
 
 #### Content
 
@@ -829,6 +905,8 @@ copy me
 - **ID:** `word_register_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `"A`
+- **Context:** `append to register`
+- **Stage:** `Registers`
 
 #### Content
 
@@ -853,6 +931,8 @@ alpha beta alpha
 - **ID:** `register_replace_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `"ap`
+- **Context:** `replace content from named register`
+- **Stage:** `Registers`
 
 #### Content
 
@@ -879,6 +959,8 @@ correct
 - **ID:** `register_duplicate_hunter`  
 - **Verify:** `buffer`  
 - **Primary Concept:** `"ap`
+- **Context:** `duplicate content from named register`
+- **Stage:** `Registers`
 
 #### Content
 

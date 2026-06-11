@@ -5,59 +5,15 @@ import (
 	"testing"
 )
 
-var curriculumConcepts = map[string]string{
-	"motion_rush":               "hjkl",
-	"grid_rush":                 "hjkl",
-	"find_hunter":               "f",
-	"word_hunter":               "w",
-	"symbol_hunter":             "F",
-	"line_hunter":               "j",
-	"paren_hunter":              "%",
-	"sentence_hunter":           ")",
-	"slash_hunter":              "/",
-	"question_hunter":           "?",
-	"repeat_hunter":             ";",
-	"inner_paren_hunter":        "i(",
-	"around_paren_hunter":       "a(",
-	"inner_bracket_hunter":      "i[",
-	"around_bracket_hunter":     "a[",
-	"inner_quote_hunter":        "i\"",
-	"around_quote_hunter":       "a\"",
-	"paragraph_hunter":          "{",
-	"match_hunter":              "%",
-	"delete_character_hunter":   "x",
-	"replace_character_hunter":  "r",
-	"toggle_case_hunter":        "~",
-	"delete_word_hunter":        "dw",
-	"change_word_hunter":        "ciw",
-	"utf8_cursor_hunter":        "f",
-	"delete_line_hunter":        "dd",
-	"delete_to_end_hunter":      "D",
-	"delete_inner_word_hunter":  "diw",
-	"delete_around_word_hunter": "daw",
-	"delete_inner_paren_hunter":  "di(",
-	"delete_around_paren_hunter": "da(",
-	"delete_inner_quote_hunter":  "di\"",
-	"delete_around_quote_hunter": "da\"",
-	"change_inner_word_hunter":   "ciw",
-	"change_inner_paren_hunter":  "ci(",
-	"change_inner_quote_hunter":  "ci\"",
-	"yank_line_hunter":           "yy",
-	"named_register_hunter":      "\"a",
-	"word_register_hunter":       "\"A",
-	"register_replace_hunter":    "\"ap",
-	"register_duplicate_hunter":  "\"ap",
-}
-
 func TestCoreConceptCoverage(t *testing.T) {
 	seen := make(map[string]bool)
 	for _, c := range All() {
-		concept, ok := curriculumConcepts[c.ID]
+		meta, ok := curriculum[c.ID]
 		if !ok {
 			t.Errorf("challenge %q missing from curriculum map", c.ID)
 			continue
 		}
-		seen[concept] = true
+		seen[meta.Concept] = true
 	}
 
 	families := []struct {
@@ -116,22 +72,22 @@ func TestNoDuplicateChallengeContent(t *testing.T) {
 }
 
 func TestCurriculumMapComplete(t *testing.T) {
-	if len(curriculumConcepts) != len(All()) {
-		t.Errorf("curriculum map has %d entries, expected %d", len(curriculumConcepts), len(All()))
+	if len(curriculum) != len(All()) {
+		t.Errorf("curriculum map has %d entries, expected %d", len(curriculum), len(All()))
 	}
 
 	for _, c := range All() {
-		concept, ok := curriculumConcepts[c.ID]
+		meta, ok := curriculum[c.ID]
 		if !ok {
 			t.Errorf("challenge %q missing from curriculum map", c.ID)
 			continue
 		}
-		if concept == "" {
+		if meta.Concept == "" {
 			t.Errorf("challenge %q has empty curriculum concept", c.ID)
 		}
 	}
 
-	for id := range curriculumConcepts {
+	for id := range curriculum {
 		var found bool
 		for _, c := range All() {
 			if c.ID == id {
