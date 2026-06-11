@@ -184,6 +184,9 @@ func TestRecordStats(t *testing.T) {
 	if !strings.Contains(out, "Best Time: 180ms") {
 		t.Errorf("expected Best Time: 180ms, got: %s", out)
 	}
+	if !strings.Contains(out, "Mastery: Learning") {
+		t.Errorf("expected Mastery: Learning, got: %s", out)
+	}
 }
 
 func TestStatsCommand(t *testing.T) {
@@ -205,6 +208,9 @@ func TestStatsCommand(t *testing.T) {
 	}
 	if !strings.Contains(out, "Best Time: 380ms") {
 		t.Errorf("expected Best Time: 380ms, got: %s", out)
+	}
+	if !strings.Contains(out, "Mastery: Learning") {
+		t.Errorf("expected Mastery: Learning, got: %s", out)
 	}
 }
 
