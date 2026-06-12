@@ -86,9 +86,44 @@ func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
 
 const (
 	LearningMax    = 2
-	PracticedMax   = 7
 	ExperiencedMin = 8
 )
+
+func NextChallenge(m map[string]Stats, curriculum []string) string {
+	for _, id := range curriculum {
+		if m[id].Completions <= LearningMax {
+			return id
+		}
+	}
+	return ""
+}
+
+func RecommendedReview(m map[string]Stats, curriculum []string) string {
+	var oldestPracticed, oldestExperienced string
+	var practicedDate, experiencedDate string
+	for _, id := range curriculum {
+		s := m[id]
+		if s.LastPlayed == "" {
+			continue
+		}
+		switch MasteryTier(s) {
+		case "Practiced":
+			if practicedDate == "" || s.LastPlayed < practicedDate {
+				practicedDate = s.LastPlayed
+				oldestPracticed = id
+			}
+		case "Experienced":
+			if experiencedDate == "" || s.LastPlayed < experiencedDate {
+				experiencedDate = s.LastPlayed
+				oldestExperienced = id
+			}
+		}
+	}
+	if oldestPracticed != "" {
+		return oldestPracticed
+	}
+	return oldestExperienced
+}
 
 func MasteryTier(s Stats) string {
 	switch {

@@ -183,3 +183,67 @@ func TestMasteryDistributionMixed(t *testing.T) {
 		t.Errorf("Experienced = %d, want 1", d["Experienced"])
 	}
 }
+
+func TestNextChallengeEmpty(t *testing.T) {
+	m := make(map[string]Stats)
+	curric := []string{"a", "b", "c"}
+	if got := NextChallenge(m, curric); got != "a" {
+		t.Errorf("NextChallenge(empty) = %q, want %q", got, "a")
+	}
+}
+
+func TestNextChallengePartial(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 5},
+		"b": {Completions: 3},
+		"c": {Completions: 0},
+	}
+	curric := []string{"a", "b", "c"}
+	if got := NextChallenge(m, curric); got != "c" {
+		t.Errorf("NextChallenge(partial) = %q, want %q", got, "c")
+	}
+}
+
+func TestNextChallengeComplete(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 5},
+		"b": {Completions: 8},
+	}
+	curric := []string{"a", "b"}
+	if got := NextChallenge(m, curric); got != "" {
+		t.Errorf("NextChallenge(all done) = %q, want %q", got, "")
+	}
+}
+
+func TestRecommendedReviewPracticed(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 5, LastPlayed: "2026-06-01"},
+		"b": {Completions: 4, LastPlayed: "2026-06-10"},
+	}
+	curric := []string{"a", "b"}
+	if got := RecommendedReview(m, curric); got != "a" {
+		t.Errorf("RecommendedReview = %q, want %q", got, "a")
+	}
+}
+
+func TestRecommendedReviewFallbackExperienced(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 10, LastPlayed: "2026-05-01"},
+		"b": {Completions: 12, LastPlayed: "2026-06-01"},
+	}
+	curric := []string{"a", "b"}
+	if got := RecommendedReview(m, curric); got != "a" {
+		t.Errorf("RecommendedReview = %q, want %q", got, "a")
+	}
+}
+
+func TestRecommendedReviewPrefersPracticedOverExperienced(t *testing.T) {
+	m := map[string]Stats{
+		"a": {Completions: 5, LastPlayed: "2026-06-10"},
+		"b": {Completions: 10, LastPlayed: "2026-06-01"},
+	}
+	curric := []string{"a", "b"}
+	if got := RecommendedReview(m, curric); got != "a" {
+		t.Errorf("RecommendedReview = %q (expected Practiced a over Experienced b), want %q", got, "a")
+	}
+}

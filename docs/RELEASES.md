@@ -33,10 +33,10 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 ## Release History
 
 | Tag | Title | Challenges | Tests |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | v0.0.1 | Initial prototype | 1 | 0 |
 | v0.0.2 | Parameterize challenge content | 1 | 0 |
-| v0.0.3 | Add grid_rush challenge | 2 | 0 |
+| v0.0.3 | Establish Neovim-to-Go-CLI Bridge | 2 | 0 |
 | v0.0.4 | Extract Lua plugin from inline | 2 | 0 |
 | v0.0.5 | Add find_hunter challenge | 3 | 0 |
 | v0.0.6 | Export praxis target for Lua | 3 | 0 |

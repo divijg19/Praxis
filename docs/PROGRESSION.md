@@ -4,6 +4,8 @@
 
 Praxis challenges are organized into six sequential stages. Each stage introduces a new category of Vim technique. Challenges within a stage build on skills from prior stages but may interleave with adjacent stages for pedagogical depth.
 
+> **Note:** Stages represent pedagogical dependencies (what should be learned before what). Packs (in CURRICULUM.md) represent historical release groupings (what was shipped together). These are intentionally separate taxonomies. A challenge belongs to exactly one stage but may appear inside a pack whose primary focus is different. For example, `utf8_cursor_hunter` belongs to the Movement stage but shipped in the Structural Editing pack; `slash_hunter`, `question_hunter`, and `repeat_hunter` belong to the Search stage but shipped in the Structural Navigation pack.
+
 ```
 Movement → Search → Structural Navigation → Editing → Text Objects → Registers
 ```
