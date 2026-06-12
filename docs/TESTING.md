@@ -15,13 +15,10 @@ Praxis has **79 tests** across 4 packages:
 
 ```bash
 # All tests
-go test ./...
+go test ./... -count=1
 
 # Specific package
 go test ./internal/content/... -v
-
-# Force non-cached run
-go clean -testcache && go test ./...
 
 # CLI tests (requires compilation)
 go test ./cmd/praxis/... -v
@@ -119,7 +116,7 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 1. Add the test function to the appropriate file
 2. If adding a challenge-level invariant, add it to `content_test.go`. If adding a curriculum-integrity test, add it to `integrity_test.go`. If adding a taxonomy test, add it to `taxonomy_test.go`.
 3. If adding a CLI-level test, add it to `main_test.go`
-4. If adding a new validator, add its test to `validator_test.go` and update `utf8_test.go` if relevant
+4. If adding a new validator, add its test to `validator_test.go`. The `utf8_test.go` file validates byte-to-character normalization for the cursor validator — update it if adding multi-byte content
 5. Run `go test ./...` to verify
 
 ## Replay Verification
@@ -148,11 +145,7 @@ Each challenge reports `PASS <id>` or `FAIL <id>`.
 
 The summary line shows the final count. All 41 must pass.
 
-### Adding a New Challenge
-
-1. Add its ID to the appropriate list in `tools/replay/replay.lua` (cursor challenges in `cursor_ids`, buffer challenges in `buffer_ids`)
-2. Run the replay to verify
-3. Commit the updated `replay.lua`
+To add a new challenge: add its ID to the appropriate list in `tools/replay/replay.lua` (`cursor_ids` or `buffer_ids`), run the replay to verify, then commit the updated file.
 
 ### Limitations
 

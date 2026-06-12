@@ -9,12 +9,11 @@
               │  Go Engine  │
               └──────┬──────┘
                      │
-         ┌───────────┴───────────┐
-         │                       │
-         ▼                       ▼
+          │
+          ▼
 
-    Standalone TUI        Neovim Frontend
-        (Go)                  (Lua)
+           CLI / Neovim Frontend
+           (Go + Lua)
 ```
 
 One engine. Multiple frontends. Shared progression, content, scoring, and persistence.
@@ -26,8 +25,8 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 ### Package layout
 
 | Package | Responsibility |
-|---|---|---|
-| `cmd/praxis` | CLI entry point: `list`, `challenge`, `target`, `verify`, `result`, `record`, `stats` |
+|---|---|
+| `cmd/praxis` | CLI entry point: `list`, `challenge`, `target`, `verify`, `result`, `attempt`, `record`, `stats` |
 | `internal/challenge` | `Challenge` struct — the core data model |
 | `internal/content` | `All()` — the complete challenge registry |
 | `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
@@ -99,5 +98,6 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 | `praxis target <id>` | Neovim | Target character to stdout |
 | `praxis verify <id>` | Neovim | "cursor" or "buffer" |
 | `praxis result <id>` | Neovim | Result lines to stdout |
+| `praxis attempt <id>` | Neovim | Silent (internal) |
 | `praxis record <id> <moves> <time_ms>` | Neovim | Silent (internal) |
 | `praxis stats [id]` | CLI | Per-challenge or summary |

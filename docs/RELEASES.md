@@ -15,15 +15,6 @@ Every release follows a two-issue pattern:
 
 See `REFERENCE.md` (Release Procedure section) for the mandatory process.
 
-1. Implement all changes
-2. Verify: `gofmt -l .` clean, `go build ./...`, `go vet ./...`, `go test ./...`
-3. Run replay: `tools/replay/replay.sh`
-4. Stage changes: `git add <files>`
-5. Commit with descriptive message
-6. Tag: `git tag v0.<major>.<N>`
-7. Push: `git push origin v0.<major>.x v0.<major>.<N>`
-8. Create GitHub issues for the release
-
 ## API Contract
 
 **Challenge IDs are stable once released.** They must never be renamed or removed. The `yank_line_hunter` precedent established in v0.0.19 demonstrates that curriculum framing (Name, Instruction) can evolve while the identifier remains permanent.
@@ -33,7 +24,7 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 ## Release History
 
 | Tag | Title | Challenges | Tests |
-|---|---|---|---|---|
+|---|---|---|---|
 | v0.0.1 | Initial prototype | 1 | 0 |
 | v0.0.2 | Parameterize challenge content | 1 | 0 |
 | v0.0.3 | Establish Neovim-to-Go-CLI Bridge | 2 | 0 |
@@ -63,4 +54,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.6** | **Documentation Consolidation & Mastery Surfacing** | **41** | **58** |
 | **v0.1.7** | **Practice Guidance & Documentation Hygiene** | **41** | **66** |
 | **v0.1.8** | **Measurement Completion** | **41** | **71** |
-| **v0.1.9** | **Execution Confidence & Freeze** | **41** | **~77** |
+| **v0.1.9** | **Execution Confidence & Freeze** | **41** | **79** |
+| **v0.1.10** | **Documentation Audit & Consistency Pass** | **41** | **79** |

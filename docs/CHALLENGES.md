@@ -4,6 +4,8 @@ Total: **41 challenges** across **7 curriculum packs**.
 
 Challenge behavior originates from internal/content/content.go.
 
+Challenges are grouped by historical shipping packs. For the pedagogical stage taxonomy, see PROGRESSION.md.
+
 Primary Concept annotations are curriculum documentation
 maintained alongside the challenge catalog.
 
