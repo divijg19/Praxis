@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/divijg19/Praxis/internal/content"
+	"github.com/divijg19/Praxis/internal/stats"
 )
 
 var binPath string
@@ -187,6 +188,11 @@ func TestRecordStats(t *testing.T) {
 	if !strings.Contains(out, "Mastery: Learning") {
 		t.Errorf("expected Mastery: Learning, got: %s", out)
 	}
+	// direct record() call bypasses normal attempt tracking;
+	// this state (Completions>0, Attempts=0) cannot occur through the Neovim frontend
+	if !strings.Contains(out, "Confidence: —") {
+		t.Errorf("expected Confidence: — (no attempts), got: %s", out)
+	}
 }
 
 func TestStatsCommand(t *testing.T) {
@@ -211,6 +217,11 @@ func TestStatsCommand(t *testing.T) {
 	}
 	if !strings.Contains(out, "Mastery: Learning") {
 		t.Errorf("expected Mastery: Learning, got: %s", out)
+	}
+	// direct record() call bypasses normal attempt tracking;
+	// this state (Completions>0, Attempts=0) cannot occur through the Neovim frontend
+	if !strings.Contains(out, "Confidence: —") {
+		t.Errorf("expected Confidence: — (no attempts), got: %s", out)
 	}
 }
 
@@ -281,11 +292,61 @@ func TestAttemptCommand(t *testing.T) {
 	}
 }
 
+func TestAttemptWithRecord(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	runPraxis(t, "attempt", "motion_rush")
+	runPraxis(t, "record", "motion_rush", "2", "180")
+	out, code := runPraxis(t, "stats", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "Attempts: 1") {
+		t.Errorf("expected Attempts: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Completions: 1") {
+		t.Errorf("expected Completions: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Confidence: High") {
+		t.Errorf("expected Confidence: High, got: %s", out)
+	}
+}
+
 func TestAttemptUnknown(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
 	_, code := runPraxis(t, "attempt", "nope")
 	if code != 1 {
 		t.Errorf("expected exit code 1, got %d", code)
+	}
+}
+
+func TestStatsCommandConfidenceLevels(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	m := map[string]stats.Stats{
+		"motion_rush": {Attempts: 0, Completions: 0},
+		"grid_rush":   {Attempts: 10, Completions: 5},
+		"find_hunter": {Attempts: 10, Completions: 6},
+		"word_hunter": {Attempts: 10, Completions: 8},
+	}
+	if err := stats.Save(m); err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		id   string
+		want string
+	}{
+		{"motion_rush", "Confidence: —"},
+		{"grid_rush", "Confidence: Low"},
+		{"find_hunter", "Confidence: Medium"},
+		{"word_hunter", "Confidence: High"},
+	}
+	for _, tc := range cases {
+		out, _ := runPraxis(t, "stats", tc.id)
+		if !strings.Contains(out, tc.want) {
+			t.Fatalf("praxis stats %s: expected %q in output, got:\n%s",
+				tc.id, tc.want, out)
+		}
 	}
 }

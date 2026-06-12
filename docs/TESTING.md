@@ -2,14 +2,14 @@
 
 ## Test Suite Overview
 
-Praxis has **71 tests** across 4 packages:
+Praxis has **79 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
 | `internal/content` | 25 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
-| `internal/stats` | 25 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance |
+| `internal/stats` | 31 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance, confidence |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
-| `cmd/praxis` | 17 | CLI subprocess behavior, output format contracts, attempt command |
+| `cmd/praxis` | 19 | CLI subprocess behavior, output format contracts, attempt command, confidence levels |
 
 ## Running Tests
 
@@ -109,6 +109,10 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 | `TestStatsCommand` | Per-challenge stats output format |
 | `TestStatsSummary` | Summary stats output format |
 | `TestStatsUnknownChallenge` | Unknown ID exits 1 for stats command |
+| `TestAttemptCommand` | Attempt tracking via CLI |
+| `TestAttemptWithRecord` | Full attempt+record workflow and confidence rendering |
+| `TestAttemptUnknown` | Non-existent ID exits 1 for attempt |
+| `TestStatsCommandConfidenceLevels` | Confidence rendering across all 4 states |
 
 ## Adding a New Test
 

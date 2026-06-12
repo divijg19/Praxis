@@ -78,6 +78,20 @@ func SuccessRate(s Stats) float64 {
 	return float64(s.Completions) / float64(s.Attempts)
 }
 
+func Confidence(s Stats) string {
+	if s.Attempts == 0 {
+		return "—"
+	}
+	switch {
+	case SuccessRate(s) >= 0.80:
+		return "High"
+	case SuccessRate(s) >= 0.60:
+		return "Medium"
+	default:
+		return "Low"
+	}
+}
+
 func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
 	s := m[id]
 	s.Completions++

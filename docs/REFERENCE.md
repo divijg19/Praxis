@@ -96,6 +96,7 @@ Success Rate: 100%
 Best Moves: 2
 Best Time: 180ms
 Mastery: Experienced
+Confidence: High
 ```
 
 Without arguments, shows summary:
@@ -125,7 +126,7 @@ Recommended Review:
 
 Exits 0 on success, 1 on unknown challenge ID.
 
-Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`
+Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`, `TestStatsCommandConfidenceLevels`
 
 ## Validators
 
@@ -268,6 +269,43 @@ type Stats struct {
 }
 ```
 
+### Measurement Model
+
+```
+                   Stats
+        ┌───────────┴───────────┐
+   Attempts                 Completions
+        │                        │
+        └───────────┐            ├───────────┐
+                    │            │           │
+              Success Rate    Mastery     Guidance
+                    │            │           │
+              Confidence      (depth)   (next action)
+                                   │
+                              LastPlayed
+```
+
+| Signal | Meaning |
+|---|---|
+| Attempts | Effort invested |
+| Completions | Raw success count |
+| Success Rate | Reliability metric (Completions / Attempts) |
+| Mastery | Practice depth (derived from Completions) |
+| Confidence | Execution reliability (derived from Success Rate) |
+| Guidance | Next action (derived from Mastery + LastPlayed + curriculum order) |
+
+### Confidence ≠ Mastery
+
+Confidence and Mastery are orthogonal dimensions.
+
+| | High Confidence | Low Confidence |
+|---|---|---|
+| High Mastery | 20 attempts, 16 completions (80%) | 20 attempts, 10 completions (50%) |
+| Low Mastery | 1 attempt, 1 completion (100%) | 1 attempt, 0 completions (0%) |
+
+High Confidence does not imply high Mastery.
+High Mastery does not imply high Confidence.
+
 ### Mastery Tiers
 
 Derived from `Completions`:
@@ -287,6 +325,8 @@ Derived from `Completions`:
 - Subsequent completions only update if better
 - No per-attempt history — only the best is preserved
 - Attempts and Completions are tracked independently. Attempts increment on challenge start and replay; Completions increment only on success
+- Confidence is derived from SuccessRate at display time. Not stored in JSON. Thresholds: ≥80% High, ≥60% Medium, <60% Low. Em dash (—) when no attempts (no-data signal, not Low).
+- Confidence and Mastery are orthogonal. Mastery answers "how much have I practiced?"; Confidence answers "how reliably am I executing?"
 
 ### Practice Guidance
 

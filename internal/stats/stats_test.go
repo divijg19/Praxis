@@ -99,6 +99,60 @@ func TestSuccessRateFull(t *testing.T) {
 	}
 }
 
+func TestConfidenceNoAttempts(t *testing.T) {
+	got := Confidence(Stats{})
+	want := "—"
+	if got != want {
+		t.Fatalf("Confidence({}) = %q, want %q", got, want)
+	}
+}
+
+func TestConfidenceLow(t *testing.T) {
+	s := Stats{Attempts: 10, Completions: 1}
+	got := Confidence(s)
+	if got != "Low" {
+		t.Fatalf("Confidence(1/10) = %q, want %q", got, "Low")
+	}
+}
+
+func TestConfidenceBoundaryMedium(t *testing.T) {
+	low := Stats{Attempts: 10, Completions: 5}
+	if got := Confidence(low); got != "Low" {
+		t.Fatalf("Confidence(5/10) = %q, want %q", got, "Low")
+	}
+	med := Stats{Attempts: 10, Completions: 6}
+	if got := Confidence(med); got != "Medium" {
+		t.Fatalf("Confidence(6/10) = %q, want %q", got, "Medium")
+	}
+}
+
+func TestConfidenceMedium(t *testing.T) {
+	s := Stats{Attempts: 10, Completions: 6}
+	got := Confidence(s)
+	if got != "Medium" {
+		t.Fatalf("Confidence(6/10) = %q, want %q", got, "Medium")
+	}
+}
+
+func TestConfidenceBoundaryHigh(t *testing.T) {
+	med := Stats{Attempts: 10, Completions: 7}
+	if got := Confidence(med); got != "Medium" {
+		t.Fatalf("Confidence(7/10) = %q, want %q", got, "Medium")
+	}
+	high := Stats{Attempts: 10, Completions: 8}
+	if got := Confidence(high); got != "High" {
+		t.Fatalf("Confidence(8/10) = %q, want %q", got, "High")
+	}
+}
+
+func TestConfidenceHigh(t *testing.T) {
+	s := Stats{Attempts: 10, Completions: 8}
+	got := Confidence(s)
+	if got != "High" {
+		t.Fatalf("Confidence(8/10) = %q, want %q", got, "High")
+	}
+}
+
 func TestUpdateBestMoves(t *testing.T) {
 	m := make(map[string]Stats)
 	Update(m, "a", 10, 100) // first: sets best to 10
