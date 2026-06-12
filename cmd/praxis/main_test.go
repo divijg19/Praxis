@@ -175,8 +175,8 @@ func TestRecordStats(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "Attempts: 2") {
-		t.Errorf("expected Attempts: 2, got: %s", out)
+	if !strings.Contains(out, "Completions: 2") {
+		t.Errorf("expected Completions: 2, got: %s", out)
 	}
 	if !strings.Contains(out, "Best Moves: 2") {
 		t.Errorf("expected Best Moves: 2, got: %s", out)
@@ -197,11 +197,11 @@ func TestStatsCommand(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "Attempts: 1") {
-		t.Errorf("expected Attempts: 1, got: %s", out)
-	}
 	if !strings.Contains(out, "Completions: 1") {
 		t.Errorf("expected Completions: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Success Rate: 0%") {
+		t.Errorf("expected success rate 0%% in output, got: %s", out)
 	}
 	if !strings.Contains(out, "Best Moves: 4") {
 		t.Errorf("expected Best Moves: 4, got: %s", out)
@@ -227,8 +227,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "2/41") {
 		t.Errorf("expected 2/41 completed, got: %s", out)
 	}
-	if !strings.Contains(out, "Total Attempts: 3") {
-		t.Errorf("expected Total Attempts: 3, got: %s", out)
+	if !strings.Contains(out, "Total Attempts: 0") {
+		t.Errorf("expected Total Attempts: 0, got: %s", out)
 	}
 	if !strings.Contains(out, "Mastery:") {
 		t.Errorf("expected Mastery header, got: %s", out)
@@ -257,6 +257,34 @@ func TestStatsUnknownChallenge(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
 	_, code := runPraxis(t, "stats", "nope")
+	if code != 1 {
+		t.Errorf("expected exit code 1, got %d", code)
+	}
+}
+
+func TestAttemptCommand(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "attempt", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	out, code := runPraxis(t, "stats", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "Attempts: 1") {
+		t.Errorf("expected Attempts: 1, got: %s", out)
+	}
+	if !strings.Contains(out, "Completions: 0") {
+		t.Errorf("expected Completions: 0, got: %s", out)
+	}
+}
+
+func TestAttemptUnknown(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "attempt", "nope")
 	if code != 1 {
 		t.Errorf("expected exit code 1, got %d", code)
 	}

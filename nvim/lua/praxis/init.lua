@@ -41,6 +41,7 @@ function M.show(opts)
 			}
 		end
 		session.challenges = session.challenges + 1
+	vim.fn.system({ "praxis", "attempt", opts.args })
 
 		local function byte_to_char(line, bytecol)
 			return vim.fn.strchars(string.sub(line, 1, bytecol))
@@ -69,6 +70,7 @@ function M.show(opts)
 			target          = target,
 			verify          = verify,
 			result_lines    = result,
+			challenge_id    = opts.args,
 		}
 
 		local function render_result()
@@ -103,6 +105,7 @@ function M.show(opts)
 				vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 			end
 			vim.api.nvim_win_set_cursor(0, { 1, 0 })
+			vim.fn.system({ "praxis", "attempt", state.challenge_id })
 		end
 
 		vim.api.nvim_create_autocmd("CursorMoved", {

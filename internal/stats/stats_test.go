@@ -43,11 +43,59 @@ func TestUpdateIncrements(t *testing.T) {
 	Update(m, "a", 3, 200)
 	Update(m, "a", 5, 300)
 	s := m["a"]
-	if s.Attempts != 2 {
-		t.Errorf("Attempts = %d, want 2", s.Attempts)
+	if s.Attempts != 0 {
+		t.Errorf("Attempts = %d, want 0", s.Attempts)
 	}
 	if s.Completions != 2 {
 		t.Errorf("Completions = %d, want 2", s.Completions)
+	}
+}
+
+func TestAttemptIncrements(t *testing.T) {
+	m := make(map[string]Stats)
+	Attempt(m, "a")
+	Attempt(m, "a")
+	s := m["a"]
+	if s.Attempts != 2 {
+		t.Errorf("Attempts = %d, want 2", s.Attempts)
+	}
+	if s.Completions != 0 {
+		t.Errorf("Completions = %d, want 0", s.Completions)
+	}
+}
+
+func TestAttemptNoSideEffects(t *testing.T) {
+	m := make(map[string]Stats)
+	Attempt(m, "a")
+	s := m["a"]
+	if s.BestMoves != 0 {
+		t.Errorf("BestMoves = %d, want 0", s.BestMoves)
+	}
+	if s.BestTimeMs != 0 {
+		t.Errorf("BestTimeMs = %d, want 0", s.BestTimeMs)
+	}
+	if s.LastPlayed != "" {
+		t.Errorf("LastPlayed = %q, want \"\"", s.LastPlayed)
+	}
+}
+
+func TestSuccessRateZero(t *testing.T) {
+	if got := SuccessRate(Stats{}); got != 0 {
+		t.Errorf("SuccessRate(zero) = %f, want 0", got)
+	}
+}
+
+func TestSuccessRateHalf(t *testing.T) {
+	s := Stats{Attempts: 10, Completions: 5}
+	if got := SuccessRate(s); got != 0.5 {
+		t.Errorf("SuccessRate(5/10) = %f, want 0.5", got)
+	}
+}
+
+func TestSuccessRateFull(t *testing.T) {
+	s := Stats{Attempts: 5, Completions: 5}
+	if got := SuccessRate(s); got != 1.0 {
+		t.Errorf("SuccessRate(5/5) = %f, want 1.0", got)
 	}
 }
 
@@ -100,7 +148,7 @@ func TestLoadCorruptFile(t *testing.T) {
 func TestUpdateReturnsUpdated(t *testing.T) {
 	m := make(map[string]Stats)
 	s := Update(m, "a", 5, 200)
-	if s.Attempts != 1 || s.Completions != 1 || s.BestMoves != 5 || s.BestTimeMs != 200 {
+	if s.Attempts != 0 || s.Completions != 1 || s.BestMoves != 5 || s.BestTimeMs != 200 {
 		t.Errorf("returned %+v", s)
 	}
 }
