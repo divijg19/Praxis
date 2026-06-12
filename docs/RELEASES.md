@@ -62,3 +62,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.5** | **Mastery Labels** | **41** | **56** |
 | **v0.1.6** | **Documentation Consolidation & Mastery Surfacing** | **41** | **58** |
 | **v0.1.7** | **Practice Guidance & Documentation Hygiene** | **41** | **66** |
+| **v0.1.8** | **Measurement Completion** | **41** | **71** |
+| **v0.1.9** | **Execution Confidence & Freeze** | **41** | **~77** |
