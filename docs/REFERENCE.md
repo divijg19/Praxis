@@ -86,11 +86,11 @@ Records a challenge completion and updates persistent stats. Silent on success (
 With an ID, shows per-challenge stats:
 
 ```
-Attempts: 12
+Attempts: 10
 Completions: 10
 Best Moves: 2
 Best Time: 180ms
-Mastery: Practiced
+Mastery: Experienced
 ```
 
 Without arguments, shows summary:
@@ -106,6 +106,16 @@ Mastery:
   Experienced: 18
 
 Highest Tier: Experienced
+```
+
+Followed by practice guidance sections:
+
+```
+Next Challenge:
+  find_hunter
+
+Recommended Review:
+  motion_rush
 ```
 
 Exits 0 on success, 1 on unknown challenge ID.
@@ -272,6 +282,12 @@ Derived from `Completions`:
 - Subsequent completions only update if better
 - No per-attempt history — only the best is preserved
 - `Attempts == Completions` always (Update is only called on success)
+
+### Practice Guidance
+
+`NextChallenge()` returns the first curriculum-ordered challenge whose Completions ≤ 2 (Unseen or Learning). This means: **finish what you started** — a partially-practiced Learning challenge will be recommended before a new Unseen challenge.
+
+`RecommendedReview()` returns the oldest Practiced challenge by LastPlayed date, falling back to the oldest Experienced if no Practiced challenges exist. Practiced challenges are preferred because they are more likely to benefit from review than deeply-ingrained Experienced ones.
 
 ## Sessions
 

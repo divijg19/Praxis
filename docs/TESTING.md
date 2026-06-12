@@ -105,6 +105,10 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 | `TestUnknownChallengeFails` | Non-existent ID exits 1 |
 | `TestUnknownTargetFails` | Non-existent target exits 1 |
 | `TestUnknownVerifyFails` | Non-existent verify exits 1 |
+| `TestRecordStats` | CLI stat recording and best-value persistence |
+| `TestStatsCommand` | Per-challenge stats output format |
+| `TestStatsSummary` | Summary stats output format |
+| `TestStatsUnknownChallenge` | Unknown ID exits 1 for stats command |
 
 ## Adding a New Test
 

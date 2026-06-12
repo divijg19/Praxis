@@ -242,6 +242,15 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Highest Tier: Learning") {
 		t.Errorf("expected Highest Tier: Learning, got: %s", out)
 	}
+	if !strings.Contains(out, "Next Challenge:") {
+		t.Errorf("expected Next Challenge header, got: %s", out)
+	}
+	if !strings.Contains(out, "motion_rush") {
+		t.Errorf("expected motion_rush as next challenge (still Learning at 2 completions), got: %s", out)
+	}
+	if strings.Contains(out, "Recommended Review:") {
+		t.Errorf("unexpected Recommended Review section (no Practiced+ challenges), got: %s", out)
+	}
 }
 
 func TestStatsUnknownChallenge(t *testing.T) {

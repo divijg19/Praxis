@@ -140,7 +140,9 @@ func statsSummary() {
 	m, _ := stats.Load()
 	var completed int
 	var totalAttempts int
+	var curriculumIDs []string
 	for _, c := range content.All() {
+		curriculumIDs = append(curriculumIDs, c.ID)
 		s := m[c.ID]
 		if s.Completions > 0 {
 			completed++
@@ -164,4 +166,21 @@ func statsSummary() {
 		}
 	}
 	fmt.Printf("\nHighest Tier: %s\n", highest)
+
+	next := stats.NextChallenge(m, curriculumIDs)
+	fmt.Println()
+	if next == "" {
+		fmt.Println("Next Challenge:")
+		fmt.Println("  Complete")
+	} else {
+		fmt.Println("Next Challenge:")
+		fmt.Printf("  %s\n", next)
+	}
+
+	review := stats.RecommendedReview(m, curriculumIDs)
+	if review != "" {
+		fmt.Println()
+		fmt.Println("Recommended Review:")
+		fmt.Printf("  %s\n", review)
+	}
 }
