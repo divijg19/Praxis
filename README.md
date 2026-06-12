@@ -43,7 +43,7 @@ Windows
 Real Editing Missions
 ```
 
-### DSA Mastery
+### Future: DSA Mastery
 
 ```text
 Arrays
@@ -63,32 +63,17 @@ Future disciplines may include Git, Linux, Shell, Systems Programming, Networkin
 
 ## Gameplay
 
-```text
-Campaign
-└── Region
-    └── Lesson
-        └── Challenge
-```
+Every challenge is scored on moves and time. Progress is tracked persistently. Mastery tiers (Unseen → Learning → Practiced → Experienced) are earned through repetition.
 
-Every challenge is scored.
-
-Every lesson contributes to progression.
-
-Every discipline has a mastery path.
-
-```text
-Bronze → Silver → Gold → Platinum → Master → Grandmaster
-```
+*Future plans include campaign, region, and lesson hierarchies for organizing disciplines.*
 
 ---
 
-## Boss Battles
-
-Knowledge is easy.
-
-Execution is difficult.
+## Future: Boss Battles
 
 Boss battles combine multiple skills into practical scenarios that test real competence rather than memorization.
+
+*Not yet implemented. Planned for future releases.*
 
 ---
 
@@ -117,12 +102,10 @@ Or directly from Neovim:
              │  Go Engine  │
              └──────┬──────┘
                     │
-        ┌───────────┴───────────┐
-        │                       │
-        ▼                       ▼
+                    ▼
 
-   Standalone TUI        Neovim Frontend
-       (Go)                  (Lua)
+        CLI / Neovim Frontend
+          (Go CLI + Lua)
 ```
 
 One engine.
@@ -147,12 +130,9 @@ If not, it doesn't belong.
 
 Early development.
 
-Current focus:
+**Implemented:** Vim challenge engine, persistent stats, mastery tiers, practice guidance, Neovim frontend, CLI.
 
-* Vim Mastery
-* DSA Mastery
-
-Everything else can wait.
+**Future:** DSA Mastery campaign, Boss Battles, rank progression, standalone TUI, additional disciplines.
 
 ---
 

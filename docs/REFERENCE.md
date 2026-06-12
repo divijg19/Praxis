@@ -47,43 +47,17 @@ challenge.Challenge{
 
 ## CLI Surface
 
-### `praxis list`
+| Command | Output | Exit | Enforced by |
+|---|---|---|---|
+| `praxis list` | One name per line, curriculum order, 41 lines | 0 | TestListCount, TestListOutputStable |
+| `praxis challenge <id>` | Content lines to stdout | 0 / 1 unknown | TestChallengeLookup, TestUnknownChallengeFails |
+| `praxis target <id>` | Target char; empty for buffer | 0 / 1 | TestTargetLookup, TestTargetOutputStable, TestUnknownTargetFails |
+| `praxis verify <id>` | `"cursor"` or `"buffer"` | 0 / 1 | TestVerifyLookup, TestVerifyOutputStable, TestUnknownVerifyFails |
+| `praxis result <id>` | Result lines to stdout; empty for cursor | 0 / 1 | TestResultLookup |
+| `praxis attempt <id>` | Silent (no stdout) | 0 / 1 | TestAttemptCommand, TestAttemptUnknown |
+| `praxis record <id> <moves> <time_ms>` | Silent (no stdout) | 0 | TestRecordStats |
 
-Outputs one challenge name per line, in curriculum order. 41 lines, UTF-8 encoded, trailing newline.
-
-Enforced by: `TestListCount`, `TestListOutputStable`
-
-### `praxis challenge <id>`
-
-Outputs the challenge content lines. First line is the instruction. Trailing newline after each line. Exits 0 on success, 1 on unknown ID. Stderr: `unknown challenge: <id>`.
-
-Enforced by: `TestChallengeLookup`, `TestUnknownChallengeFails`
-
-### `praxis target <id>`
-
-Outputs the target character on a single line. Empty for buffer challenges. Exits 0 on success, 1 on unknown ID.
-
-Enforced by: `TestTargetLookup`, `TestTargetOutputStable`, `TestUnknownTargetFails`
-
-### `praxis verify <id>`
-
-Outputs the validator name (`"cursor"` or `"buffer"`) on a single line. Exits 0 on success, 1 on unknown ID.
-
-Enforced by: `TestVerifyLookup`, `TestVerifyOutputStable`, `TestUnknownVerifyFails`
-
-### `praxis result <id>`
-
-Outputs the result lines for buffer challenges. Trailing newline after each line. Empty output for cursor challenges. Exits 0 on success, 1 on unknown ID.
-
-Enforced by: `TestResultLookup`
-
-### `praxis attempt <id>`
-
-Records an attempt on a challenge. Silent on success (no stdout). Exit 0 on success, 1 on unknown ID. Used internally by the Neovim frontend on challenge start and replay.
-
-### `praxis record <id> <moves> <time_ms>`
-
-Records a challenge completion and updates persistent stats. Silent on success (no stdout). Exit 0 on success. Used internally by the Neovim frontend.
+On unknown ID, stderr is `unknown challenge: <id>`.
 
 ### `praxis stats [id]`
 
@@ -99,32 +73,7 @@ Mastery: Experienced
 Confidence: High
 ```
 
-Without arguments, shows summary:
-
-```
-Challenges Completed: 31/41
-Total Attempts: 245
-
-Mastery:
-  Unseen: 10
-  Learning: 5
-  Practiced: 8
-  Experienced: 18
-
-Highest Tier: Experienced
-```
-
-Followed by practice guidance sections:
-
-```
-Next Challenge:
-  find_hunter
-
-Recommended Review:
-  motion_rush
-```
-
-Exits 0 on success, 1 on unknown challenge ID.
+Without arguments, shows summary with mastery distribution and practice guidance. Exit 0 on success, 1 on unknown challenge ID.
 
 Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`, `TestStatsCommandConfidenceLevels`
 
@@ -253,10 +202,6 @@ Not implemented. Listed for architectural awareness: `selection`, `state`, `regi
 
 ## Stats
 
-### Storage
-
-Stats are stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/stats.json`). Simple JSON, human-readable and editable. No database, no migrations. If the file is missing or corrupt, Praxis silently starts fresh.
-
 ### Schema
 
 ```go
@@ -269,21 +214,7 @@ type Stats struct {
 }
 ```
 
-### Measurement Model
-
-```
-                   Stats
-        ┌───────────┴───────────┐
-   Attempts                 Completions
-        │                        │
-        └───────────┐            ├───────────┐
-                    │            │           │
-              Success Rate    Mastery     Guidance
-                    │            │           │
-              Confidence      (depth)   (next action)
-                                   │
-                              LastPlayed
-```
+Stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/stats.json`). Simple JSON, human-readable and editable. No database, no migrations.
 
 | Signal | Meaning |
 |---|---|
@@ -296,15 +227,12 @@ type Stats struct {
 
 ### Confidence ≠ Mastery
 
-Confidence and Mastery are orthogonal dimensions.
+These are orthogonal dimensions — high Confidence does not imply high Mastery, and vice versa.
 
 | | High Confidence | Low Confidence |
 |---|---|---|
 | High Mastery | 20 attempts, 16 completions (80%) | 20 attempts, 10 completions (50%) |
 | Low Mastery | 1 attempt, 1 completion (100%) | 1 attempt, 0 completions (0%) |
-
-High Confidence does not imply high Mastery.
-High Mastery does not imply high Confidence.
 
 ### Mastery Tiers
 
@@ -336,9 +264,7 @@ Derived from `Completions`:
 
 ## Sessions
 
-### Overview
-
-A session represents a contiguous period of deliberate practice within a single Neovim instance. Sessions are ephemeral — they exist only in memory and are discarded when Neovim exits. There is exactly one session per Neovim instance. It begins when the first `:Praxis <id>` is called and accumulates data until Neovim is closed.
+Sessions represent a contiguous period of deliberate practice within a single Neovim instance. Ephemeral — discarded on Neovim exit.
 
 ### Command
 
@@ -349,16 +275,11 @@ A session represents a contiguous period of deliberate practice within a single 
 Opens a read-only scratch buffer showing the current session's aggregated metrics.
 
 ```
-Session
-
 Challenges: 8
 Completions: 5
-
 Session Length: 18m42s
 Practice Time: 6m12s
-
 Moves: 74
-
 Avg Moves: 14
 Avg Time: 74s
 ```
@@ -375,15 +296,15 @@ Avg Time: 74s
 | **Avg Moves** | Moves / Completions |
 | **Avg Time** | Practice Time / Completions |
 
-Completions counts every successful run, including replays via the `r` key. A single challenge may contribute multiple completions within one session, so `Completions` can exceed `Challenges`.
+Completions includes replays via the `r` key, so it can exceed `Challenges`.
 
 ### Design Decisions
 
 - **No persistence.** Sessions are Neovim-scoped ephemeral state.
 - **No automatic popup.** `:PraxisSession` is user-invoked only.
-- **Lua-only, no Go.** Session lives as a module-level table in `nvim/lua/praxis/init.lua`.
+- **Lua-only, no Go.** Lives in `nvim/lua/praxis/init.lua`.
 - **Challenges and Completions are separate counters.** The gap shows unfinished attempts.
-- **Session Length tracks wall-clock time.** Not idle-adjusted. Honest but approximate.
+- **Session Length tracks wall-clock time.** Honest but approximate (not idle-adjusted).
 
 ## Integrity Guarantees
 
@@ -422,85 +343,15 @@ Completions counts every successful run, including replays via the `r` key. A si
 
 ## Release Procedure
 
-### 10-Step Process
+1. **Format** — `gofmt -l .` — must produce no output
+2. **Build** — `go build ./...` — all packages compile
+3. **Vet** — `go vet ./...` — all packages pass static analysis
+4. **Test** — `go test ./...` — all packages report `ok`
+5. **Replay** — `tools/replay/replay.sh` — reports `ALL 41/41 REPLAY TESTS PASS`
+6. **Documentation** — If content changed: `go run scripts/generate_catalog.go > docs/CHALLENGES.md`. Update `docs/RELEASES.md` with new version row.
+7. **Stage** — `git add -A && git status` — verify staged files
+8. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
+9. **Tag** — `git tag v0.1.<N>` — must match release plan
+10. **Push and Release** — `git push origin v0.1.x v0.1.<N>`. Create release and verification issues on GitHub.
 
-**1. Format**
-
-```bash
-gofmt -l .
-```
-
-Must produce no output. If it lists files, run `gofmt -w` on them.
-
-**2. Build**
-
-```bash
-go build ./...
-```
-
-All packages must compile without errors.
-
-**3. Vet**
-
-```bash
-go vet ./...
-```
-
-All packages must pass static analysis.
-
-**4. Test**
-
-```bash
-go test ./...
-```
-
-All tests must pass. Final line must report `PASS` or `ok` for every package.
-
-**5. Replay**
-
-```bash
-tools/replay/replay.sh
-```
-
-Must report `ALL 41/41 REPLAY TESTS PASS`. If replay fails, fix the issue before proceeding.
-
-**6. Documentation**
-
-If challenge content changed, regenerate the catalog:
-
-```bash
-go run scripts/generate_catalog.go > docs/CHALLENGES.md
-```
-
-Update `docs/RELEASES.md` with the new version row. Verify all documentation references are consistent.
-
-**7. Stage**
-
-```bash
-git add -A
-git status
-```
-
-Review staged files. Confirm no unintended changes are included.
-
-**8. Commit**
-
-Write a descriptive commit message with title (version tag + one-line summary), body (categorized changes), and discipline section (what did NOT change).
-
-**9. Tag**
-
-```bash
-git tag v0.1.<N>
-```
-
-The tag version must match the release plan.
-
-**10. Push and Release**
-
-```bash
-git push origin v0.1.x v0.1.<N>
-gh issue create --title "v0.1.<N>: <title>" --body "<scope>"
-gh issue create --title "v0.1.<N>: verify <title>" --body "<checklist>"
-```
-
-Create two issues per release: a release issue describing the scope and a verification issue with a checklist. Do not skip steps. Every release follows the same process.
+Every release follows the same process. Do not skip steps.
