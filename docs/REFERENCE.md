@@ -77,6 +77,10 @@ Outputs the result lines for buffer challenges. Trailing newline after each line
 
 Enforced by: `TestResultLookup`
 
+### `praxis attempt <id>`
+
+Records an attempt on a challenge. Silent on success (no stdout). Exit 0 on success, 1 on unknown ID. Used internally by the Neovim frontend on challenge start and replay.
+
 ### `praxis record <id> <moves> <time_ms>`
 
 Records a challenge completion and updates persistent stats. Silent on success (no stdout). Exit 0 on success. Used internally by the Neovim frontend.
@@ -88,6 +92,7 @@ With an ID, shows per-challenge stats:
 ```
 Attempts: 10
 Completions: 10
+Success Rate: 100%
 Best Moves: 2
 Best Time: 180ms
 Mastery: Experienced
@@ -255,8 +260,8 @@ Stats are stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/s
 
 ```go
 type Stats struct {
-    Attempts    int    // total completions
-    Completions int    // same as Attempts (every recorded attempt is a success)
+    Attempts    int    // total attempts (including replays and abandoned starts)
+    Completions int    // total successful completions
     BestMoves   int    // lowest moves across all completions
     BestTimeMs  int    // fastest time across all completions
     LastPlayed  string // "2006-01-02" format
@@ -281,7 +286,7 @@ Derived from `Completions`:
 - First completion always sets the best value
 - Subsequent completions only update if better
 - No per-attempt history — only the best is preserved
-- `Attempts == Completions` always (Update is only called on success)
+- Attempts and Completions are tracked independently. Attempts increment on challenge start and replay; Completions increment only on success
 
 ### Practice Guidance
 
@@ -373,7 +378,7 @@ Completions counts every successful run, including replays via the `r` key. A si
 - Mastery scoring
 - Skill trees or dependencies
 - Progression gates
-- Recommendation systems
+
 
 ## Release Procedure
 

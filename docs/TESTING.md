@@ -2,14 +2,14 @@
 
 ## Test Suite Overview
 
-Praxis has **58 tests** across 4 packages:
+Praxis has **71 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
 | `internal/content` | 25 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
-| `internal/stats` | 14 | Stats persistence, update logic, best-value tracking, mastery tiers and distribution |
+| `internal/stats` | 25 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
-| `cmd/praxis` | 15 | CLI subprocess behavior, output format contracts |
+| `cmd/praxis` | 17 | CLI subprocess behavior, output format contracts, attempt command |
 
 ## Running Tests
 

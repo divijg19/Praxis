@@ -35,6 +35,11 @@ func main() {
 				result(os.Args[2])
 				return
 			}
+		case "attempt":
+			if len(os.Args) > 2 {
+				attempt(os.Args[2])
+				return
+			}
 		case "record":
 			if len(os.Args) > 4 {
 				record(os.Args[2], os.Args[3], os.Args[4])
@@ -107,6 +112,23 @@ func result(id string) {
 	os.Exit(1)
 }
 
+func attempt(id string) {
+	found := false
+	for _, c := range content.All() {
+		if c.ID == id {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+		os.Exit(1)
+	}
+	m, _ := stats.Load()
+	stats.Attempt(m, id)
+	stats.Save(m)
+}
+
 func record(id, movesStr, timeStr string) {
 	moves, _ := strconv.Atoi(movesStr)
 	timeMs, _ := strconv.Atoi(timeStr)
@@ -131,6 +153,7 @@ func statsForID(id string) {
 	s := m[id]
 	fmt.Printf("Attempts: %d\n", s.Attempts)
 	fmt.Printf("Completions: %d\n", s.Completions)
+	fmt.Printf("Success Rate: %.0f%%\n", stats.SuccessRate(s)*100)
 	fmt.Printf("Best Moves: %d\n", s.BestMoves)
 	fmt.Printf("Best Time: %dms\n", s.BestTimeMs)
 	fmt.Printf("Mastery: %s\n", stats.MasteryTier(s))

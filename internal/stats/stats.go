@@ -64,9 +64,22 @@ func Save(m map[string]Stats) error {
 	return os.Rename(tmp.Name(), Path())
 }
 
-func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
+func Attempt(m map[string]Stats, id string) Stats {
 	s := m[id]
 	s.Attempts++
+	m[id] = s
+	return s
+}
+
+func SuccessRate(s Stats) float64 {
+	if s.Attempts == 0 {
+		return 0
+	}
+	return float64(s.Completions) / float64(s.Attempts)
+}
+
+func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
+	s := m[id]
 	s.Completions++
 	s.LastPlayed = time.Now().Format("2006-01-02")
 	if s.Completions == 1 {
