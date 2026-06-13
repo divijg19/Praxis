@@ -2,7 +2,7 @@
 
 ## Versioning
 
-Praxis uses `v0.0.x` versioning during the foundation phase and `v0.1.x` for the public contracts phase. Each release is tagged and pushed to GitHub with a corresponding pair of issues.
+Praxis uses `v0.0.x` for the foundation phase, `v0.1.x` for the public contracts phase, and `v0.2.x` for the expand phase. Each release is tagged and pushed to GitHub with a corresponding pair of issues.
 
 ## Release Pattern
 
@@ -56,3 +56,4 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.8** | **Measurement Completion** | **41** | **71** |
 | **v0.1.9** | **Execution Confidence & Freeze** | **41** | **79** |
 | **v0.1.10** | **Documentation Audit & Consistency Pass** | **41** | **79** |
+| **v0.2.0** | **Curriculum Taxonomy** | **41** | **82** |

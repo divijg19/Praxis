@@ -12,6 +12,7 @@ func All() []challenge.Challenge {
 			Content: []string{
 				"Move your cursor to the star ★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "grid_rush",
@@ -23,6 +24,7 @@ func All() []challenge.Challenge {
 				". . . ★ .",
 				". . . . .",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "find_hunter",
@@ -34,6 +36,7 @@ func All() []challenge.Challenge {
 				"",
 				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "word_hunter",
@@ -45,6 +48,7 @@ func All() []challenge.Challenge {
 				"",
 				"alpha beta gamma delta epsilon ★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "symbol_hunter",
@@ -56,6 +60,7 @@ func All() []challenge.Challenge {
 				"",
 				".......................@",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "line_hunter",
@@ -72,6 +77,7 @@ func All() []challenge.Challenge {
 				"line five",
 				"★ line six",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "paren_hunter",
@@ -83,6 +89,7 @@ func All() []challenge.Challenge {
 				"",
 				"(                         )★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "sentence_hunter",
@@ -96,6 +103,7 @@ func All() []challenge.Challenge {
 				"Second. Third.",
 				"★ Fourth. Fifth.",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "slash_hunter",
@@ -107,6 +115,7 @@ func All() []challenge.Challenge {
 				"",
 				"alpha  bravo  charlie  delta  echo  foxtrot  golf  ★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "question_hunter",
@@ -135,6 +144,7 @@ func All() []challenge.Challenge {
 				"★ line seventeen",
 				"line eighteen",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "repeat_hunter",
@@ -146,6 +156,7 @@ func All() []challenge.Challenge {
 				"",
 				"★  ★  ★  ★  ★  ★  ★  ★  @",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "inner_paren_hunter",
@@ -157,6 +168,7 @@ func All() []challenge.Challenge {
 				"",
 				"(hello★)",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "around_paren_hunter",
@@ -168,6 +180,7 @@ func All() []challenge.Challenge {
 				"",
 				"(hello)★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "inner_bracket_hunter",
@@ -179,6 +192,7 @@ func All() []challenge.Challenge {
 				"",
 				"[hello★]",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "around_bracket_hunter",
@@ -190,6 +204,7 @@ func All() []challenge.Challenge {
 				"",
 				"[hello]★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "inner_quote_hunter",
@@ -201,6 +216,7 @@ func All() []challenge.Challenge {
 				"",
 				"x\"magnificent★\"",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "around_quote_hunter",
@@ -212,6 +228,7 @@ func All() []challenge.Challenge {
 				"",
 				"x\"magnificent\"★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "paragraph_hunter",
@@ -227,6 +244,7 @@ func All() []challenge.Challenge {
 				"",
 				"third Z",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "match_hunter",
@@ -238,6 +256,7 @@ func All() []challenge.Challenge {
 				"",
 				"[         ]★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_character_hunter",
@@ -254,6 +273,7 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "replace_character_hunter",
@@ -270,6 +290,7 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "toggle_case_hunter",
@@ -286,6 +307,7 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_word_hunter",
@@ -302,6 +324,7 @@ func All() []challenge.Challenge {
 				"",
 				"keep  keep",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "change_word_hunter",
@@ -318,6 +341,7 @@ func All() []challenge.Challenge {
 				"",
 				"bar",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "utf8_cursor_hunter",
@@ -329,6 +353,7 @@ func All() []challenge.Challenge {
 				"",
 				"α β γ ★",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_line_hunter",
@@ -348,6 +373,7 @@ func All() []challenge.Challenge {
 				"keep",
 				"keep",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_to_end_hunter",
@@ -364,6 +390,7 @@ func All() []challenge.Challenge {
 				"",
 				"keep this text",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_inner_word_hunter",
@@ -380,6 +407,7 @@ func All() []challenge.Challenge {
 				"",
 				"keep  keep",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_around_word_hunter",
@@ -396,6 +424,7 @@ func All() []challenge.Challenge {
 				"",
 				"keep keep",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_inner_paren_hunter",
@@ -412,6 +441,7 @@ func All() []challenge.Challenge {
 				"",
 				"func()",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_around_paren_hunter",
@@ -428,6 +458,7 @@ func All() []challenge.Challenge {
 				"",
 				"func",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_inner_quote_hunter",
@@ -444,6 +475,7 @@ func All() []challenge.Challenge {
 				"",
 				"\"\"",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "delete_around_quote_hunter",
@@ -460,6 +492,7 @@ func All() []challenge.Challenge {
 				"",
 				"",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "change_inner_word_hunter",
@@ -476,6 +509,7 @@ func All() []challenge.Challenge {
 				"",
 				"hello world",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "change_inner_paren_hunter",
@@ -492,6 +526,7 @@ func All() []challenge.Challenge {
 				"",
 				"func(hello)",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "change_inner_quote_hunter",
@@ -508,6 +543,7 @@ func All() []challenge.Challenge {
 				"",
 				"\"hello\"",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "yank_line_hunter",
@@ -525,6 +561,7 @@ func All() []challenge.Challenge {
 				"copy me",
 				"copy me",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "named_register_hunter",
@@ -542,6 +579,7 @@ func All() []challenge.Challenge {
 				"copy me",
 				"copy me",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "word_register_hunter",
@@ -558,6 +596,7 @@ func All() []challenge.Challenge {
 				"",
 				"alpha beta alpha",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "register_replace_hunter",
@@ -576,6 +615,7 @@ func All() []challenge.Challenge {
 				"correct",
 				"correct",
 			},
+			Layer: "Tutorial",
 		},
 		{
 			ID:     "register_duplicate_hunter",
@@ -595,6 +635,7 @@ func All() []challenge.Challenge {
 				"bar",
 				"foo",
 			},
+			Layer: "Tutorial",
 		},
 	}
 }

@@ -3,17 +3,19 @@
 ## Overview
 
 ```
-                  Praxis
+              Praxis
 
-              ┌─────────────┐
-              │  Go Engine  │
-              └──────┬──────┘
-                     │
-          │
-          ▼
-
-           CLI / Neovim Frontend
-           (Go + Lua)
+          ┌─────────────┐
+          │  Go Engine  │
+          └──────┬──────┘
+                 │
+           ┌─────┬─────┐
+           │           │
+           ▼           ▼
+     ┌──────────┐ ┌──────────┐
+     │   CLI    │ │  Neovim  │
+     │ (Go cmd) │ │  (Lua)   │
+     └──────────┘ └──────────┘
 ```
 
 One engine. Multiple frontends. Shared progression, content, scoring, and persistence.
@@ -41,7 +43,7 @@ User request (CLI)
 cmd/praxis/main.go
     |
     v
-internal/content.All()  →  challenge.Challenge{ID, Name, Verify, Target, Content, Result}
+internal/content.All()  →  challenge.Challenge{ID, Name, Verify, Target, Content, Result, Layer}
     |
     v
 stdout (CLI response)
@@ -57,6 +59,7 @@ type Challenge struct {
     Target  string     // for cursor: the character to navigate to
     Content []string   // buffer content lines
     Result  []string   // for buffer: target buffer state
+    Layer   string     // "Tutorial", "Training", "Trial", "Boss"
 }
 ```
 
