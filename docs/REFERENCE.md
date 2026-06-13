@@ -22,6 +22,7 @@ challenge.Challenge{
         "",
         "edited content",
     },
+    Layer:   "Tutorial",       // "Tutorial", "Training", "Trial", "Boss"
 }
 ```
 
@@ -35,6 +36,7 @@ challenge.Challenge{
 | `Target` | STABLE | Required for cursor (non-empty). Must be present in buffer. Empty for buffer. |
 | `Content` | STABLE | First line is instruction. Buffer: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
 | `Result` | STABLE | Required for buffer (non-empty slice, exact target state). Nil for cursor. |
+| `Layer` | STABLE | `"Tutorial"`, `"Training"`, `"Trial"`, or `"Boss"`. All 41 existing challenges are `"Tutorial"`. |
 
 ### Adding a New Challenge
 
@@ -351,7 +353,7 @@ Completions includes replays via the `r` key, so it can exceed `Challenges`.
 6. **Documentation** — If content changed: `go run scripts/generate_catalog.go > docs/CHALLENGES.md`. Update `docs/RELEASES.md` with new version row.
 7. **Stage** — `git add -A && git status` — verify staged files
 8. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
-9. **Tag** — `git tag v0.1.<N>` — must match release plan
-10. **Push and Release** — `git push origin v0.1.x v0.1.<N>`. Create release and verification issues on GitHub.
+9. **Tag** — `git tag <version>` — must match release plan
+10. **Push and Release** — `git push origin <branch> <version>`. Create release and verification issues on GitHub.
 
 Every release follows the same process. Do not skip steps.

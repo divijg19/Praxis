@@ -1,10 +1,10 @@
 # Vision
 
-Most developer education optimizes for consumption.
+Praxis is a place for deliberate practice.
 
-Praxis optimizes for competence.
+Not a curriculum browser. Not a dashboard. Not a game.
 
-No courses. No playlists. No passive lessons. Just challenges, feedback, progression, and deliberate practice.
+---
 
 ## Why Praxis Exists
 
@@ -12,17 +12,80 @@ Vim mastery is not about knowing key bindings. It is about developing automatic,
 
 Praxis bridges that gap through deliberate practice: repeated, focused, measurable execution of composable skills.
 
-## What Makes Praxis Different
+v0.1 solved measurement. It answered *what have I done, how much have I practiced, how reliably can I execute, what should I do next.*
 
-- **Challenge-driven.** Every skill is taught through a concrete editing challenge with a verifiable success condition.
-- **Composable.** Motions combine with operators combine with text objects. Praxis teaches the composition, not just the parts.
-- **Terminal-first.** No GUI. No browser. The learning environment is the real environment.
-- **Measurable.** Every challenge has a pass/fail outcome. Progress is tracked. Mastery is earned, not claimed.
+v0.2 solves journey. It answers *where am I, what is next, what have I unlocked, what lies ahead.*
 
-## Design Principles
+The shift is measurement → world. Curriculum → place. Challenges → experiences.
 
-1. **Do not optimize for consumption.** Optimize for execution.
-2. **Teach composition, not isolation.** `diw` is meaningful. `d` alone is not.
-3. **Verification must be automatic.** If a human needs to judge success, the feedback loop is too slow.
-4. **Content and engine are separate.** The Go engine defines challenges. The Lua frontend validates them. Either can evolve independently.
-5. **Stable IDs are a public contract.** Challenge IDs must never change once released. Names may evolve; IDs do not.
+---
+
+## Core Principles
+
+### Place Over Dashboard
+Users should feel located, not merely informed. Location first. Metrics second.
+
+### Earned Discovery
+Nothing appears until it is relevant. The world unfolds as mastery expands.
+
+### One Obvious Next Step
+The user should never ask *what do I do now?* The Hub always answers *continue journey.*
+
+### Progressive Disclosure
+Day one shows tutorials. Later unlocks training, trials, bosses. Complexity reveals itself slowly.
+
+### Beautiful Through Restraint
+Whitespace is a feature. Calmness is a feature. Praxis should feel premium, not crowded.
+
+### Meaningful Accomplishment
+Rewards are reflections of capability, not bribes. No XP, no coins, no loot, no streaks.
+
+### Forward Momentum
+The primary surface always advances. Review exists. The Hub moves forward.
+
+### Systems Must Earn Their Existence
+Nothing is added because it might become useful. Every system must have a living consumer.
+
+---
+
+## What Praxis Is Not
+
+- **Not a game.** No currencies, XP, loot, achievements, streak manipulation, or compulsion loops.
+- **Not a dashboard.** No graphs everywhere, percentages everywhere, analytics everywhere.
+- **Not a course platform.** No "lesson 1, lesson 2, lesson 3."
+- **Not a knowledge base.** No walls of text, large explanations, or documentation-first learning.
+
+---
+
+## Learning Model
+
+| Layer | Purpose | Question |
+|---|---|---|
+| Tutorial | Understanding | Do I understand this concept? |
+| Training | Fluency | Can I combine concepts? |
+| Trial | Confidence | Can I consistently execute? |
+| Boss | Application | Can I use this in practice? |
+
+Today, Praxis contains only Tutorial content.
+
+Training, Trial, and Boss layers are part of the v0.2 vision and will be introduced incrementally as the curriculum expands.
+
+---
+
+## Three Surfaces
+
+1. **Journey** — the Hub. Answers *where am I, what is next, what is unlocked.*
+2. **Practice** — the challenge buffer. Answers *what am I doing, how do I complete it.*
+3. **Reflection** — stats and session history. Answers *how am I improving.*
+
+Numbers live in Reflection. The Journey leads with direction, not data.
+
+---
+
+## Success Criterion
+
+A learner using Praxis should always know:
+
+*Where am I? What should I do next? Why am I doing it?*
+
+And every step should feel intentional.

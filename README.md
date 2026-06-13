@@ -96,16 +96,19 @@ Or directly from Neovim:
 ## Architecture
 
 ```text
-                 `Praxis`
+                 Praxis
 
              ┌─────────────┐
              │  Go Engine  │
              └──────┬──────┘
                     │
-                    ▼
-
-        CLI / Neovim Frontend
-          (Go CLI + Lua)
+              ┌─────┬─────┐
+              │           │
+              ▼           ▼
+        ┌──────────┐ ┌──────────┐
+        │   CLI    │ │  Neovim  │
+        │ (Go cmd) │ │  (Lua)   │
+        └──────────┘ └──────────┘
 ```
 
 One engine.

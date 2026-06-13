@@ -7,4 +7,5 @@ type Challenge struct {
 	Content []string
 	Result  []string
 	Target  string
+	Layer   string
 }

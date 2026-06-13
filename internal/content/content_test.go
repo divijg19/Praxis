@@ -289,6 +289,36 @@ func TestResultShapeMatchesVerify(t *testing.T) {
 	}
 }
 
+func TestAllChallengesHaveLayer(t *testing.T) {
+	for _, c := range All() {
+		if c.Layer == "" {
+			t.Errorf("challenge %s has empty Layer", c.ID)
+		}
+	}
+}
+
+func TestLayerValidValues(t *testing.T) {
+	allowed := map[string]bool{
+		"Tutorial": true,
+		"Training": true,
+		"Trial":    true,
+		"Boss":     true,
+	}
+	for _, c := range All() {
+		if !allowed[c.Layer] {
+			t.Errorf("challenge %s has invalid Layer %q", c.ID, c.Layer)
+		}
+	}
+}
+
+func TestAllCurrentChallengesAreTutorials(t *testing.T) {
+	for _, c := range All() {
+		if c.Layer != "Tutorial" {
+			t.Errorf("challenge %s has Layer %q, expected %q", c.ID, c.Layer, "Tutorial")
+		}
+	}
+}
+
 func TestContentResultLineCountReasonable(t *testing.T) {
 	for _, c := range All() {
 		if c.Verify != "buffer" {

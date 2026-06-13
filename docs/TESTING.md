@@ -2,11 +2,11 @@
 
 ## Test Suite Overview
 
-Praxis has **79 tests** across 4 packages:
+Praxis has **82 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 25 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
+| `internal/content` | 28 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
 | `internal/stats` | 31 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance, confidence |
 | `internal/validator` | 4 | Validator registry, UTF-8 normalization |
 | `cmd/praxis` | 19 | CLI subprocess behavior, output format contracts, attempt command, confidence levels |
@@ -43,6 +43,9 @@ These are the most important tests. They protect the challenge registry from acc
 | Test | What it catches |
 |---|---|
 | `TestAllChallengesHaveVerify` | Missing Verify field |
+| `TestAllChallengesHaveLayer` | Missing Layer field |
+| `TestLayerValidValues` | Invalid Layer value (typo, wrong case, stray whitespace) |
+| `TestAllCurrentChallengesAreTutorials` | Challenge unexpectedly tagged non-Tutorial |
 | `TestValidatorCoverage` | Unknown validator type |
 | `TestNoValidatorDrift` | Registered validator unused by any challenge |
 | `TestResultMatchesVerify` | Buffer without Result / cursor with Result |
