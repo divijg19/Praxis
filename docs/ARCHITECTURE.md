@@ -9,13 +9,13 @@
           │  Go Engine  │
           └──────┬──────┘
                  │
-           ┌─────┬─────┐
-           │           │
-           ▼           ▼
-     ┌──────────┐ ┌──────────┐
-     │   CLI    │ │  Neovim  │
-     │ (Go cmd) │ │  (Lua)   │
-     └──────────┘ └──────────┘
+            ┌─────┬─────┐
+            │           │
+            ▼           ▼
+      ┌──────────┐ ┌──────────┐
+      │   CLI    │ │  Neovim  │
+      │ (Go cmd) │ │  (Lua)   │
+      └──────────┘ └──────────┘
 ```
 
 One engine. Multiple frontends. Shared progression, content, scoring, and persistence.
@@ -65,9 +65,20 @@ type Challenge struct {
 
 ## Neovim Frontend (Lua)
 
-The Neovim frontend lives in `nvim/lua/praxis/init.lua`. It is loaded via `nvim/plugin/praxis.lua`.
+The Neovim frontend is loaded via `nvim/plugin/praxis.lua` which requires `nvim/lua/praxis/init.lua`.
 
-### Responsibilities
+### Module layout
+
+| Module | Surface | Responsibility |
+|---|---|---|
+| `init.lua` | — | Command registration, dispatch, first-time detection |
+| `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, replay |
+| `session.lua` | Reflection | Session tracking: start, record, `:PraxisSession` |
+| `ui.lua` | — | Scratch buffer creation and content helpers |
+| `onboarding.lua` | Arrival | First-time welcome flow |
+| `hub.lua` | Journey | Hub surface (reserved for future use) |
+
+### Practice Surface (challenge.lua)
 
 - Fetch challenge data from the Go binary (`/tmp/praxis`)
 - Create buffer with challenge content
@@ -75,14 +86,10 @@ The Neovim frontend lives in `nvim/lua/praxis/init.lua`. It is loaded via `nvim/
   - `CursorMoved` — cursor challenges (target reached check)
   - `TextChanged` — buffer challenges (buffer matches result, Normal mode edits increment moves)
   - `TextChangedI` — buffer challenges (Insert mode keystrokes, no move increment)
-
-### Validator dispatch
-
-The Lua frontend checks `state.verify` to decide which autocmd behavior to enable:
-- `"cursor"` → modifiable=false, CursorMoved listener, target check
-- `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
-
-### byte_to_char normalization
+- Checks `state.verify` to decide which autocmd behavior to enable:
+  - `"cursor"` → modifiable=false, CursorMoved listener, target check
+  - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
+- Uses `byte_to_char()` normalization for multi-byte content:
 
 ```lua
 function byte_to_char(line, bytecol)
@@ -91,6 +98,25 @@ end
 ```
 
 Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critical for multi-byte content (UTF-8 Greek, emoji, etc.).
+
+### Reflection Surface (session.lua)
+
+- Ephemeral session state (moves, time, completion counts)
+- `session.start()` — initializes or continues session tracking per challenge
+- `session.record()` — persists completion via `praxis record` CLI, aggregates counters
+- `session.show()` — renders `:PraxisSession` buffer
+
+### Arrival Surface (onboarding.lua)
+
+- First-time detection via stats file absence
+- Welcome buffer with orientation text
+- Enter → `challenge.open("motion_rush")`
+- No persistence, no state, no wizard
+
+### Hub Surface (hub.lua)
+
+- Reserved for v0.2.2 (Journey release)
+- Currently a stub that errors on invocation
 
 ## External interface contracts
 
