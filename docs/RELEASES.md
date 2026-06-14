@@ -57,3 +57,4 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.1.9** | **Execution Confidence & Freeze** | **41** | **79** |
 | **v0.1.10** | **Documentation Audit & Consistency Pass** | **41** | **79** |
 | **v0.2.0** | **Curriculum Taxonomy** | **41** | **82** |
+| **v0.2.1** | **Arrival** | **41** | **82** |
