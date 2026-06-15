@@ -350,3 +350,89 @@ func TestStatsCommandConfidenceLevels(t *testing.T) {
 		}
 	}
 }
+
+func TestNextCommand(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	out, code := runPraxis(t, "next")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "motion_rush\n" {
+		t.Errorf("expected 'motion_rush', got %q", out)
+	}
+}
+
+func TestNextCommandAfterCompletion(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	m := map[string]stats.Stats{
+		"motion_rush": {Attempts: 3, Completions: 3},
+		"grid_rush":   {Attempts: 3, Completions: 3},
+	}
+	if err := stats.Save(m); err != nil {
+		t.Fatal(err)
+	}
+
+	out, code := runPraxis(t, "next")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "find_hunter\n" {
+		t.Errorf("expected 'find_hunter', got %q", out)
+	}
+}
+
+func TestNextCommandComplete(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	m := make(map[string]stats.Stats)
+	for _, c := range content.All() {
+		m[c.ID] = stats.Stats{Attempts: 10, Completions: 10}
+	}
+	if err := stats.Save(m); err != nil {
+		t.Fatal(err)
+	}
+
+	out, code := runPraxis(t, "next")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "" {
+		t.Errorf("expected empty output, got %q", out)
+	}
+}
+
+func TestStageCommand(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	out, code := runPraxis(t, "stage", "motion_rush")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "Movement\n" {
+		t.Errorf("expected 'Movement', got %q", out)
+	}
+
+	out, code = runPraxis(t, "stage", "find_hunter")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if out != "Search\n" {
+		t.Errorf("expected 'Search', got %q", out)
+	}
+}
+
+func TestStageCommandUnknown(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	_, code := runPraxis(t, "stage", "nope")
+	if code != 1 {
+		t.Errorf("expected exit code 1 for unknown challenge, got %d", code)
+	}
+}

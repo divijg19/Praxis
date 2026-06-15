@@ -45,6 +45,14 @@ func main() {
 				record(os.Args[2], os.Args[3], os.Args[4])
 				return
 			}
+		case "next":
+			next()
+			return
+		case "stage":
+			if len(os.Args) > 2 {
+				stage(os.Args[2])
+				return
+			}
 		case "stats":
 			if len(os.Args) > 2 {
 				statsForID(os.Args[2])
@@ -62,6 +70,27 @@ func list() {
 	for _, c := range content.All() {
 		fmt.Println(c.Name)
 	}
+}
+
+func next() {
+	var curriculumIDs []string
+	for _, c := range content.All() {
+		curriculumIDs = append(curriculumIDs, c.ID)
+	}
+	m, _ := stats.Load()
+	id := stats.NextChallenge(m, curriculumIDs)
+	if id != "" {
+		fmt.Println(id)
+	}
+}
+
+func stage(id string) {
+	m, ok := content.MetadataFor(id)
+	if !ok {
+		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+		os.Exit(1)
+	}
+	fmt.Println(m.Stage)
 }
 
 func challenge(id string) {
