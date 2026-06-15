@@ -58,6 +58,8 @@ challenge.Challenge{
 | `praxis result <id>` | Result lines to stdout; empty for cursor | 0 / 1 | TestResultLookup |
 | `praxis attempt <id>` | Silent (no stdout) | 0 / 1 | TestAttemptCommand, TestAttemptUnknown |
 | `praxis record <id> <moves> <time_ms>` | Silent (no stdout) | 0 | TestRecordStats |
+| `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
+| `praxis stage <id>` | Stage name | 0 / 1 unknown | TestStageCommand, TestStageCommandUnknown |
 
 On unknown ID, stderr is `unknown challenge: <id>`.
 
@@ -76,6 +78,14 @@ Confidence: High
 ```
 
 Without arguments, shows summary with mastery distribution and practice guidance. Exit 0 on success, 1 on unknown challenge ID.
+
+### `praxis next`
+
+Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ LearningMax=2). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
+
+### `praxis stage <id>`
+
+Returns the stage name for a given challenge ID. Exit 1 with `unknown challenge: <id>` on stderr if the ID is not in the curriculum.
 
 Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`, `TestStatsCommandConfidenceLevels`
 
