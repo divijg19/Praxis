@@ -49,7 +49,7 @@ function M.open(id)
     local stats_out = vim.fn.systemlist({ "praxis", "stats", id })
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
-      "Success", "",
+      "Complete.", "",
       "Moves: " .. state.moves,
       "Time: "  .. elapsed_ms .. "ms", "",
     }
@@ -57,7 +57,9 @@ function M.open(id)
       table.insert(display, line)
     end
     table.insert(display, "")
-    table.insert(display, "Press r to replay")
+    table.insert(display, "[r] Replay")
+    table.insert(display, "[Enter] Continue Journey")
+    table.insert(display, "[q] Quit")
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
     vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
   end
@@ -118,6 +120,25 @@ function M.open(id)
 
   vim.keymap.set("n", "r", function()
     if state.done then reset_challenge() end
+  end, { buffer = buf, nowait = true, silent = true })
+
+  vim.keymap.set("n", "<CR>", function()
+    if state.done then
+      local next_id = vim.fn.systemlist({ "praxis", "next" })[1]
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      if next_id and next_id ~= "" then
+        vim.cmd("Praxis " .. next_id)
+      else
+        vim.cmd("Praxis")
+      end
+    end
+  end, { buffer = buf, nowait = true, silent = true })
+
+  vim.keymap.set("n", "q", function()
+    if state.done then
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      vim.cmd("Praxis")
+    end
   end, { buffer = buf, nowait = true, silent = true })
 end
 
