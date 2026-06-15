@@ -19,3 +19,9 @@ func TestExistsBuffer(t *testing.T) {
 		t.Error("Exists(\"buffer\") should be true")
 	}
 }
+
+func TestExistsComposite(t *testing.T) {
+	if !Exists("composite") {
+		t.Error("Exists(\"composite\") should be true")
+	}
+}

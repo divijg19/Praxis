@@ -1,6 +1,6 @@
 # Challenge Catalog
 
-Total: **41 challenges** across **7 curriculum packs**.
+Total: **51 challenges** — **41 Tutorials** across **7 curriculum packs** + **10 Training** composite challenges.
 
 Challenge behavior originates from internal/content/content.go.
 
@@ -985,3 +985,273 @@ foo
 
 ---
 
+## Training
+
+### Find diw Combo
+
+- **ID:** `find_diw_combo`
+- **Verify:** `composite`
+- **Max Moves:** 10
+- **Primary Concept:** `f,diw`
+- **Context:** `search + delete inside word`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Find and delete the word 'remove'
+a;lskdfj remove ;alskdfj
+```
+
+#### Result
+
+```text
+Find and delete the word 'remove'
+a;lskdfj ;alskdfj
+```
+
+---
+
+### Find daw Combo
+
+- **ID:** `find_daw_combo`
+- **Verify:** `composite`
+- **Max Moves:** 10
+- **Primary Concept:** `f,daw`
+- **Context:** `search + delete around word`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Find and delete around the word 'remove'
+a;lskdfj remove ;alskdfj
+```
+
+#### Result
+
+```text
+Find and delete around the word 'remove'
+a;lskdfj;alskdfj
+```
+
+---
+
+### Find di( Combo
+
+- **ID:** `find_di_paren_combo`
+- **Verify:** `composite`
+- **Max Moves:** 8
+- **Primary Concept:** `f,di(`
+- **Context:** `search + delete inside parens`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Find and delete inside the parens
+alpha(bravo) charlie
+```
+
+#### Result
+
+```text
+Find and delete inside the parens
+alpha() charlie
+```
+
+---
+
+### Find ca" Combo
+
+- **ID:** `find_ca_quote_combo`
+- **Verify:** `composite`
+- **Max Moves:** 10
+- **Primary Concept:** `f,ca"`
+- **Context:** `search + change around quotes`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Find and change around the quotes
+alpha "bravo" charlie
+```
+
+#### Result
+
+```text
+Find and change around the quotes
+alpha "" charlie
+```
+
+---
+
+### Find ciw Combo
+
+- **ID:** `find_ciw_combo`
+- **Verify:** `composite`
+- **Max Moves:** 12
+- **Primary Concept:** `f,ciw`
+- **Context:** `search + change inner word`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Find and change the word 'remove'
+a;lskdfj remove ;alskdfj
+```
+
+#### Result
+
+```text
+Find and change the word 'remove'
+a;lskdfj hello ;alskdfj
+```
+
+---
+
+### dw Dot Combo
+
+- **ID:** `dw_dot_combo`
+- **Verify:** `composite`
+- **Max Moves:** 12
+- **Primary Concept:** `dw,.`
+- **Context:** `editing + repeat`
+- **Stage:** `Editing`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Repeat the word deletion using dot
+remove remove remove
+```
+
+#### Result
+
+```text
+Repeat the word deletion using dot
+
+```
+
+---
+
+### ciw Dot Combo
+
+- **ID:** `ciw_dot_combo`
+- **Verify:** `composite`
+- **Max Moves:** 12
+- **Primary Concept:** `ciw,.`
+- **Context:** `text objects + repeat`
+- **Stage:** `Text Objects`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Change each word using dot
+foo bar baz
+```
+
+#### Result
+
+```text
+Change each word using dot
+hello hello hello
+```
+
+---
+
+### Yank Paste Combo
+
+- **ID:** `yank_paste_combo`
+- **Verify:** `composite`
+- **Max Moves:** 10
+- **Primary Concept:** `yy,p`
+- **Context:** `registers + editing`
+- **Stage:** `Registers`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Yank and paste the line below
+copy me
+```
+
+#### Result
+
+```text
+Yank and paste the line below
+copy me
+copy me
+```
+
+---
+
+### dd Paste Combo
+
+- **ID:** `dd_paste_combo`
+- **Verify:** `composite`
+- **Max Moves:** 12
+- **Primary Concept:** `dd,p`
+- **Context:** `editing + registers`
+- **Stage:** `Editing`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Delete the middle line and paste it at the end
+first
+move me
+last
+```
+
+#### Result
+
+```text
+Delete the middle line and paste it at the end
+first
+last
+move me
+```
+
+---
+
+### dd Paste Before Combo
+
+- **ID:** `dd_paste_before_combo`
+- **Verify:** `composite`
+- **Max Moves:** 12
+- **Primary Concept:** `dd,P`
+- **Context:** `editing + registers`
+- **Stage:** `Editing`
+- **Layer:** `Training`
+
+#### Content
+
+```text
+Delete the middle line and paste it at the top
+first
+move me
+last
+```
+
+#### Result
+
+```text
+Delete the middle line and paste it at the top
+move me
+first
+last
+```
+
+---

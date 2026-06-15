@@ -3,14 +3,16 @@ local ui = require('praxis.ui')
 local M = {}
 
 function M.open(id)
-  local lines = vim.fn.systemlist({ "praxis", "challenge", id })
-  local verify = vim.fn.systemlist({ "praxis", "verify", id })[1] or ""
-  local target = vim.fn.systemlist({ "praxis", "target", id })[1]
-  local result = vim.fn.systemlist({ "praxis", "result", id }) or {}
+  local desc_raw = vim.fn.systemlist({ "praxis", "describe", id })
+  local desc = vim.fn.json_decode(table.concat(desc_raw, ""))
+  if type(desc) ~= "table" then
+    vim.api.nvim_echo({ { "Error: could not describe challenge: " .. id } }, false, {})
+    return
+  end
 
   local buf = ui.create_buffer("Praxis")
-  ui.set_lines(buf, lines)
-  ui.set_modifiable(buf, verify == "buffer")
+  ui.set_lines(buf, desc.content)
+  ui.set_modifiable(buf, desc.verify == "buffer" or desc.verify == "composite")
   vim.api.nvim_set_current_buf(buf)
 
   local session = require('praxis.session')
@@ -25,18 +27,23 @@ function M.open(id)
     done            = false,
     moves           = 0,
     start_ns        = vim.uv.hrtime(),
-    challenge_lines = lines,
-    target          = target,
-    verify          = verify,
-    result_lines    = result,
+    challenge_lines = desc.content,
+    target          = desc.target,
+    verify          = desc.verify,
+    result_lines    = desc.result,
     challenge_id    = id,
+    maxmoves        = desc.evaluation and desc.evaluation.max_moves,
   }
 
   local function check_buffer()
     local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    if #current ~= #result then return end
+    if #current ~= #state.result_lines then return end
     for i = 1, #current do
-      if current[i] ~= result[i] then return end
+      if current[i] ~= state.result_lines[i] then return end
+    end
+    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
+      vim.api.nvim_echo({ { "Too many moves! Press r to retry.", "WarningMsg" } }, false, {})
+      return
     end
     state.done = true
     vim.api.nvim_echo({ { "Success" } }, false, {})
@@ -50,9 +57,14 @@ function M.open(id)
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
       "Complete.", "",
-      "Moves: " .. state.moves,
-      "Time: "  .. elapsed_ms .. "ms", "",
     }
+    if state.maxmoves then
+      table.insert(display, "Moves: " .. state.moves .. " / " .. state.maxmoves)
+    else
+      table.insert(display, "Moves: " .. state.moves)
+    end
+    table.insert(display, "Time: "  .. elapsed_ms .. "ms")
+    table.insert(display, "")
     for _, line in ipairs(stats_out) do
       table.insert(display, line)
     end
@@ -70,7 +82,7 @@ function M.open(id)
     state.start_ns = vim.uv.hrtime()
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, state.challenge_lines)
-    if state.verify ~= "buffer" then
+    if state.verify ~= "buffer" and state.verify ~= "composite" then
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
     vim.api.nvim_win_set_cursor(0, { 1, 0 })
@@ -102,7 +114,7 @@ function M.open(id)
     callback = function()
       if state.done then return end
       state.moves = state.moves + 1
-      if state.verify == "buffer" then
+      if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
     end,
@@ -112,7 +124,7 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
-      if state.verify == "buffer" then
+      if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
     end,

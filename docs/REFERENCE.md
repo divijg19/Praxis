@@ -10,19 +10,20 @@ Every challenge is defined in `internal/content/content.go` as part of the `All(
 challenge.Challenge{
     ID:      "unique_identifier",
     Name:    "Display Name",
-    Verify:  "cursor",         // or "buffer"
-    Target:  "★",              // cursor challenges only; empty for buffer
+    Verify:  "cursor",         // "cursor", "buffer", or "composite"
+    Target:  "★",              // cursor challenges only; empty for buffer/composite
     Content: []string{
         "Instruction line",
         "",
         "play area content",
     },
-    Result:  []string{         // buffer challenges only; nil for cursor
+    Result:  []string{         // buffer/composite challenges only; nil for cursor
         "Instruction line",
         "",
         "edited content",
     },
     Layer:   "Tutorial",       // "Tutorial", "Training", "Trial", "Boss"
+    Evaluation: &challenge.Evaluation{MaxMoves: 10}, // composite only; nil otherwise
 }
 ```
 
@@ -30,36 +31,43 @@ challenge.Challenge{
 
 | Field | Stability | Rule |
 |---|---|---|
-| `ID` | STABLE | Globally unique. Never change after first release. `snake_case` with `_hunter` suffix. |
+| `ID` | STABLE | Globally unique. Never change after first release. `snake_case` with `_hunter` or `_combo` suffix. |
 | `Name` | EVOLVABLE | Display name. May change as curriculum framing shifts. |
-| `Verify` | STABLE | `"cursor"` or `"buffer"`. Must match a registered validator. |
-| `Target` | STABLE | Required for cursor (non-empty). Must be present in buffer. Empty for buffer. |
-| `Content` | STABLE | First line is instruction. Buffer: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
-| `Result` | STABLE | Required for buffer (non-empty slice, exact target state). Nil for cursor. |
-| `Layer` | STABLE | `"Tutorial"`, `"Training"`, `"Trial"`, or `"Boss"`. All 41 existing challenges are `"Tutorial"`. |
+| `Verify` | STABLE | `"cursor"`, `"buffer"`, or `"composite"`. Must match a registered validator. |
+| `Target` | STABLE | Required for cursor (non-empty). Empty for buffer/composite. |
+| `Content` | STABLE | First line is instruction. Buffer/composite: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
+| `Result` | STABLE | Required for buffer/composite (non-empty slice, exact target state). Nil for cursor. |
+| `Layer` | STABLE | `"Tutorial"`, `"Training"`, `"Trial"`, or `"Boss"`. |
+| `Evaluation` | STABLE | Non-nil only for `"composite"`. Contains `MaxMoves` threshold. |
 
 ### Adding a New Challenge
 
 1. Add the challenge to the end of `All()` in `internal/content/content.go`
-2. Update `TestChallengeIDsStable` with the new ID in the correct position
-3. Update `TestChallengeNamesStable` with the new Name
-4. Add the ID to the appropriate list in `tools/replay/replay.lua` (cursor or buffer)
+2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
+3. Update `stableChallengeIDs` and `stableChallengeNames` in `internal/content/content_test.go`
+4. Add the ID to the `all_ids` list in `tools/replay/replay.lua`
 5. Run `go test ./...` to verify
 6. Run `tools/replay/replay.sh` to verify
 
 ## CLI Surface
 
+### Public Commands
+
 | Command | Output | Exit | Enforced by |
 |---|---|---|---|
-| `praxis list` | One name per line, curriculum order, 41 lines | 0 | TestListCount, TestListOutputStable |
-| `praxis challenge <id>` | Content lines to stdout | 0 / 1 unknown | TestChallengeLookup, TestUnknownChallengeFails |
-| `praxis target <id>` | Target char; empty for buffer | 0 / 1 | TestTargetLookup, TestTargetOutputStable, TestUnknownTargetFails |
-| `praxis verify <id>` | `"cursor"` or `"buffer"` | 0 / 1 | TestVerifyLookup, TestVerifyOutputStable, TestUnknownVerifyFails |
-| `praxis result <id>` | Result lines to stdout; empty for cursor | 0 / 1 | TestResultLookup |
+| `praxis help` | CLI reference, all commands listed with descriptions | 0 | TestHelpCommand |
+| `praxis` (bare) | Next challenge ID + `praxis help` hint | 0 | TestBarePraxis |
+| `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + evaluation) | 0 / 1 | TestDescribeCommand, TestDescribeComposite, TestDescribeUnknown |
+| `praxis catalog` | One name per line, curriculum order | 0 | TestCatalogOutputStable |
+| `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
+| `praxis stats [id]` | Per-challenge or summary | 0 / 1 | TestStatsCommand, TestStatsSummary, TestRecordStats, TestStatsCommandConfidenceLevels |
+
+### Internal (Frontend Transport API)
+
+| Command | Output | Exit | Enforced by |
+|---|---|---|---|
 | `praxis attempt <id>` | Silent (no stdout) | 0 / 1 | TestAttemptCommand, TestAttemptUnknown |
 | `praxis record <id> <moves> <time_ms>` | Silent (no stdout) | 0 | TestRecordStats |
-| `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
-| `praxis stage <id>` | Stage name | 0 / 1 unknown | TestStageCommand, TestStageCommandUnknown |
 
 On unknown ID, stderr is `unknown challenge: <id>`.
 
@@ -79,19 +87,48 @@ Confidence: High
 
 Without arguments, shows summary with mastery distribution and practice guidance. Exit 0 on success, 1 on unknown challenge ID.
 
+### `praxis describe <id>`
+
+Returns a canonical JSON representation of the challenge including its metadata and (for composite challenges) evaluation. This single endpoint replaces the legacy `challenge`, `target`, `verify`, `result`, and `stage` commands.
+
+**Output schema:**
+```json
+{
+  "id": "find_diw_combo",
+  "name": "Find diw Combo",
+  "verify": "composite",
+  "layer": "Training",
+  "target": "",
+  "content": ["Find and delete...", "", "a;lskdfj remove ;alskdfj"],
+  "result": ["Find and delete...", "", "a;lskdfj ;alskdfj"],
+  "concept": "f,diw",
+  "context": "search + delete inside word",
+  "stage": "Text Objects",
+  "evaluation": {
+    "max_moves": 10
+  }
+}
+```
+
+The `evaluation` field is emitted only for `"composite"` challenges (via `json:"evaluation,omitempty"`). Non-composite challenges omit this field entirely.
+
+Enforced by: `TestDescribeCommand`, `TestDescribeComposite`, `TestDescribeUnknown`, `TestDescribeRoundTrip`, `TestDescribeEvaluation`.
+
+### `praxis catalog`
+
+Returns the name of every registered challenge, one per line, in curriculum order. This is a literal rename of the legacy `list` command — same stable format, new name.
+
+Enforced by: `TestCatalogOutputStable`.
+
 ### `praxis next`
 
 Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ LearningMax=2). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
-
-### `praxis stage <id>`
-
-Returns the stage name for a given challenge ID. Exit 1 with `unknown challenge: <id>` on stderr if the ID is not in the curriculum.
 
 Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`, `TestStatsCommandConfidenceLevels`
 
 ## Validators
 
-Validators determine how a challenge's success condition is evaluated. Praxis has two: **cursor** and **buffer**.
+Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**.
 
 ### Validator Registry
 
@@ -99,8 +136,9 @@ Defined in `internal/validator/validator.go`:
 
 ```go
 var valid = map[string]bool{
-    "cursor": true,
-    "buffer": true,
+    "cursor":    true,
+    "buffer":    true,
+    "composite": true,
 }
 
 func Exists(name string) bool {
@@ -116,7 +154,7 @@ func Exists(name string) bool {
 
 Buffer is set to `Content` with `modifiable=false`. A `CursorMoved` autocommand checks if the character under the cursor matches `Target`. Uses `byte_to_char()` normalization to handle multi-byte content correctly. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 20 challenges (movement, search, navigation, UTF-8 proof).
+**Used by:** 19 challenges (movement, search, navigation, UTF-8 proof).
 
 **Formal specification:**
 
@@ -195,6 +233,22 @@ Comparison is byte-exact string equality:
 | Trailing whitespace differs | `"keep "` vs `"keep"` — byte-exact comparison |
 | Result is empty | Result field is nil or `[]string{}` (violates contract) |
 
+### Composite Validator
+
+**Verify value:** `"composite"`
+
+**Rule:** Edit the buffer content to exactly match `Result`, within a maximum number of moves.
+
+Behaviorally identical to the buffer validator (TextChanged + TextChangedI listeners, byte-exact comparison via `check_buffer()`). Additionally, the Lua frontend enforces a `MaxMoves` threshold:
+
+- On each Normal-mode edit (TextChanged), moves counter is incremented
+- If moves exceed `MaxMoves`, challenge is failed with "Too many moves! Press r to retry."
+- Result screen shows `Moves: N / MaxMoves` instead of just `Moves: N`
+
+The `MaxMoves` value is transmitted via the `describe` JSON endpoint (`evaluation.max_moves`). It is an anti-bruteforce threshold, not a scoring target — thresholds are set at 2–4× the optimal move count.
+
+**Used by:** 10 Training challenges.
+
 ### Autocommand Dispatching
 
 The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer challenges use `TextChanged` + `TextChangedI` instead. Handled by checking `state.verify` when setting up autocommands.
@@ -205,8 +259,9 @@ The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer chall
 |---|---|
 | `TestValidatorCoverage` | Every challenge references a registered validator |
 | `TestNoValidatorDrift` | Every registered validator is used by at least one challenge |
-| `TestResultShapeMatchesVerify` | Cursor challenges forbid Result; buffer challenges forbid Target |
-| `TestExistsCursor` / `TestExistsBuffer` | Validators are present in the registry |
+| `TestResultShapeMatchesVerify` | Cursor challenges forbid Result; buffer and composite forbid Target |
+| `TestExistsCursor` / `TestExistsBuffer` / `TestExistsComposite` | Validators are present in the registry |
+| `TestCompositeHasEvaluation` | Composite challenges always have non-nil Evaluation with positive MaxMoves |
 
 ### Future Candidates
 
@@ -402,7 +457,7 @@ Three sections:
 2. **Build** — `go build ./...` — all packages compile
 3. **Vet** — `go vet ./...` — all packages pass static analysis
 4. **Test** — `go test ./...` — all packages report `ok`
-5. **Replay** — `tools/replay/replay.sh` — reports `ALL 41/41 REPLAY TESTS PASS`
+5. **Replay** — `tools/replay/replay.sh` — reports `ALL 51/51 REPLAY TESTS PASS`
 6. **Documentation** — If content changed: `go run scripts/generate_catalog.go > docs/CHALLENGES.md`. Update `docs/RELEASES.md` with new version row.
 7. **Stage** — `git add -A && git status` — verify staged files
 8. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)

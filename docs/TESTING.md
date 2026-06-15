@@ -2,14 +2,14 @@
 
 ## Test Suite Overview
 
-Praxis has **82 tests** across 4 packages:
+Praxis has **91 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 28 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy |
+| `internal/content` | 32 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy, describe round-trip |
 | `internal/stats` | 31 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance, confidence |
-| `internal/validator` | 4 | Validator registry, UTF-8 normalization |
-| `cmd/praxis` | 19 | CLI subprocess behavior, output format contracts, attempt command, confidence levels |
+| `internal/validator` | 5 | Validator registry (`cursor`, `buffer`, `composite`), UTF-8 normalization |
+| `cmd/praxis` | 22 | CLI subprocess behavior, output format contracts, describe/catalog/help commands, attempt command, confidence levels |
 
 ## Running Tests
 
@@ -45,18 +45,19 @@ These are the most important tests. They protect the challenge registry from acc
 | `TestAllChallengesHaveVerify` | Missing Verify field |
 | `TestAllChallengesHaveLayer` | Missing Layer field |
 | `TestLayerValidValues` | Invalid Layer value (typo, wrong case, stray whitespace) |
-| `TestAllCurrentChallengesAreTutorials` | Challenge unexpectedly tagged non-Tutorial |
+| `TestAllCurrentChallengesAreTutorials` | Challenge unexpectedly tagged non-Tutorial/non-Training; counts drift |
 | `TestValidatorCoverage` | Unknown validator type |
 | `TestNoValidatorDrift` | Registered validator unused by any challenge |
-| `TestResultMatchesVerify` | Buffer without Result / cursor with Result |
-| `TestResultShapeMatchesVerify` | Cursor challenge with Result / buffer challenge with Target |
+| `TestResultMatchesVerify` | Buffer/composite without Result / cursor with Result |
+| `TestResultShapeMatchesVerify` | Cursor challenge with Result / buffer/composite with Target |
 | `TestCursorChallengesHaveTargets` | Cursor challenge without Target |
-| `TestBufferChallengesHaveNoTargets` | Buffer challenge with incorrect Target |
+| `TestBufferChallengesHaveNoTargets` | Buffer-like challenge with incorrect Target |
 | `TestNoEmptyContent` | Completely empty Content |
 | `TestInstructionLinePresent` | Missing first-content-line instruction |
-| `TestBufferChallengeLayout` | Buffer challenge with <3 lines or missing blank |
+| `TestBufferChallengeLayout` | Buffer-like challenge with <3 lines or missing blank |
 | `TestCursorChallengeLayout` | Cursor challenge with <1 line or empty instruction |
-| `TestContentResultLineCountReasonable` | Buffer challenge with wildly mismatched Content/Result line count |
+| `TestContentResultLineCountReasonable` | Buffer-like challenge with wildly mismatched Content/Result line count |
+| `TestCompositeHasEvaluation` | Composite challenge missing Evaluation or invalid MaxMoves |
 
 ## Integrity Tests (`internal/content/integrity_test.go`)
 
@@ -79,12 +80,21 @@ These tests enforce the Concept–Context–Stage metadata model, which is the s
 | `TestProgressionCoverage` | Progression stage with zero challenges |
 | `TestStageIntroductionOrder` | Stages introduced out of pedagogical order |
 
+## Describe Tests (`internal/content/describe_test.go`)
+
+| Test | What it catches |
+|---|---|
+| `TestDescribeRoundTrip` | Describe JSON round-trip: every field survives marshal/unmarshal |
+| `TestDescribeEvaluation` | Composite challenges include Evaluation; non-composite omit it |
+| `TestDescribeUnknown` | Unknown ID returns false |
+
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
 
 | Test | What it catches |
 |---|---|
 | `TestExistsCursor` | "cursor" validator unregistered |
 | `TestExistsBuffer` | "buffer" validator unregistered |
+| `TestExistsComposite` | "composite" validator unregistered |
 | `TestExistsUnknown` | Non-existent validator falsely registered |
 | `TestUTF8CursorNormalization` | byte_to_char regression with multi-byte content |
 
@@ -94,17 +104,12 @@ CLI tests build and run the praxis binary as a subprocess, verifying output and 
 
 | Test | What it catches |
 |---|---|
-| `TestListCount` | List output not matching challenge count |
-| `TestListOutputStable` | List output names or order drift |
-| `TestChallengeLookup` | Challenge content mismatch |
-| `TestTargetLookup` | Target output mismatch |
-| `TestTargetOutputStable` | Target output format drift |
-| `TestVerifyLookup` | Verify output mismatch |
-| `TestVerifyOutputStable` | Verify output format drift |
-| `TestResultLookup` | Result output mismatch |
-| `TestUnknownChallengeFails` | Non-existent ID exits 1 |
-| `TestUnknownTargetFails` | Non-existent target exits 1 |
-| `TestUnknownVerifyFails` | Non-existent verify exits 1 |
+| `TestCatalogOutputStable` | Catalog output names or order drift |
+| `TestDescribeCommand` | Describe JSON for a buffer challenge (no Evaluation) |
+| `TestDescribeComposite` | Describe JSON for a composite challenge (with Evaluation) |
+| `TestDescribeUnknown` | Non-existent describe ID exits 1 |
+| `TestHelpCommand` | Help output includes all public commands, excludes removed commands |
+| `TestBarePraxis` | Bare invocation shows next challenge + `praxis help` hint |
 | `TestRecordStats` | CLI stat recording and best-value persistence |
 | `TestStatsCommand` | Per-challenge stats output format |
 | `TestStatsSummary` | Summary stats output format |
@@ -136,7 +141,7 @@ The script:
 1. Builds the Go binary to `/tmp/praxis`
 2. Runs Neovim headless with `tools/replay/replay.lua`
 3. Prints PASS/FAIL for each challenge
-4. Reports summary: `ALL 41/41 REPLAY TESTS PASS`
+4. Reports per-layer summary and total: `ALL 51/51 REPLAY TESTS PASS`
 
 ### Interpreting Results
 
@@ -145,10 +150,11 @@ Each challenge reports `PASS <id>` or `FAIL <id>`.
 - A **cursor challenge** passes when navigating to the target character completes successfully
 - A **buffer challenge** passes when setting the buffer content to the result matches exactly
 - The **UTF-8 challenge** passes when byte-to-character normalization correctly identifies the star at bytecol=9, charcol=6
+- A **composite challenge** passes when setting the buffer content matches and moves ≤ MaxMoves
 
-The summary line shows the final count. All 41 must pass.
+The summary shows per-layer breakout and final count. All 51 must pass.
 
-To add a new challenge: add its ID to the appropriate list in `tools/replay/replay.lua` (`cursor_ids` or `buffer_ids`), run the replay to verify, then commit the updated file.
+To add a new challenge: add its ID to `all_ids` in `tools/replay/replay.lua`, run the replay to verify, then commit the updated file.
 
 ### Limitations
 

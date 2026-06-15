@@ -28,11 +28,11 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI entry point: `list`, `challenge`, `target`, `verify`, `result`, `attempt`, `record`, `stats`, `next`, `stage` |
-| `internal/challenge` | `Challenge` struct — the core data model |
-| `internal/content` | `All()`, `MetadataFor()`, `ValidStages()` — challenge registry + curriculum metadata |
+| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats` (public); `attempt`, `record` (internal) |
+| `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
+| `internal/content` | `All()`, `Describe()`, `MetadataFor()`, `ValidStages()` — challenge registry + curriculum metadata |
 | `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
-| `internal/validator` | `Exists(name)` — validator dispatch registry |
+| `internal/validator` | `Exists(name)` — validator dispatch registry (`cursor`, `buffer`, `composite`) |
 
 ### Data flow
 
@@ -42,9 +42,10 @@ User request (CLI)
     v
 cmd/praxis/main.go
     |
-    ├── internal/content.All()  →  challenge.Challenge{ID, Name, Verify, Target, Content, Result, Layer}
+    ├── internal/content.All()      →  challenge.Challenge[]
+    ├── internal/content.Describe(id)  →  JSON string (Description struct)
     ├── internal/content.MetadataFor(id)  →  content.Metadata{Concept, Context, Stage, Layer}
-    ├── internal/stats.Load()  →  map[string]Stats
+    ├── internal/stats.Load()       →  map[string]Stats
     |
     v
 stdout (CLI response)
@@ -54,13 +55,18 @@ stdout (CLI response)
 
 ```go
 type Challenge struct {
-    ID      string     // stable public identifier, never changes
-    Name    string     // display name, may evolve
-    Verify  string     // "cursor" or "buffer"
-    Target  string     // for cursor: the character to navigate to
-    Content []string   // buffer content lines
-    Result  []string   // for buffer: target buffer state
-    Layer   string     // "Tutorial", "Training", "Trial", "Boss"
+    ID         string      // stable public identifier, never changes
+    Name       string      // display name, may evolve
+    Verify     string      // "cursor", "buffer", or "composite"
+    Target     string      // for cursor: the character to navigate to
+    Content    []string    // buffer content lines
+    Result     []string    // for buffer/composite: target buffer state
+    Layer      string      // "Tutorial", "Training", "Trial", "Boss"
+    Evaluation *Evaluation // non-nil only for "composite" challenges
+}
+
+type Evaluation struct {
+    MaxMoves int // anti-bruteforce threshold
 }
 ```
 
@@ -90,6 +96,7 @@ The Neovim frontend is loaded via `nvim/plugin/praxis.lua` which requires `nvim/
 - Checks `state.verify` to decide which autocmd behavior to enable:
   - `"cursor"` → modifiable=false, CursorMoved listener, target check
   - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
+  - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Too many moves! Press r to retry." on exceed
 - Uses `byte_to_char()` normalization for multi-byte content:
 
 ```lua
@@ -122,7 +129,7 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
   - **Direction:** next challenge + its stage, review recommendation + its stage
   - **Data:** mastery distribution (compact one-line format)
 - `<CR>` opens the next challenge directly via `challenge.open()`
-- Data sourced from `praxis next`, `praxis stage`, `praxis stats`
+- Data sourced from `praxis next`, `praxis describe`, `praxis stats`
 - Zero Go changes, zero schema changes
 
 ### Journey Surface (challenge.lua — result screen)
@@ -137,11 +144,11 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 
 | Interface | Consumer | Format |
 |---|---|---|
-| `praxis list` | CLI, Neovim | One challenge name per line |
-| `praxis challenge <id>` | Neovim | Content lines to stdout |
-| `praxis target <id>` | Neovim | Target character to stdout |
-| `praxis verify <id>` | Neovim | "cursor" or "buffer" |
-| `praxis result <id>` | Neovim | Result lines to stdout |
+| `praxis help` | CLI | CLI reference, commands listed with descriptions |
+| `praxis` (bare) | CLI | Next challenge ID + `praxis help` hint |
+| `praxis describe <id>` | Neovim, replay | JSON: `Description` struct (challenge + metadata + evaluation) |
+| `praxis catalog` | CLI | One challenge name per line (flat, no grouping) |
+| `praxis next` | Neovim, hub | Challenge ID or empty |
 | `praxis attempt <id>` | Neovim | Silent (internal) |
 | `praxis record <id> <moves> <time_ms>` | Neovim | Silent (internal) |
 | `praxis stats [id]` | CLI | Per-challenge or summary |
