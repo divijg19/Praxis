@@ -318,6 +318,49 @@ Completions includes replays via the `r` key, so it can exceed `Challenges`.
 - **Challenges and Completions are separate counters.** The gap shows unfinished attempts.
 - **Session Length tracks wall-clock time.** Honest but approximate (not idle-adjusted).
 
+## Hub
+
+The Hub is the primary surface for returning users. It answers "where am I and what should I do next?" and is opened automatically on `:Praxis` for non-first-time users.
+
+### Layout
+
+```
+── Praxis ──────────────────────────────────────
+
+  Location: Search
+  Progress: 4/41
+
+  Direction:
+    Next: find_hunter — Search
+    Review: motion_rush — Movement
+
+  Mastery:
+    Unseen: 21   Learning: 16   Practiced: 3   Experienced: 1
+
+  Press Enter to continue.
+```
+
+Three sections:
+
+| Section | Content | Source |
+|---|---|---|
+| **Location** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis stage`, `praxis stats` |
+| **Direction** | Next challenge + stage, review recommendation + stage | `praxis next`, `praxis stage`, `praxis stats` |
+| **Data** | Mastery distribution (compact one-line) | `praxis stats` |
+
+### Actions
+
+| Key | Action |
+|---|---|
+| `<CR>` | Opens the next challenge directly (never opens Hub as intermediate step) |
+
+### Design Principles
+
+- **Hub is for orientation.** You visit it when you need context (starting Praxis, returning after a break, wondering where you are).
+- **Result screen is for momentum.** After completing a challenge, Enter goes directly to the next challenge — never through Hub.
+- **Practice flow:** Challenge → Result → Next Challenge. Navigation only when you explicitly choose it.
+- **Zero Go changes.** All data is sourced from `praxis next`, `praxis stage`, `praxis stats`.
+
 ## Integrity Guarantees
 
 ### Principles

@@ -1,7 +1,7 @@
 local challenge = require('praxis.challenge')
 local session = require('praxis.session')
-local ui = require('praxis.ui')
 local onboarding = require('praxis.onboarding')
+local hub = require('praxis.hub')
 
 local M = {}
 
@@ -21,13 +21,7 @@ function M.show(opts)
   elseif first_time() then
     onboarding.open()
   else
-    local lines = vim.fn.systemlist({ "praxis" })
-    table.insert(lines, "")
-    table.insert(lines, "CLI Connected")
-    local buf = ui.create_buffer("Praxis")
-    ui.set_lines(buf, lines)
-    ui.set_modifiable(buf, false)
-    vim.api.nvim_set_current_buf(buf)
+    hub.open()
   end
 end
 

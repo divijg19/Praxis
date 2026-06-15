@@ -116,8 +116,22 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 
 ### Hub Surface (hub.lua)
 
-- Reserved for v0.2.2 (Journey release)
-- Currently a stub that errors on invocation
+- Returning users see Hub on `:Praxis` instead of raw CLI output
+- Layout: Location → Direction → Data
+  - **Location:** current stage (stage of first un-Practiced challenge), progress count
+  - **Direction:** next challenge + its stage, review recommendation + its stage
+  - **Data:** mastery distribution (compact one-line format)
+- `<CR>` opens the next challenge directly via `challenge.open()`
+- Data sourced from `praxis next`, `praxis stage`, `praxis stats`
+- Zero Go changes, zero schema changes
+
+### Journey Surface (challenge.lua — result screen)
+
+- Result screen displays stats with action options:
+  - `[r] Replay` — reset and retry the challenge
+  - `[Enter] Continue Journey` — opens the next curriculum challenge
+  - `[q] Quit` — returns to the Hub
+- Enter on result screen skips Hub entirely (Challenge → Result → Next Challenge)
 
 ## External interface contracts
 
