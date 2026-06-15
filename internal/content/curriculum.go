@@ -64,6 +64,17 @@ var curriculum = map[string]Metadata{
 	"word_register_hunter":      {"\"A", "append to register", StageRegisters, "Tutorial"},
 	"register_replace_hunter":   {"\"ap", "replace content from named register", StageRegisters, "Tutorial"},
 	"register_duplicate_hunter": {"\"ap", "duplicate content from named register", StageRegisters, "Tutorial"},
+	// Training
+	"find_diw_combo":        {"f", "composite deletion", StageTextObjects, "Training"},
+	"find_daw_combo":        {"daw", "composite deletion around", StageTextObjects, "Training"},
+	"find_di_paren_combo":   {"di(", "composite delete inside parens", StageTextObjects, "Training"},
+	"find_ca_quote_combo":   {"ca\"", "composite change around quotes", StageTextObjects, "Training"},
+	"find_ciw_combo":        {"ciw", "composite change word", StageEditing, "Training"},
+	"dw_dot_combo":          {"dw", "composite delete with repeat", StageEditing, "Training"},
+	"ciw_dot_combo":         {"ciw", "composite change with repeat", StageEditing, "Training"},
+	"yank_paste_combo":      {"yy", "composite yank and paste", StageRegisters, "Training"},
+	"dd_paste_combo":        {"dd", "composite cut and paste", StageRegisters, "Training"},
+	"dd_paste_before_combo": {"dd", "composite cut and paste before", StageRegisters, "Training"},
 }
 
 func MetadataFor(id string) (Metadata, bool) {

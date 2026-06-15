@@ -48,6 +48,16 @@ var stableChallengeIDs = []string{
 	"word_register_hunter",
 	"register_replace_hunter",
 	"register_duplicate_hunter",
+	"find_diw_combo",
+	"find_daw_combo",
+	"find_di_paren_combo",
+	"find_ca_quote_combo",
+	"find_ciw_combo",
+	"dw_dot_combo",
+	"ciw_dot_combo",
+	"yank_paste_combo",
+	"dd_paste_combo",
+	"dd_paste_before_combo",
 }
 
 func TestUniqueChallengeIDs(t *testing.T) {
@@ -80,8 +90,8 @@ func TestAllChallengesHaveVerify(t *testing.T) {
 
 func TestBufferChallengesHaveResults(t *testing.T) {
 	for _, c := range All() {
-		if c.Verify == "buffer" && len(c.Result) == 0 {
-			t.Errorf("buffer challenge %s has empty Result", c.ID)
+		if (c.Verify == "buffer" || c.Verify == "composite") && len(c.Result) == 0 {
+			t.Errorf("buffer-like challenge %s has empty Result", c.ID)
 		}
 	}
 }
@@ -96,8 +106,8 @@ func TestCursorChallengesHaveTargets(t *testing.T) {
 
 func TestBufferChallengesHaveNoTargets(t *testing.T) {
 	for _, c := range All() {
-		if c.Verify == "buffer" && c.Target != "" {
-			t.Errorf("buffer challenge %s has non-empty Target: %q", c.ID, c.Target)
+		if (c.Verify == "buffer" || c.Verify == "composite") && c.Target != "" {
+			t.Errorf("buffer-like challenge %s has non-empty Target: %q", c.ID, c.Target)
 		}
 	}
 }
@@ -142,61 +152,72 @@ func TestChallengeIDsStable(t *testing.T) {
 }
 
 func TestChallengeNamesStable(t *testing.T) {
-	expected := []string{
-		"Motion Rush",
-		"Grid Rush",
-		"Find Hunter",
-		"Word Hunter",
-		"Symbol Hunter",
-		"Line Hunter",
-		"Paren Hunter",
-		"Sentence Hunter",
-		"Slash Hunter",
-		"Question Hunter",
-		"Repeat Hunter",
-		"Inner Paren Hunter",
-		"Around Paren Hunter",
-		"Inner Bracket Hunter",
-		"Around Bracket Hunter",
-		"Inner Quote Hunter",
-		"Around Quote Hunter",
-		"Paragraph Hunter",
-		"Match Hunter",
-		"Delete Character Hunter",
-		"Replace Character Hunter",
-		"Toggle Case Hunter",
-		"Delete Word Hunter",
-		"Change Word Hunter",
-		"UTF-8 Cursor Hunter",
-		"Delete Line Hunter",
-		"Delete To End Hunter",
-		"Delete Inner Word Hunter",
-		"Delete Around Word Hunter",
-		"Delete Inner Paren Hunter",
-		"Delete Around Paren Hunter",
-		"Delete Inner Quote Hunter",
-		"Delete Around Quote Hunter",
-		"Change Inner Word Hunter",
-		"Change Inner Paren Hunter",
-		"Change Inner Quote Hunter",
-		"Unnamed Register Hunter",
-		"Named Register Hunter",
-		"Word Register Hunter",
-		"Register Replace Hunter",
-		"Register Duplicate Hunter",
-	}
 	got := make([]string, len(All()))
 	for i, c := range All() {
 		got[i] = c.Name
 	}
-	if len(got) != len(expected) {
-		t.Fatalf("got %d challenges, want %d", len(got), len(expected))
+	if len(got) != len(stableChallengeNames) {
+		t.Fatalf("got %d challenges, want %d", len(got), len(stableChallengeNames))
 	}
 	for i, name := range got {
-		if name != expected[i] {
-			t.Errorf("challenge[%d] name = %q, want %q", i, name, expected[i])
+		if name != stableChallengeNames[i] {
+			t.Errorf("challenge[%d] name = %q, want %q", i, name, stableChallengeNames[i])
 		}
 	}
+}
+
+var stableChallengeNames = []string{
+	"Motion Rush",
+	"Grid Rush",
+	"Find Hunter",
+	"Word Hunter",
+	"Symbol Hunter",
+	"Line Hunter",
+	"Paren Hunter",
+	"Sentence Hunter",
+	"Slash Hunter",
+	"Question Hunter",
+	"Repeat Hunter",
+	"Inner Paren Hunter",
+	"Around Paren Hunter",
+	"Inner Bracket Hunter",
+	"Around Bracket Hunter",
+	"Inner Quote Hunter",
+	"Around Quote Hunter",
+	"Paragraph Hunter",
+	"Match Hunter",
+	"Delete Character Hunter",
+	"Replace Character Hunter",
+	"Toggle Case Hunter",
+	"Delete Word Hunter",
+	"Change Word Hunter",
+	"UTF-8 Cursor Hunter",
+	"Delete Line Hunter",
+	"Delete To End Hunter",
+	"Delete Inner Word Hunter",
+	"Delete Around Word Hunter",
+	"Delete Inner Paren Hunter",
+	"Delete Around Paren Hunter",
+	"Delete Inner Quote Hunter",
+	"Delete Around Quote Hunter",
+	"Change Inner Word Hunter",
+	"Change Inner Paren Hunter",
+	"Change Inner Quote Hunter",
+	"Unnamed Register Hunter",
+	"Named Register Hunter",
+	"Word Register Hunter",
+	"Register Replace Hunter",
+	"Register Duplicate Hunter",
+	"Find + Delete Word",
+	"Find + Delete Around",
+	"Find + Delete Inside",
+	"Find + Change Around",
+	"Find + Change Word",
+	"Delete + Repeat",
+	"Change + Repeat",
+	"Yank + Paste",
+	"Cut + Paste",
+	"Cut + Paste Before",
 }
 
 func TestChallengeCount(t *testing.T) {
@@ -208,9 +229,9 @@ func TestChallengeCount(t *testing.T) {
 func TestResultMatchesVerify(t *testing.T) {
 	for _, c := range All() {
 		switch c.Verify {
-		case "buffer":
+		case "buffer", "composite":
 			if len(c.Result) == 0 {
-				t.Errorf("buffer challenge %s has empty Result", c.ID)
+				t.Errorf("buffer-like challenge %s has empty Result", c.ID)
 			}
 		case "cursor":
 			if len(c.Result) > 0 {
@@ -222,18 +243,18 @@ func TestResultMatchesVerify(t *testing.T) {
 
 func TestBufferChallengeLayout(t *testing.T) {
 	for _, c := range All() {
-		if c.Verify != "buffer" {
+		if c.Verify != "buffer" && c.Verify != "composite" {
 			continue
 		}
 		if len(c.Content) < 3 {
-			t.Errorf("buffer challenge %s has fewer than 3 content lines", c.ID)
+			t.Errorf("buffer-like challenge %s has fewer than 3 content lines", c.ID)
 			continue
 		}
 		if c.Content[1] != "" {
-			t.Errorf("buffer challenge %s content[1] is not blank", c.ID)
+			t.Errorf("buffer-like challenge %s content[1] is not blank", c.ID)
 		}
 		if len(c.Result) > 0 && c.Result[0] != c.Content[0] {
-			t.Errorf("buffer challenge %s result[0] != content[0]", c.ID)
+			t.Errorf("buffer-like challenge %s result[0] != content[0]", c.ID)
 		}
 	}
 }
@@ -261,7 +282,7 @@ func TestNoValidatorDrift(t *testing.T) {
 	for _, c := range All() {
 		used[c.Verify] = true
 	}
-	for _, name := range []string{"cursor", "buffer"} {
+	for _, name := range []string{"cursor", "buffer", "composite"} {
 		if !used[name] {
 			t.Errorf("validator %q is registered but unused by any challenge", name)
 		}
@@ -278,13 +299,24 @@ func TestResultShapeMatchesVerify(t *testing.T) {
 			if len(c.Result) > 0 {
 				t.Errorf("cursor challenge %s has unexpected Result", c.ID)
 			}
-		case "buffer":
+		case "buffer", "composite":
 			if c.Target != "" {
-				t.Errorf("buffer challenge %s has non-empty Target: %q", c.ID, c.Target)
+				t.Errorf("buffer-like challenge %s has non-empty Target: %q", c.ID, c.Target)
 			}
 			if len(c.Result) == 0 {
-				t.Errorf("buffer challenge %s has empty Result", c.ID)
+				t.Errorf("buffer-like challenge %s has empty Result", c.ID)
 			}
+		}
+	}
+}
+
+func TestCompositeHasEvaluation(t *testing.T) {
+	for _, c := range All() {
+		if c.Verify == "composite" && c.Evaluation == nil {
+			t.Errorf("composite challenge %s has nil Evaluation", c.ID)
+		}
+		if c.Verify == "composite" && c.Evaluation != nil && c.Evaluation.MaxMoves <= 0 {
+			t.Errorf("composite challenge %s has invalid MaxMoves: %d", c.ID, c.Evaluation.MaxMoves)
 		}
 	}
 }
@@ -313,21 +345,43 @@ func TestLayerValidValues(t *testing.T) {
 
 func TestAllCurrentChallengesAreTutorials(t *testing.T) {
 	for _, c := range All() {
-		if c.Layer != "Tutorial" {
-			t.Errorf("challenge %s has Layer %q, expected %q", c.ID, c.Layer, "Tutorial")
+		if c.Layer != "Tutorial" && c.Layer != "Training" {
+			t.Errorf("challenge %s has unexpected Layer %q", c.ID, c.Layer)
 		}
 	}
+	t.Run("tutorial_count", func(t *testing.T) {
+		var count int
+		for _, c := range All() {
+			if c.Layer == "Tutorial" {
+				count++
+			}
+		}
+		if count != 41 {
+			t.Errorf("expected 41 Tutorial challenges, got %d", count)
+		}
+	})
+	t.Run("training_count", func(t *testing.T) {
+		var count int
+		for _, c := range All() {
+			if c.Layer == "Training" {
+				count++
+			}
+		}
+		if count != 10 {
+			t.Errorf("expected 10 Training challenges, got %d", count)
+		}
+	})
 }
 
 func TestContentResultLineCountReasonable(t *testing.T) {
 	for _, c := range All() {
-		if c.Verify != "buffer" {
+		if c.Verify != "buffer" && c.Verify != "composite" {
 			continue
 		}
 		n := len(c.Result)
 		m := len(c.Content)
 		if n < m-1 || n > m+1 {
-			t.Errorf("buffer challenge %s: Result has %d lines, Content has %d (reasonable range: %d–%d)",
+			t.Errorf("buffer-like challenge %s: Result has %d lines, Content has %d (reasonable range: %d–%d)",
 				c.ID, n, m, m-1, m+1)
 		}
 	}

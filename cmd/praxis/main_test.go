@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -38,88 +39,8 @@ func runPraxis(t *testing.T, args ...string) (string, int) {
 	return string(out), 0
 }
 
-func TestListCount(t *testing.T) {
-	out, code := runPraxis(t, "list")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
-	if len(lines) != 41 {
-		t.Errorf("got %d lines, want 41", len(lines))
-	}
-}
-
-func TestChallengeLookup(t *testing.T) {
-	out, code := runPraxis(t, "challenge", "yank_line_hunter")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
-	if len(lines) < 3 {
-		t.Fatalf("challenge yank_line_hunter returned %d lines", len(lines))
-	}
-	if lines[0] != "Every yank enters a register. Yank and paste to see." {
-		t.Errorf("unexpected instruction: %q", lines[0])
-	}
-}
-
-func TestTargetLookup(t *testing.T) {
-	out, code := runPraxis(t, "target", "motion_rush")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	if strings.TrimSpace(out) != "★" {
-		t.Errorf("unexpected target: %q", out)
-	}
-}
-
-func TestVerifyLookup(t *testing.T) {
-	out, code := runPraxis(t, "verify", "delete_word_hunter")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	if strings.TrimSpace(out) != "buffer" {
-		t.Errorf("unexpected verify: %q", out)
-	}
-}
-
-func TestResultLookup(t *testing.T) {
-	out, code := runPraxis(t, "result", "change_word_hunter")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
-	if len(lines) < 3 {
-		t.Fatalf("result change_word_hunter returned %d lines", len(lines))
-	}
-	if lines[2] != "bar" {
-		t.Errorf("unexpected result line: %q", lines[2])
-	}
-}
-
-func TestUnknownChallengeFails(t *testing.T) {
-	_, code := runPraxis(t, "challenge", "nope")
-	if code != 1 {
-		t.Errorf("expected exit code 1, got %d", code)
-	}
-}
-
-func TestUnknownTargetFails(t *testing.T) {
-	_, code := runPraxis(t, "target", "nope")
-	if code != 1 {
-		t.Errorf("expected exit code 1, got %d", code)
-	}
-}
-
-func TestUnknownVerifyFails(t *testing.T) {
-	_, code := runPraxis(t, "verify", "nope")
-	if code != 1 {
-		t.Errorf("expected exit code 1, got %d", code)
-	}
-}
-
-func TestListOutputStable(t *testing.T) {
-	out, code := runPraxis(t, "list")
+func TestCatalogOutputStable(t *testing.T) {
+	out, code := runPraxis(t, "catalog")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
@@ -138,23 +59,103 @@ func TestListOutputStable(t *testing.T) {
 	}
 }
 
-func TestTargetOutputStable(t *testing.T) {
-	out, code := runPraxis(t, "target", "motion_rush")
+func TestDescribeCommand(t *testing.T) {
+	out, code := runPraxis(t, "describe", "delete_word_hunter")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if out != "★\n" {
-		t.Errorf("target output: got %q, want \"★\\n\"", out)
+	var d content.Description
+	if err := json.Unmarshal([]byte(out), &d); err != nil {
+		t.Fatalf("invalid JSON: %v\n%s", err, out)
+	}
+	if d.ID != "delete_word_hunter" {
+		t.Errorf("ID = %q, want %q", d.ID, "delete_word_hunter")
+	}
+	if d.Verify != "buffer" {
+		t.Errorf("Verify = %q, want %q", d.Verify, "buffer")
+	}
+	if d.Evaluation != nil {
+		t.Errorf("expected nil Evaluation for buffer challenge, got %+v", d.Evaluation)
 	}
 }
 
-func TestVerifyOutputStable(t *testing.T) {
-	out, code := runPraxis(t, "verify", "delete_word_hunter")
+func TestDescribeComposite(t *testing.T) {
+	out, code := runPraxis(t, "describe", "find_diw_combo")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if out != "buffer\n" {
-		t.Errorf("verify output: got %q, want \"buffer\\n\"", out)
+	var d content.Description
+	if err := json.Unmarshal([]byte(out), &d); err != nil {
+		t.Fatalf("invalid JSON: %v\n%s", err, out)
+	}
+	if d.Verify != "composite" {
+		t.Errorf("Verify = %q, want %q", d.Verify, "composite")
+	}
+	if d.Evaluation == nil {
+		t.Fatal("expected non-nil Evaluation for composite challenge")
+	}
+	if d.Evaluation.MaxMoves <= 0 {
+		t.Errorf("MaxMoves = %d, want > 0", d.Evaluation.MaxMoves)
+	}
+	if d.Layer != "Training" {
+		t.Errorf("Layer = %q, want %q", d.Layer, "Training")
+	}
+}
+
+func TestDescribeUnknown(t *testing.T) {
+	_, code := runPraxis(t, "describe", "nope")
+	if code != 1 {
+		t.Errorf("expected exit code 1, got %d", code)
+	}
+}
+
+func TestHelpCommand(t *testing.T) {
+	out, code := runPraxis(t, "help")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "describe") {
+		t.Errorf("help output missing 'describe', got:\n%s", out)
+	}
+	if !strings.Contains(out, "catalog") {
+		t.Errorf("help output missing 'catalog', got:\n%s", out)
+	}
+	if !strings.Contains(out, "next") {
+		t.Errorf("help output missing 'next', got:\n%s", out)
+	}
+	if !strings.Contains(out, "stats") {
+		t.Errorf("help output missing 'stats', got:\n%s", out)
+	}
+	if strings.Contains(out, "list") {
+		t.Errorf("help output should not mention removed 'list' command")
+	}
+	if strings.Contains(out, "challenge") {
+		t.Errorf("help output should not mention removed 'challenge' command")
+	}
+	if strings.Contains(out, "verify") {
+		t.Errorf("help output should not mention removed 'verify' command")
+	}
+	if strings.Contains(out, "target") {
+		t.Errorf("help output should not mention removed 'target' command")
+	}
+	if strings.Contains(out, "result") {
+		t.Errorf("help output should not mention removed 'result' command")
+	}
+	if strings.Contains(out, "stage") {
+		t.Errorf("help output should not mention removed 'stage' command")
+	}
+}
+
+func TestBarePraxis(t *testing.T) {
+	out, code := runPraxis(t)
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "motion_rush") {
+		t.Errorf("bare output missing next challenge ID, got:\n%s", out)
+	}
+	if !strings.Contains(out, "praxis help") {
+		t.Errorf("bare output missing 'praxis help' hint, got:\n%s", out)
 	}
 }
 
@@ -188,8 +189,6 @@ func TestRecordStats(t *testing.T) {
 	if !strings.Contains(out, "Mastery: Learning") {
 		t.Errorf("expected Mastery: Learning, got: %s", out)
 	}
-	// direct record() call bypasses normal attempt tracking;
-	// this state (Completions>0, Attempts=0) cannot occur through the Neovim frontend
 	if !strings.Contains(out, "Confidence: —") {
 		t.Errorf("expected Confidence: — (no attempts), got: %s", out)
 	}
@@ -218,8 +217,6 @@ func TestStatsCommand(t *testing.T) {
 	if !strings.Contains(out, "Mastery: Learning") {
 		t.Errorf("expected Mastery: Learning, got: %s", out)
 	}
-	// direct record() call bypasses normal attempt tracking;
-	// this state (Completions>0, Attempts=0) cannot occur through the Neovim frontend
 	if !strings.Contains(out, "Confidence: —") {
 		t.Errorf("expected Confidence: — (no attempts), got: %s", out)
 	}
@@ -235,8 +232,8 @@ func TestStatsSummary(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "2/41") {
-		t.Errorf("expected 2/41 completed, got: %s", out)
+	if !strings.Contains(out, "2/51") {
+		t.Errorf("expected 2/51 completed, got: %s", out)
 	}
 	if !strings.Contains(out, "Total Attempts: 0") {
 		t.Errorf("expected Total Attempts: 0, got: %s", out)
@@ -244,8 +241,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Mastery:") {
 		t.Errorf("expected Mastery header, got: %s", out)
 	}
-	if !strings.Contains(out, "Unseen: 39") {
-		t.Errorf("expected Unseen: 39, got: %s", out)
+	if !strings.Contains(out, "Unseen: 49") {
+		t.Errorf("expected Unseen: 49, got: %s", out)
 	}
 	if !strings.Contains(out, "Learning: 2") {
 		t.Errorf("expected Learning: 2, got: %s", out)
@@ -403,36 +400,5 @@ func TestNextCommandComplete(t *testing.T) {
 	}
 	if out != "" {
 		t.Errorf("expected empty output, got %q", out)
-	}
-}
-
-func TestStageCommand(t *testing.T) {
-	d := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", d)
-
-	out, code := runPraxis(t, "stage", "motion_rush")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	if out != "Movement\n" {
-		t.Errorf("expected 'Movement', got %q", out)
-	}
-
-	out, code = runPraxis(t, "stage", "find_hunter")
-	if code != 0 {
-		t.Fatalf("exit code %d", code)
-	}
-	if out != "Search\n" {
-		t.Errorf("expected 'Search', got %q", out)
-	}
-}
-
-func TestStageCommandUnknown(t *testing.T) {
-	d := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", d)
-
-	_, code := runPraxis(t, "stage", "nope")
-	if code != 1 {
-		t.Errorf("expected exit code 1 for unknown challenge, got %d", code)
 	}
 }

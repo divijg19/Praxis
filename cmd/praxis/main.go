@@ -12,29 +12,20 @@ import (
 func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
-		case "list":
-			list()
+		case "help":
+			help()
 			return
-		case "challenge":
+		case "describe":
 			if len(os.Args) > 2 {
-				challenge(os.Args[2])
+				describe(os.Args[2])
 				return
 			}
-		case "target":
-			if len(os.Args) > 2 {
-				target(os.Args[2])
-				return
-			}
-		case "verify":
-			if len(os.Args) > 2 {
-				verify(os.Args[2])
-				return
-			}
-		case "result":
-			if len(os.Args) > 2 {
-				result(os.Args[2])
-				return
-			}
+		case "catalog":
+			catalog()
+			return
+		case "next":
+			next()
+			return
 		case "attempt":
 			if len(os.Args) > 2 {
 				attempt(os.Args[2])
@@ -43,14 +34,6 @@ func main() {
 		case "record":
 			if len(os.Args) > 4 {
 				record(os.Args[2], os.Args[3], os.Args[4])
-				return
-			}
-		case "next":
-			next()
-			return
-		case "stage":
-			if len(os.Args) > 2 {
-				stage(os.Args[2])
 				return
 			}
 		case "stats":
@@ -62,11 +45,59 @@ func main() {
 			return
 		}
 	}
-	fmt.Println("Praxis")
-	fmt.Println("Mastery through practice.")
+	entrypoint()
 }
 
-func list() {
+func entrypoint() {
+	fmt.Println("Praxis")
+	fmt.Println("Mastery through practice.")
+	fmt.Println()
+
+	var curriculumIDs []string
+	for _, c := range content.All() {
+		curriculumIDs = append(curriculumIDs, c.ID)
+	}
+	m, _ := stats.Load()
+	id := stats.NextChallenge(m, curriculumIDs)
+	fmt.Println("Next:")
+	if id != "" {
+		fmt.Printf("  %s\n", id)
+	} else {
+		fmt.Println("  All challenges complete!")
+	}
+	fmt.Println()
+	fmt.Println("Run:")
+	fmt.Println("  praxis next")
+	fmt.Println("  praxis help")
+}
+
+func help() {
+	fmt.Println("Praxis")
+	fmt.Println("Mastery through practice.")
+	fmt.Println()
+	fmt.Println("Start:")
+	fmt.Println("  praxis next")
+	fmt.Println()
+	fmt.Println("Progress:")
+	fmt.Println("  praxis stats")
+	fmt.Println()
+	fmt.Println("Explore:")
+	fmt.Println("  praxis catalog")
+	fmt.Println()
+	fmt.Println("Inspect:")
+	fmt.Println("  praxis describe <id>")
+}
+
+func describe(id string) {
+	json, ok := content.Describe(id)
+	if !ok {
+		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+		os.Exit(1)
+	}
+	fmt.Println(json)
+}
+
+func catalog() {
 	for _, c := range content.All() {
 		fmt.Println(c.Name)
 	}
@@ -82,63 +113,6 @@ func next() {
 	if id != "" {
 		fmt.Println(id)
 	}
-}
-
-func stage(id string) {
-	m, ok := content.MetadataFor(id)
-	if !ok {
-		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
-		os.Exit(1)
-	}
-	fmt.Println(m.Stage)
-}
-
-func challenge(id string) {
-	for _, c := range content.All() {
-		if c.ID == id {
-			for _, line := range c.Content {
-				fmt.Println(line)
-			}
-			return
-		}
-	}
-	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
-	os.Exit(1)
-}
-
-func target(id string) {
-	for _, c := range content.All() {
-		if c.ID == id {
-			fmt.Println(c.Target)
-			return
-		}
-	}
-	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
-	os.Exit(1)
-}
-
-func verify(id string) {
-	for _, c := range content.All() {
-		if c.ID == id {
-			fmt.Println(c.Verify)
-			return
-		}
-	}
-	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
-	os.Exit(1)
-}
-
-func result(id string) {
-	for _, c := range content.All() {
-		if c.ID == id {
-			for _, line := range c.Result {
-				fmt.Println(line)
-			}
-			return
-		}
-	}
-	fmt.Fprintln(os.Stderr, "unknown challenge:", id)
-	os.Exit(1)
 }
 
 func attempt(id string) {

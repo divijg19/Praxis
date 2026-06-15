@@ -1,22 +1,11 @@
--- End-to-end replay test for all 41 challenges
--- Committed at tools/replay/replay.lua
+-- End-to-end replay test for all 51 challenges
 -- Run via: tools/replay/replay.sh
 
-local function sh(id, cmd)
-  local handle = io.popen("/tmp/praxis " .. cmd .. " " .. id)
-  local result = handle:read("*l")
+local function describe(id)
+  local handle = io.popen("/tmp/praxis describe " .. id)
+  local raw = handle:read("*a")
   handle:close()
-  return result or ""
-end
-
-local function sh_all(id, cmd)
-  local handle = io.popen("/tmp/praxis " .. cmd .. " " .. id)
-  local lines = {}
-  for line in handle:lines() do
-    table.insert(lines, line)
-  end
-  handle:close()
-  return lines
+  return vim.fn.json_decode(raw)
 end
 
 local function byte_to_char(line, bytecol)
@@ -36,18 +25,16 @@ local function check_buffer(buf, result_lines)
   return true
 end
 
-local cursor_ids = {
+local all_ids = {
   "motion_rush","grid_rush","find_hunter","word_hunter",
   "symbol_hunter","line_hunter","paren_hunter","sentence_hunter",
   "slash_hunter","question_hunter","repeat_hunter",
   "inner_paren_hunter","around_paren_hunter","inner_bracket_hunter",
   "around_bracket_hunter","inner_quote_hunter","around_quote_hunter",
   "paragraph_hunter","match_hunter",
-}
-
-local buffer_ids = {
   "delete_character_hunter","replace_character_hunter",
   "toggle_case_hunter","delete_word_hunter","change_word_hunter",
+  "utf8_cursor_hunter",
   "delete_line_hunter","delete_to_end_hunter",
   "delete_inner_word_hunter","delete_around_word_hunter",
   "delete_inner_paren_hunter","delete_around_paren_hunter",
@@ -56,133 +43,127 @@ local buffer_ids = {
   "change_inner_quote_hunter","yank_line_hunter",
   "named_register_hunter","word_register_hunter",
   "register_replace_hunter","register_duplicate_hunter",
+  "find_diw_combo","find_daw_combo",
+  "find_di_paren_combo","find_ca_quote_combo","find_ciw_combo",
+  "dw_dot_combo","ciw_dot_combo",
+  "yank_paste_combo","dd_paste_combo","dd_paste_before_combo",
 }
 
-local utf8_id = "utf8_cursor_hunter"
+local results = {}
 
-local cursor_pass = 0
-local cursor_fail = 0
-local buffer_pass = 0
-local buffer_fail = 0
+for _, id in ipairs(all_ids) do
+  local d = describe(id)
+  if type(d) ~= "table" then
+    print("FAIL " .. id .. ": could not describe")
+    results[id] = "FAIL"
+    goto continue
+  end
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  vim.api.nvim_set_current_buf(buf)
+
+  if d.verify == "cursor" then
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.content)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+
+    local found = false
+    for r = 1, #d.content do
+      local line = d.content[r]
+      if line then
+        for c = 0, #line do
+          local charcol = byte_to_char(line, c)
+          local ch = vim.fn.strcharpart(line, charcol, 1)
+          if ch == d.target then
+            vim.api.nvim_win_set_cursor(0, { r, c })
+            found = true
+            break
+          end
+        end
+      end
+      if found then break end
+    end
+
+    if not found then
+      print("FAIL " .. id .. ": target '" .. d.target .. "' not found")
+      results[id] = "FAIL"
+      goto continue
+    end
+
+    local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+    local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
+    local completed = false
+    if line then
+      local charcol = byte_to_char(line, col0)
+      if vim.fn.strcharpart(line, charcol, 1) == d.target then
+        completed = true
+      end
+    end
+
+    if completed then
+      print("PASS " .. id)
+      results[id] = "PASS"
+    else
+      print("FAIL " .. id)
+      results[id] = "FAIL"
+    end
+
+  elseif d.verify == "buffer" or d.verify == "composite" then
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.content)
+    vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.result)
+
+    if check_buffer(buf, d.result) then
+      print("PASS " .. id)
+      results[id] = "PASS"
+    else
+      local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+      print("FAIL " .. id .. " #current=" .. #current .. " #result=" .. #d.result)
+      results[id] = "FAIL"
+    end
+  end
+
+  ::continue::
+end
+
+local tutorial_cursor_pass = 0
+local tutorial_cursor_fail = 0
+local tutorial_buffer_pass = 0
+local tutorial_buffer_fail = 0
+local training_pass = 0
+local training_fail = 0
 local utf8_pass = 0
 local utf8_fail = 0
 
-for _, id in ipairs(cursor_ids) do
-  local verify = sh(id, "verify")
-  local target = sh(id, "target")
-  local lines = sh_all(id, "challenge")
+for _, id in ipairs(all_ids) do
+  local d = describe(id)
+  if type(d) ~= "table" then goto next_id end
 
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
-  vim.api.nvim_set_current_buf(buf)
+  local result = results[id] or "FAIL"
+  local is_pass = result == "PASS"
 
-  local found = false
-  for r = 1, #lines do
-    local line = lines[r]
-    if line then
-      for c = 0, #line do
-        local charcol = byte_to_char(line, c)
-        local ch = vim.fn.strcharpart(line, charcol, 1)
-        if ch == target then
-          vim.api.nvim_win_set_cursor(0, { r, c })
-          found = true
-          break
-        end
-      end
-    end
-    if found then break end
+  if d.layer == "Tutorial" and id == "utf8_cursor_hunter" then
+    if is_pass then utf8_pass = utf8_pass + 1 else utf8_fail = utf8_fail + 1 end
+  elseif d.layer == "Tutorial" and d.verify == "cursor" then
+    if is_pass then tutorial_cursor_pass = tutorial_cursor_pass + 1 else tutorial_cursor_fail = tutorial_cursor_fail + 1 end
+  elseif d.layer == "Tutorial" and (d.verify == "buffer" or d.verify == "composite") then
+    if is_pass then tutorial_buffer_pass = tutorial_buffer_pass + 1 else tutorial_buffer_fail = tutorial_buffer_fail + 1 end
+  elseif d.layer == "Training" then
+    if is_pass then training_pass = training_pass + 1 else training_fail = training_fail + 1 end
   end
 
-  if not found then
-    cursor_fail = cursor_fail + 1
-    print("FAIL " .. id .. ": target '" .. target .. "' not found")
-    goto continue_cursor
-  end
-
-  local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
-  local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-  local completed = false
-  if line and verify == "cursor" then
-    local charcol = byte_to_char(line, col0)
-    if vim.fn.strcharpart(line, charcol, 1) == target then
-      completed = true
-    end
-  end
-
-  if completed then
-    cursor_pass = cursor_pass + 1
-    print("PASS " .. id)
-  else
-    cursor_fail = cursor_fail + 1
-    print("FAIL " .. id)
-  end
-
-  ::continue_cursor::
+  ::next_id::
 end
 
-for _, id in ipairs(buffer_ids) do
-  local verify = sh(id, "verify")
-  local content_lines = sh_all(id, "challenge")
-  local result_lines = sh_all(id, "result")
-
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, content_lines)
-  vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
-  vim.api.nvim_set_current_buf(buf)
-
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, result_lines)
-  local matched = verify == "buffer" and check_buffer(buf, result_lines)
-
-  if matched then
-    buffer_pass = buffer_pass + 1
-    print("PASS " .. id)
-  else
-    buffer_fail = buffer_fail + 1
-    local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    print("FAIL " .. id .. " #current=" .. #current .. " #result=" .. #result_lines)
-  end
-end
-
-do
-  local id = utf8_id
-  local verify = sh(id, "verify")
-  local target = sh(id, "target")
-  local lines = sh_all(id, "challenge")
-
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
-  vim.api.nvim_set_current_buf(buf)
-
-  vim.api.nvim_win_set_cursor(0, { 3, 9 })
-  local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
-  local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-  local charcol = byte_to_char(line, col0)
-  local ch = vim.fn.strcharpart(line, charcol, 1)
-
-  if verify == "cursor" and ch == target then
-    utf8_pass = utf8_pass + 1
-    print("PASS " .. id .. " bytecol=" .. col0 .. " charcol=" .. charcol)
-  else
-    utf8_fail = utf8_fail + 1
-    print("FAIL " .. id)
-  end
-end
-
-local total_cursor = cursor_pass + cursor_fail
-local total_buffer = buffer_pass + buffer_fail
-local total_pass = cursor_pass + buffer_pass + utf8_pass
-local total_fail = cursor_fail + buffer_fail + utf8_fail
-local total = total_cursor + total_buffer + 1
+local total_pass = tutorial_cursor_pass + tutorial_buffer_pass + utf8_pass + training_pass
+local total_fail = tutorial_cursor_fail + tutorial_buffer_fail + utf8_fail + training_fail
+local total = total_pass + total_fail
 
 print("")
-print("Cursor: " .. cursor_pass .. "/" .. total_cursor .. " PASS")
-print("Buffer: " .. buffer_pass .. "/" .. total_buffer .. " PASS")
-print("UTF-8:  " .. utf8_pass .. "/1 PASS")
+print("Tutorial (cursor): " .. tutorial_cursor_pass .. "/" .. (tutorial_cursor_pass + tutorial_cursor_fail) .. " PASS")
+print("Tutorial (buffer): " .. tutorial_buffer_pass .. "/" .. (tutorial_buffer_pass + tutorial_buffer_fail) .. " PASS")
+print("Tutorial (utf-8):  " .. utf8_pass .. "/" .. (utf8_pass + utf8_fail) .. " PASS")
+print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS")
 print("")
 if total_fail == 0 then
   print("ALL " .. total .. "/" .. total .. " REPLAY TESTS PASS")

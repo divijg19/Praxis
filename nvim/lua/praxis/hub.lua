@@ -3,6 +3,15 @@ local challenge = require('praxis.challenge')
 
 local M = {}
 
+local function stage_for_id(id)
+  local raw = vim.fn.systemlist({ "praxis", "describe", id })
+  local desc = vim.fn.json_decode(table.concat(raw, ""))
+  if type(desc) == "table" then
+    return desc.stage or ""
+  end
+  return ""
+end
+
 function M.open()
   local next_id = vim.fn.systemlist({ "praxis", "next" })[1] or ""
   local stats_lines = vim.fn.systemlist({ "praxis", "stats" })
@@ -52,7 +61,7 @@ function M.open()
 
   local stage = ""
   if next_id ~= "" then
-    stage = vim.fn.systemlist({ "praxis", "stage", next_id })[1] or ""
+    stage = stage_for_id(next_id)
   end
 
   if stage ~= "" then
@@ -60,7 +69,7 @@ function M.open()
   else
     table.insert(display, "  Location: Complete")
   end
-  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "41"))
+  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "51"))
   table.insert(display, "")
 
   table.insert(display, "  Direction:")
@@ -70,7 +79,7 @@ function M.open()
     table.insert(display, "    Complete")
   end
   if review_challenge and review_challenge ~= "" then
-    local review_stage = vim.fn.systemlist({ "praxis", "stage", review_challenge })[1] or ""
+    local review_stage = stage_for_id(review_challenge)
     table.insert(display, "    Review: " .. review_challenge .. " — " .. review_stage)
   end
   table.insert(display, "")
