@@ -1,21 +1,19 @@
 # Challenge Catalog
 
-Total: **51 challenges** — **41 Tutorials** across **7 curriculum packs** + **10 Training** composite challenges.
+Total: **51 challenges** — **41 Tutorial** + **10 Training**.
 
-Challenge behavior originates from internal/content/content.go.
+Generated from `internal/content/describe.go` via `content.DescriptionFor`.
 
-Challenges are grouped by historical shipping packs. For the pedagogical stage taxonomy, see PROGRESSION.md.
+## Tutorial
 
-Primary Concept annotations are curriculum documentation
-maintained alongside the challenge catalog.
+### Movement
 
-## Movement
+#### Motion Rush
 
-### Motion Rush
-
-- **ID:** `motion_rush`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `motion_rush`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `hjkl`
 - **Context:** `basic navigation`
 - **Stage:** `Movement`
@@ -28,11 +26,12 @@ Move your cursor to the star ★
 
 ---
 
-### Grid Rush
+#### Grid Rush
 
-- **ID:** `grid_rush`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `grid_rush`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `hjkl`
 - **Context:** `grid navigation`
 - **Stage:** `Movement`
@@ -47,13 +46,34 @@ Move your cursor to the star ★
 
 ---
 
-## Search
+#### UTF-8 Cursor Hunter
 
-### Find Hunter
+- **ID:** `utf8_cursor_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
+- **Primary Concept:** `f`
+- **Context:** `multi-byte search`
+- **Stage:** `Movement`
 
-- **ID:** `find_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+#### Content
+
+```text
+Navigate past multi-byte characters to the star
+
+α β γ ★
+```
+
+---
+
+### Search
+
+#### Find Hunter
+
+- **ID:** `find_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `f`
 - **Context:** `character search`
 - **Stage:** `Search`
@@ -68,11 +88,12 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★
 
 ---
 
-### Word Hunter
+#### Word Hunter
 
-- **ID:** `word_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `word_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `w`
 - **Context:** `word motion`
 - **Stage:** `Search`
@@ -87,11 +108,12 @@ alpha beta gamma delta epsilon ★
 
 ---
 
-### Symbol Hunter
+#### Symbol Hunter
 
-- **ID:** `symbol_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `@`  
+- **ID:** `symbol_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `@`
 - **Primary Concept:** `F`
 - **Context:** `backward symbol search`
 - **Stage:** `Search`
@@ -106,11 +128,12 @@ find the target symbol
 
 ---
 
-### Line Hunter
+#### Line Hunter
 
-- **ID:** `line_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `line_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `j`
 - **Context:** `line navigation`
 - **Stage:** `Search`
@@ -130,53 +153,12 @@ line five
 
 ---
 
-## Structural Navigation
+#### Slash Hunter
 
-### Paren Hunter
-
-- **ID:** `paren_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
-- **Primary Concept:** `%`
-- **Context:** `matching delimiters navigation`
-- **Stage:** `Structural Navigation`
-
-#### Content
-
-```text
-Jump to the matching paren
-
-(                         )★
-```
-
----
-
-### Sentence Hunter
-
-- **ID:** `sentence_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
-- **Primary Concept:** `)`
-- **Context:** `sentence navigation`
-- **Stage:** `Structural Navigation`
-
-#### Content
-
-```text
-Jump between sentences
-
-First sentence ends here.
-Second. Third.
-★ Fourth. Fifth.
-```
-
----
-
-### Slash Hunter
-
-- **ID:** `slash_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `slash_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `/`
 - **Context:** `forward search`
 - **Stage:** `Search`
@@ -191,11 +173,12 @@ alpha  bravo  charlie  delta  echo  foxtrot  golf  ★
 
 ---
 
-### Question Hunter
+#### Question Hunter
 
-- **ID:** `question_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `question_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `?`
 - **Context:** `backward search`
 - **Stage:** `Search`
@@ -227,11 +210,12 @@ line eighteen
 
 ---
 
-### Repeat Hunter
+#### Repeat Hunter
 
-- **ID:** `repeat_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `@`  
+- **ID:** `repeat_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `@`
 - **Primary Concept:** `;`
 - **Context:** `repeat motion`
 - **Stage:** `Search`
@@ -246,11 +230,56 @@ Search for ★, then repeat to find @
 
 ---
 
-### Inner Paren Hunter
+### Structural Navigation
 
-- **ID:** `inner_paren_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+#### Paren Hunter
+
+- **ID:** `paren_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
+- **Primary Concept:** `%`
+- **Context:** `matching delimiters navigation`
+- **Stage:** `Structural Navigation`
+
+#### Content
+
+```text
+Jump to the matching paren
+
+(                         )★
+```
+
+---
+
+#### Sentence Hunter
+
+- **ID:** `sentence_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
+- **Primary Concept:** `)`
+- **Context:** `sentence navigation`
+- **Stage:** `Structural Navigation`
+
+#### Content
+
+```text
+Jump between sentences
+
+First sentence ends here.
+Second. Third.
+★ Fourth. Fifth.
+```
+
+---
+
+#### Inner Paren Hunter
+
+- **ID:** `inner_paren_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `i(`
 - **Context:** `select inside parentheses`
 - **Stage:** `Structural Navigation`
@@ -265,11 +294,12 @@ Select inside the parentheses
 
 ---
 
-### Around Paren Hunter
+#### Around Paren Hunter
 
-- **ID:** `around_paren_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `)`  
+- **ID:** `around_paren_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `)`
 - **Primary Concept:** `a(`
 - **Context:** `select around parentheses`
 - **Stage:** `Structural Navigation`
@@ -284,11 +314,12 @@ Select around the parentheses
 
 ---
 
-### Inner Bracket Hunter
+#### Inner Bracket Hunter
 
-- **ID:** `inner_bracket_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `inner_bracket_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `i[`
 - **Context:** `select inside brackets`
 - **Stage:** `Structural Navigation`
@@ -303,11 +334,12 @@ Select inside the brackets
 
 ---
 
-### Around Bracket Hunter
+#### Around Bracket Hunter
 
-- **ID:** `around_bracket_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `]`  
+- **ID:** `around_bracket_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `]`
 - **Primary Concept:** `a[`
 - **Context:** `select around brackets`
 - **Stage:** `Structural Navigation`
@@ -322,11 +354,12 @@ Select around the brackets
 
 ---
 
-### Inner Quote Hunter
+#### Inner Quote Hunter
 
-- **ID:** `inner_quote_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `inner_quote_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `i"`
 - **Context:** `select inside quotes`
 - **Stage:** `Structural Navigation`
@@ -341,11 +374,12 @@ x"magnificent★"
 
 ---
 
-### Around Quote Hunter
+#### Around Quote Hunter
 
-- **ID:** `around_quote_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `around_quote_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `a"`
 - **Context:** `select around quotes`
 - **Stage:** `Structural Navigation`
@@ -360,11 +394,12 @@ x"magnificent"★
 
 ---
 
-### Paragraph Hunter
+#### Paragraph Hunter
 
-- **ID:** `paragraph_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `Z`  
+- **ID:** `paragraph_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `Z`
 - **Primary Concept:** `{`
 - **Context:** `paragraph navigation`
 - **Stage:** `Structural Navigation`
@@ -383,11 +418,12 @@ third Z
 
 ---
 
-### Match Hunter
+#### Match Hunter
 
-- **ID:** `match_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
+- **ID:** `match_hunter`
+- **Verify:** `cursor`
+- **Layer:** `Tutorial`
+- **Target:** `★`
 - **Primary Concept:** `%`
 - **Context:** `nested delimiter matching`
 - **Stage:** `Structural Navigation`
@@ -402,12 +438,13 @@ Jump to the matching delimiter
 
 ---
 
-## Editing
+### Editing
 
-### Delete Character Hunter
+#### Delete Character Hunter
 
-- **ID:** `delete_character_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_character_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `x`
 - **Context:** `delete character`
 - **Stage:** `Editing`
@@ -430,10 +467,11 @@ hello
 
 ---
 
-### Replace Character Hunter
+#### Replace Character Hunter
 
-- **ID:** `replace_character_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `replace_character_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `r`
 - **Context:** `replace character`
 - **Stage:** `Editing`
@@ -456,10 +494,11 @@ hello
 
 ---
 
-### Toggle Case Hunter
+#### Toggle Case Hunter
 
-- **ID:** `toggle_case_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `toggle_case_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `~`
 - **Context:** `toggle case`
 - **Stage:** `Editing`
@@ -482,10 +521,11 @@ hello
 
 ---
 
-### Delete Word Hunter
+#### Delete Word Hunter
 
-- **ID:** `delete_word_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_word_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `dw`
 - **Context:** `delete word`
 - **Stage:** `Editing`
@@ -508,10 +548,11 @@ keep  keep
 
 ---
 
-### Change Word Hunter
+#### Change Word Hunter
 
-- **ID:** `change_word_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `change_word_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `ciw`
 - **Context:** `simple word replacement`
 - **Stage:** `Editing`
@@ -534,33 +575,11 @@ bar
 
 ---
 
-## UTF-8 Proof
+#### Delete Line Hunter
 
-### UTF-8 Cursor Hunter
-
-- **ID:** `utf8_cursor_hunter`  
-- **Verify:** `cursor`  
-- **Target:** `★`  
-- **Primary Concept:** `f`
-- **Context:** `multi-byte search`
-- **Stage:** `Movement`
-
-#### Content
-
-```text
-Navigate past multi-byte characters to the star
-
-α β γ ★
-```
-
----
-
-## Structural Editing
-
-### Delete Line Hunter
-
-- **ID:** `delete_line_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_line_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `dd`
 - **Context:** `delete line`
 - **Stage:** `Editing`
@@ -586,10 +605,11 @@ keep
 
 ---
 
-### Delete To End Hunter
+#### Delete To End Hunter
 
-- **ID:** `delete_to_end_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_to_end_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `D`
 - **Context:** `delete to end of line`
 - **Stage:** `Editing`
@@ -612,10 +632,13 @@ keep this text
 
 ---
 
-### Delete Inner Word Hunter
+### Text Objects
 
-- **ID:** `delete_inner_word_hunter`  
-- **Verify:** `buffer`  
+#### Delete Inner Word Hunter
+
+- **ID:** `delete_inner_word_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `diw`
 - **Context:** `delete inside word`
 - **Stage:** `Text Objects`
@@ -638,10 +661,11 @@ keep  keep
 
 ---
 
-### Delete Around Word Hunter
+#### Delete Around Word Hunter
 
-- **ID:** `delete_around_word_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_around_word_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `daw`
 - **Context:** `delete around word`
 - **Stage:** `Text Objects`
@@ -664,10 +688,11 @@ keep keep
 
 ---
 
-### Delete Inner Paren Hunter
+#### Delete Inner Paren Hunter
 
-- **ID:** `delete_inner_paren_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_inner_paren_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `di(`
 - **Context:** `delete inside parentheses`
 - **Stage:** `Text Objects`
@@ -690,10 +715,11 @@ func()
 
 ---
 
-### Delete Around Paren Hunter
+#### Delete Around Paren Hunter
 
-- **ID:** `delete_around_paren_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_around_paren_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `da(`
 - **Context:** `delete around parentheses`
 - **Stage:** `Text Objects`
@@ -716,10 +742,11 @@ func
 
 ---
 
-### Delete Inner Quote Hunter
+#### Delete Inner Quote Hunter
 
-- **ID:** `delete_inner_quote_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_inner_quote_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `di"`
 - **Context:** `delete inside quotes`
 - **Stage:** `Text Objects`
@@ -742,10 +769,11 @@ Delete inside quotes
 
 ---
 
-### Delete Around Quote Hunter
+#### Delete Around Quote Hunter
 
-- **ID:** `delete_around_quote_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `delete_around_quote_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `da"`
 - **Context:** `delete around quotes`
 - **Stage:** `Text Objects`
@@ -768,10 +796,11 @@ Delete around quotes
 
 ---
 
-### Change Inner Word Hunter
+#### Change Inner Word Hunter
 
-- **ID:** `change_inner_word_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `change_inner_word_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `ciw`
 - **Context:** `word replacement within structural editing`
 - **Stage:** `Text Objects`
@@ -794,10 +823,11 @@ hello world
 
 ---
 
-### Change Inner Paren Hunter
+#### Change Inner Paren Hunter
 
-- **ID:** `change_inner_paren_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `change_inner_paren_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `ci(`
 - **Context:** `change inside parentheses`
 - **Stage:** `Text Objects`
@@ -820,10 +850,11 @@ func(hello)
 
 ---
 
-### Change Inner Quote Hunter
+#### Change Inner Quote Hunter
 
-- **ID:** `change_inner_quote_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `change_inner_quote_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `ci"`
 - **Context:** `change inside quotes`
 - **Stage:** `Text Objects`
@@ -846,10 +877,13 @@ Change inside quotes
 
 ---
 
-### Unnamed Register Hunter
+### Registers
 
-- **ID:** `yank_line_hunter`  
-- **Verify:** `buffer`  
+#### Unnamed Register Hunter
+
+- **ID:** `yank_line_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `yy`
 - **Context:** `yank line`
 - **Stage:** `Registers`
@@ -873,12 +907,11 @@ copy me
 
 ---
 
-## Registers
+#### Named Register Hunter
 
-### Named Register Hunter
-
-- **ID:** `named_register_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `named_register_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `"a`
 - **Context:** `named register`
 - **Stage:** `Registers`
@@ -902,10 +935,11 @@ copy me
 
 ---
 
-### Word Register Hunter
+#### Word Register Hunter
 
-- **ID:** `word_register_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `word_register_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `"A`
 - **Context:** `append to register`
 - **Stage:** `Registers`
@@ -928,10 +962,11 @@ alpha beta alpha
 
 ---
 
-### Register Replace Hunter
+#### Register Replace Hunter
 
-- **ID:** `register_replace_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `register_replace_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `"ap`
 - **Context:** `replace content from named register`
 - **Stage:** `Registers`
@@ -956,10 +991,11 @@ correct
 
 ---
 
-### Register Duplicate Hunter
+#### Register Duplicate Hunter
 
-- **ID:** `register_duplicate_hunter`  
-- **Verify:** `buffer`  
+- **ID:** `register_duplicate_hunter`
+- **Verify:** `buffer`
+- **Layer:** `Tutorial`
 - **Primary Concept:** `"ap`
 - **Context:** `duplicate content from named register`
 - **Stage:** `Registers`
@@ -987,271 +1023,298 @@ foo
 
 ## Training
 
-### Find diw Combo
+### Editing
 
-- **ID:** `find_diw_combo`
-- **Verify:** `composite`
-- **Max Moves:** 10
-- **Primary Concept:** `f,diw`
-- **Context:** `search + delete inside word`
-- **Stage:** `Text Objects`
-- **Layer:** `Training`
-
-#### Content
-
-```text
-Find and delete the word 'remove'
-a;lskdfj remove ;alskdfj
-```
-
-#### Result
-
-```text
-Find and delete the word 'remove'
-a;lskdfj ;alskdfj
-```
-
----
-
-### Find daw Combo
-
-- **ID:** `find_daw_combo`
-- **Verify:** `composite`
-- **Max Moves:** 10
-- **Primary Concept:** `f,daw`
-- **Context:** `search + delete around word`
-- **Stage:** `Text Objects`
-- **Layer:** `Training`
-
-#### Content
-
-```text
-Find and delete around the word 'remove'
-a;lskdfj remove ;alskdfj
-```
-
-#### Result
-
-```text
-Find and delete around the word 'remove'
-a;lskdfj;alskdfj
-```
-
----
-
-### Find di( Combo
-
-- **ID:** `find_di_paren_combo`
-- **Verify:** `composite`
-- **Max Moves:** 8
-- **Primary Concept:** `f,di(`
-- **Context:** `search + delete inside parens`
-- **Stage:** `Text Objects`
-- **Layer:** `Training`
-
-#### Content
-
-```text
-Find and delete inside the parens
-alpha(bravo) charlie
-```
-
-#### Result
-
-```text
-Find and delete inside the parens
-alpha() charlie
-```
-
----
-
-### Find ca" Combo
-
-- **ID:** `find_ca_quote_combo`
-- **Verify:** `composite`
-- **Max Moves:** 10
-- **Primary Concept:** `f,ca"`
-- **Context:** `search + change around quotes`
-- **Stage:** `Text Objects`
-- **Layer:** `Training`
-
-#### Content
-
-```text
-Find and change around the quotes
-alpha "bravo" charlie
-```
-
-#### Result
-
-```text
-Find and change around the quotes
-alpha "" charlie
-```
-
----
-
-### Find ciw Combo
+#### Find + Change Word
 
 - **ID:** `find_ciw_combo`
 - **Verify:** `composite`
-- **Max Moves:** 12
-- **Primary Concept:** `f,ciw`
-- **Context:** `search + change inner word`
-- **Stage:** `Text Objects`
 - **Layer:** `Training`
+- **Primary Concept:** `ciw`
+- **Context:** `composite change word`
+- **Stage:** `Editing`
+- **Max Moves:** `10`
 
 #### Content
 
 ```text
-Find and change the word 'remove'
-a;lskdfj remove ;alskdfj
+Change a word using f<char> and ciw
+
+keep delete keep
 ```
 
 #### Result
 
 ```text
-Find and change the word 'remove'
-a;lskdfj hello ;alskdfj
+Change a word using f<char> and ciw
+
+keep hello keep
 ```
 
 ---
 
-### dw Dot Combo
+#### Delete + Repeat
 
 - **ID:** `dw_dot_combo`
 - **Verify:** `composite`
-- **Max Moves:** 12
-- **Primary Concept:** `dw,.`
-- **Context:** `editing + repeat`
-- **Stage:** `Editing`
 - **Layer:** `Training`
+- **Primary Concept:** `dw`
+- **Context:** `composite delete with repeat`
+- **Stage:** `Editing`
+- **Max Moves:** `8`
 
 #### Content
 
 ```text
-Repeat the word deletion using dot
-remove remove remove
+Delete multiple words using dw and .
+
+one two three four
 ```
 
 #### Result
 
 ```text
-Repeat the word deletion using dot
+Delete multiple words using dw and .
 
+one four
 ```
 
 ---
 
-### ciw Dot Combo
+#### Change + Repeat
 
 - **ID:** `ciw_dot_combo`
 - **Verify:** `composite`
-- **Max Moves:** 12
-- **Primary Concept:** `ciw,.`
-- **Context:** `text objects + repeat`
-- **Stage:** `Text Objects`
 - **Layer:** `Training`
+- **Primary Concept:** `ciw`
+- **Context:** `composite change with repeat`
+- **Stage:** `Editing`
+- **Max Moves:** `12`
 
 #### Content
 
 ```text
-Change each word using dot
-foo bar baz
+Change two words using ciw and repeat with .
+
+one two three
 ```
 
 #### Result
 
 ```text
-Change each word using dot
-hello hello hello
+Change two words using ciw and repeat with .
+
+hello hello three
 ```
 
 ---
 
-### Yank Paste Combo
+### Text Objects
+
+#### Find + Delete Word
+
+- **ID:** `find_diw_combo`
+- **Verify:** `composite`
+- **Layer:** `Training`
+- **Primary Concept:** `f`
+- **Context:** `composite deletion`
+- **Stage:** `Text Objects`
+- **Max Moves:** `8`
+
+#### Content
+
+```text
+Delete the word using f<char> and diw
+
+keep delete keep
+```
+
+#### Result
+
+```text
+Delete the word using f<char> and diw
+
+keep  keep
+```
+
+---
+
+#### Find + Delete Around
+
+- **ID:** `find_daw_combo`
+- **Verify:** `composite`
+- **Layer:** `Training`
+- **Primary Concept:** `daw`
+- **Context:** `composite deletion around`
+- **Stage:** `Text Objects`
+- **Max Moves:** `8`
+
+#### Content
+
+```text
+Delete around the word using f<char> and daw
+
+keep delete keep
+```
+
+#### Result
+
+```text
+Delete around the word using f<char> and daw
+
+keep keep
+```
+
+---
+
+#### Find + Delete Inside
+
+- **ID:** `find_di_paren_combo`
+- **Verify:** `composite`
+- **Layer:** `Training`
+- **Primary Concept:** `di(`
+- **Context:** `composite delete inside parens`
+- **Stage:** `Text Objects`
+- **Max Moves:** `8`
+
+#### Content
+
+```text
+Delete inside parentheses using f<char> and di(
+
+func(remove)
+```
+
+#### Result
+
+```text
+Delete inside parentheses using f<char> and di(
+
+func()
+```
+
+---
+
+#### Find + Change Around
+
+- **ID:** `find_ca_quote_combo`
+- **Verify:** `composite`
+- **Layer:** `Training`
+- **Primary Concept:** `ca"`
+- **Context:** `composite change around quotes`
+- **Stage:** `Text Objects`
+- **Max Moves:** `10`
+
+#### Content
+
+```text
+Change text inside quotes using f<char> and ca"
+
+"remove"
+```
+
+#### Result
+
+```text
+Change text inside quotes using f<char> and ca"
+
+hello
+```
+
+---
+
+### Registers
+
+#### Yank + Paste
 
 - **ID:** `yank_paste_combo`
 - **Verify:** `composite`
-- **Max Moves:** 10
-- **Primary Concept:** `yy,p`
-- **Context:** `registers + editing`
-- **Stage:** `Registers`
 - **Layer:** `Training`
+- **Primary Concept:** `yy`
+- **Context:** `composite yank and paste`
+- **Stage:** `Registers`
+- **Max Moves:** `8`
 
 #### Content
 
 ```text
-Yank and paste the line below
-copy me
+Duplicate a line below using yy and p
+
+alpha
+beta
 ```
 
 #### Result
 
 ```text
-Yank and paste the line below
-copy me
-copy me
+Duplicate a line below using yy and p
+
+alpha
+beta
+alpha
 ```
 
 ---
 
-### dd Paste Combo
+#### Cut + Paste
 
 - **ID:** `dd_paste_combo`
 - **Verify:** `composite`
-- **Max Moves:** 12
-- **Primary Concept:** `dd,p`
-- **Context:** `editing + registers`
-- **Stage:** `Editing`
 - **Layer:** `Training`
+- **Primary Concept:** `dd`
+- **Context:** `composite cut and paste`
+- **Stage:** `Registers`
+- **Max Moves:** `8`
 
 #### Content
 
 ```text
-Delete the middle line and paste it at the end
-first
-move me
-last
+Move a line to the end using dd and p
+
+one
+TWO
+three
 ```
 
 #### Result
 
 ```text
-Delete the middle line and paste it at the end
-first
-last
-move me
+Move a line to the end using dd and p
+
+one
+three
+TWO
 ```
 
 ---
 
-### dd Paste Before Combo
+#### Cut + Paste Before
 
 - **ID:** `dd_paste_before_combo`
 - **Verify:** `composite`
-- **Max Moves:** 12
-- **Primary Concept:** `dd,P`
-- **Context:** `editing + registers`
-- **Stage:** `Editing`
 - **Layer:** `Training`
+- **Primary Concept:** `dd`
+- **Context:** `composite cut and paste before`
+- **Stage:** `Registers`
+- **Max Moves:** `8`
 
 #### Content
 
 ```text
-Delete the middle line and paste it at the top
+Swap two lines using dd and P
+
 first
-move me
-last
+second
 ```
 
 #### Result
 
 ```text
-Delete the middle line and paste it at the top
-move me
+Swap two lines using dd and P
+
+second
 first
-last
 ```
 
 ---
+

@@ -16,17 +16,18 @@ A passing replay means every challenge is mechanically solvable as of this commi
 
 - **Pedagogical quality.** A challenge may pass replay while teaching a poor or incorrect technique.
 - **Concept uniqueness.** Two challenges may pass replay while teaching identical concepts.
-- **Curriculum balance.** All 41 challenges may pass while omitting entire categories of Vim techniques.
+- **Curriculum balance.** All 51 challenges may pass while omitting entire categories of Vim techniques.
 - **Difficulty progression.** Replay does not measure whether challenges increase in complexity.
 - **Real-user behavior.** Replay uses automated input sequences. It cannot simulate genuine practice.
 
 ## Coverage
 
 | Metric | Current |
-|---|---|
-| Challenges tested | 41/41 |
+|---|---|---|
+| Challenges tested | 51/51 |
 | Cursor challenges | 20/20 |
 | Buffer challenges | 21/21 |
+| Composite challenges | 10/10 |
 | Pass rate | 100% |
 
 ## Adding a New Challenge

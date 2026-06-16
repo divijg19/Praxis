@@ -59,4 +59,5 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.2.0** | **Curriculum Taxonomy** | **41** | **82** |
 | **v0.2.1** | **Arrival** | **41** | **82** |
 | **v0.2.2** | **Production Curriculum Metadata** | **41** | **90** |
-| **v0.2.3** | **Challenge Description + Training** | **51** | **91** |
+| **v0.2.3** | **Challenge Description + Training** | **51** | **87** |
+| **v0.2.4** | **Canonicalization** | **51** | **87** |

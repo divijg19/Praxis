@@ -1,10 +1,6 @@
 package content
 
-import (
-	"encoding/json"
-
-	"github.com/divijg19/Praxis/internal/challenge"
-)
+import "github.com/divijg19/Praxis/internal/challenge"
 
 type Description struct {
 	ID         string                `json:"id"`
@@ -20,7 +16,7 @@ type Description struct {
 	Evaluation *challenge.Evaluation `json:"evaluation,omitempty"`
 }
 
-func Describe(id string) (string, bool) {
+func DescriptionFor(id string) (Description, bool) {
 	for _, c := range All() {
 		if c.ID == id {
 			d := Description{
@@ -38,12 +34,8 @@ func Describe(id string) (string, bool) {
 				d.Concept = m.Concept
 				d.Context = m.Context
 			}
-			data, err := json.Marshal(d)
-			if err != nil {
-				return "", false
-			}
-			return string(data), true
+			return d, true
 		}
 	}
-	return "", false
+	return Description{}, false
 }

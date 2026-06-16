@@ -1,7 +1,7 @@
 package challenge
 
 type Evaluation struct {
-	MaxMoves int
+	MaxMoves int `json:"max_moves"`
 }
 
 type Challenge struct {

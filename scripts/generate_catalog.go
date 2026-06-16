@@ -3,106 +3,125 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/divijg19/Praxis/internal/challenge"
 	"github.com/divijg19/Praxis/internal/content"
 )
 
-type pack struct {
-	Name string
-	IDs  []string
+var stageOrder = []string{
+	"Movement",
+	"Search",
+	"Structural Navigation",
+	"Editing",
+	"Text Objects",
+	"Registers",
 }
 
-var packs = []pack{
-	{"Movement", []string{"motion_rush", "grid_rush"}},
-	{"Search", []string{"find_hunter", "word_hunter", "symbol_hunter", "line_hunter"}},
-	{"Structural Navigation", []string{
-		"paren_hunter", "sentence_hunter", "slash_hunter",
-		"question_hunter", "repeat_hunter",
-		"inner_paren_hunter", "around_paren_hunter",
-		"inner_bracket_hunter", "around_bracket_hunter",
-		"inner_quote_hunter", "around_quote_hunter",
-		"paragraph_hunter", "match_hunter",
-	}},
-	{"Editing", []string{
-		"delete_character_hunter", "replace_character_hunter",
-		"toggle_case_hunter", "delete_word_hunter", "change_word_hunter",
-	}},
-	{"UTF-8 Proof", []string{"utf8_cursor_hunter"}},
-	{"Structural Editing", []string{
-		"delete_line_hunter", "delete_to_end_hunter",
-		"delete_inner_word_hunter", "delete_around_word_hunter",
-		"delete_inner_paren_hunter", "delete_around_paren_hunter",
-		"delete_inner_quote_hunter", "delete_around_quote_hunter",
-		"change_inner_word_hunter", "change_inner_paren_hunter",
-		"change_inner_quote_hunter", "yank_line_hunter",
-	}},
-	{"Registers", []string{
-		"named_register_hunter", "word_register_hunter",
-		"register_replace_hunter", "register_duplicate_hunter",
-	}},
+func stageRank(stage string) int {
+	for i, s := range stageOrder {
+		if s == stage {
+			return i
+		}
+	}
+	return len(stageOrder)
 }
 
 func main() {
-	all := make(map[string]challenge.Challenge)
+	layerOrder := []string{"Tutorial", "Training"}
+
+	// Collect challenges grouped by layer then stage, preserving curriculum order
+	type entry struct {
+		d    content.Description
+		rank int
+	}
+	grouped := make(map[string]map[string][]entry)
+
 	for _, c := range content.All() {
-		all[c.ID] = c
-	}
-
-	var count int
-	for _, p := range packs {
-		for _, id := range p.IDs {
-			if _, ok := all[id]; !ok {
-				fmt.Fprintf(os.Stderr, "error: challenge %q not found in content\n", id)
-				os.Exit(1)
-			}
+		d, ok := content.DescriptionFor(c.ID)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "error: DescriptionFor(%q) failed\n", c.ID)
+			os.Exit(1)
 		}
-		count += len(p.IDs)
+		if grouped[d.Layer] == nil {
+			grouped[d.Layer] = make(map[string][]entry)
+		}
+		grouped[d.Layer][d.Stage] = append(grouped[d.Layer][d.Stage], entry{d, stageRank(d.Stage)})
 	}
 
-	if count != len(all) {
-		fmt.Fprintf(os.Stderr, "error: catalog covers %d challenges but content has %d\n", count, len(all))
-		os.Exit(1)
+	// Count totals per layer
+	layerCounts := make(map[string]int)
+	for _, c := range content.All() {
+		layerCounts[c.Layer]++
 	}
 
 	fmt.Println("# Challenge Catalog")
 	fmt.Println()
-	fmt.Printf("Total: **%d challenges** across **%d curriculum packs**.\n", count, len(packs))
+	fmt.Printf("Total: **%d challenges** — ", len(content.All()))
+	var parts []string
+	for _, layer := range layerOrder {
+		if n := layerCounts[layer]; n > 0 {
+			parts = append(parts, fmt.Sprintf("**%d %s**", n, layer))
+		}
+	}
+	fmt.Println(strings.Join(parts, " + ") + ".")
 	fmt.Println()
-	fmt.Println("Generated from `internal/content/content.go`. Do not edit by hand.")
+	fmt.Println("Generated from `internal/content/describe.go` via `content.DescriptionFor`.")
 	fmt.Println()
 
-	for _, p := range packs {
-		fmt.Printf("## %s\n\n", p.Name)
-		for _, id := range p.IDs {
-			c := all[id]
-			fmt.Printf("### %s\n\n", c.Name)
-			fmt.Printf("- **ID:** `%s`  \n", c.ID)
-			fmt.Printf("- **Verify:** `%s`  \n", c.Verify)
-			if c.Target != "" {
-				fmt.Printf("- **Target:** `%s`  \n", c.Target)
+	for _, layer := range layerOrder {
+		stages := grouped[layer]
+		if len(stages) == 0 {
+			continue
+		}
+
+		fmt.Printf("## %s\n\n", layer)
+
+		// Render stages in pedagogical order
+		for _, stage := range stageOrder {
+			entries := stages[stage]
+			if len(entries) == 0 {
+				continue
 			}
-			fmt.Println()
-			fmt.Println("#### Content")
-			fmt.Println()
-			fmt.Println("```text")
-			for _, line := range c.Content {
-				fmt.Println(line)
-			}
-			fmt.Println("```")
-			if len(c.Result) > 0 {
+
+			fmt.Printf("### %s\n\n", stage)
+
+			for _, e := range entries {
+				d := e.d
+				fmt.Printf("#### %s\n\n", d.Name)
+				fmt.Printf("- **ID:** `%s`\n", d.ID)
+				fmt.Printf("- **Verify:** `%s`\n", d.Verify)
+				fmt.Printf("- **Layer:** `%s`\n", d.Layer)
+				if d.Target != "" {
+					fmt.Printf("- **Target:** `%s`\n", d.Target)
+				}
+				fmt.Printf("- **Primary Concept:** `%s`\n", d.Concept)
+				fmt.Printf("- **Context:** `%s`\n", d.Context)
+				fmt.Printf("- **Stage:** `%s`\n", d.Stage)
+				if d.Evaluation != nil {
+					fmt.Printf("- **Max Moves:** `%d`\n", d.Evaluation.MaxMoves)
+				}
 				fmt.Println()
-				fmt.Println("#### Result")
+				fmt.Println("#### Content")
 				fmt.Println()
 				fmt.Println("```text")
-				for _, line := range c.Result {
+				for _, line := range d.Content {
 					fmt.Println(line)
 				}
 				fmt.Println("```")
+				if len(d.Result) > 0 {
+					fmt.Println()
+					fmt.Println("#### Result")
+					fmt.Println()
+					fmt.Println("```text")
+					for _, line := range d.Result {
+						fmt.Println(line)
+					}
+					fmt.Println("```")
+				}
+				fmt.Println()
+				fmt.Println("---")
+				fmt.Println()
 			}
-			fmt.Println()
-			fmt.Println("---")
-			fmt.Println()
 		}
 	}
 }

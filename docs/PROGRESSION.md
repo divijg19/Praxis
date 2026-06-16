@@ -109,15 +109,29 @@ Yanking, named registers, appending, and register-based replacement and duplicat
 
 ## Stage Totals
 
-| Stage | Count |
-|---|---|
-| Movement | 3 |
-| Search | 7 |
-| Structural Navigation | 10 |
-| Editing | 7 |
-| Text Objects | 9 |
-| Registers | 5 |
-| **Total** | **41** |
+| Stage | Tutorial | Training | Total |
+|---|---|---|---|
+| Movement | 3 | — | 3 |
+| Search | 7 | — | 7 |
+| Structural Navigation | 10 | — | 10 |
+| Editing | 7 | 3 | 10 |
+| Text Objects | 9 | 4 | 13 |
+| Registers | 5 | 3 | 8 |
+| **Total** | **41** | **10** | **51** |
+
+---
+
+## Training Layer
+
+Training challenges teach **cross-family skill compositions**. While Tutorial challenges focus on single concepts (e.g., `diw` alone, `dw` alone), Training challenges combine two or more families:
+
+- **Search + Text Objects** — find a character, then apply a text-object operation
+- **Editing + Repeat** — perform an edit, then repeat it with `.`
+- **Registers + Editing** — yank, cut, or paste as part of an edit sequence
+
+Training challenges use the `composite` validator, which behaves like `buffer` (byte-exact buffer comparison) but enforces a `MaxMoves` threshold to prevent bruteforce approaches.
+
+All 10 Training challenges are listed in [`CHALLENGES.md`](CHALLENGES.md) under the Training section.
 
 ---
 
