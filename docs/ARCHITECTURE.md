@@ -30,7 +30,7 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 |---|---|---|
 | `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats` (public); `attempt`, `record` (internal) |
 | `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
-| `internal/content` | `All()`, `Describe()`, `MetadataFor()`, `ValidStages()` — challenge registry + curriculum metadata |
+| `internal/content` | `All()`, `DescriptionFor()`, `MetadataFor()`, `ValidStages()` — challenge registry + curriculum metadata |
 | `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
 | `internal/validator` | `Exists(name)` — validator dispatch registry (`cursor`, `buffer`, `composite`) |
 
@@ -43,7 +43,7 @@ User request (CLI)
 cmd/praxis/main.go
     |
     ├── internal/content.All()      →  challenge.Challenge[]
-    ├── internal/content.Describe(id)  →  JSON string (Description struct)
+    ├── internal/content.DescriptionFor(id)  →  (Description, bool)
     ├── internal/content.MetadataFor(id)  →  content.Metadata{Concept, Context, Stage, Layer}
     ├── internal/stats.Load()       →  map[string]Stats
     |

@@ -194,6 +194,15 @@ func TestRecordStats(t *testing.T) {
 	}
 }
 
+func TestRecordUnknownChallenge(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "record", "bogus", "1", "100")
+	if code != 1 {
+		t.Errorf("expected exit code 1 for unknown challenge, got %d", code)
+	}
+}
+
 func TestStatsCommand(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)

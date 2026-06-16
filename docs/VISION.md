@@ -66,9 +66,9 @@ Nothing is added because it might become useful. Every system must have a living
 | Trial | Confidence | Can I consistently execute? |
 | Boss | Application | Can I use this in practice? |
 
-Today, Praxis contains only Tutorial content.
+Today, Praxis contains Tutorial and Training content.
 
-Training, Trial, and Boss layers are part of the v0.2 vision and will be introduced incrementally as the curriculum expands.
+Trial and Boss layers are part of the v0.2 vision and will be introduced incrementally as the curriculum expands.
 
 ---
 

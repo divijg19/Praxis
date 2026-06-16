@@ -69,11 +69,13 @@ Every challenge is scored on moves and time. Progress is tracked persistently. M
 
 ---
 
-## Future: Boss Battles
+## Training & Boss Battles
 
-Boss battles combine multiple skills into practical scenarios that test real competence rather than memorization.
+Training challenges combine multiple skills into cross-family compositions with move-limit constraints.
 
-*Not yet implemented. Planned for future releases.*
+Boss battles are larger-scale scenarios testing real competence rather than memorization.
+
+**Training:** Implemented (10 challenges across Text Objects, Editing, Registers).
 
 ---
 
@@ -133,7 +135,7 @@ If not, it doesn't belong.
 
 Early development.
 
-**Implemented:** Vim challenge engine, persistent stats, mastery tiers, practice guidance, Neovim frontend, CLI.
+**Implemented:** Vim challenge engine (51 challenges across Tutorial + Training layers), persistent stats, mastery tiers, practice guidance, composite validator, Neovim frontend, CLI.
 
 **Future:** DSA Mastery campaign, Boss Battles, rank progression, standalone TUI, additional disciplines.
 

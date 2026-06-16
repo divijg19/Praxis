@@ -2,14 +2,14 @@
 
 ## Test Suite Overview
 
-Praxis has **91 tests** across 4 packages:
+Praxis has **87 tests** across 4 packages:
 
 | Package | Tests | What they verify |
 |---|---|---|
-| `internal/content` | 32 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy, describe round-trip |
+| `internal/content` | 33 | Content invariants, layout, stability, contracts, curriculum integrity, taxonomy, describe canonical correctness |
 | `internal/stats` | 31 | Stats persistence, attempt/completion tracking, best-value, mastery tiers, distribution, guidance, confidence |
 | `internal/validator` | 5 | Validator registry (`cursor`, `buffer`, `composite`), UTF-8 normalization |
-| `cmd/praxis` | 22 | CLI subprocess behavior, output format contracts, describe/catalog/help commands, attempt command, confidence levels |
+| `cmd/praxis` | 18 | CLI subprocess behavior, output format contracts, describe/catalog/help commands, attempt/record commands, confidence levels |
 
 ## Running Tests
 
@@ -75,7 +75,7 @@ These tests enforce the Concept–Context–Stage metadata model, which is the s
 
 | Test | What it catches |
 |---|---|
-| `TestCurriculumContextsComplete` | Challenge missing Concept, Context, or Stage |
+| `TestCurriculumCoverage` | Challenge missing Concept, Context, or Stage |
 | `TestConceptContextPairsUnique` | Two challenges with identical (Concept, Context) |
 | `TestProgressionCoverage` | Progression stage with zero challenges |
 | `TestStageIntroductionOrder` | Stages introduced out of pedagogical order |
@@ -84,9 +84,8 @@ These tests enforce the Concept–Context–Stage metadata model, which is the s
 
 | Test | What it catches |
 |---|---|
-| `TestDescribeRoundTrip` | Describe JSON round-trip: every field survives marshal/unmarshal |
-| `TestDescribeEvaluation` | Composite challenges include Evaluation; non-composite omit it |
-| `TestDescribeUnknown` | Unknown ID returns false |
+| `TestDescriptionForCompleteness` | DescriptionFor returns complete and correct data for all 51 challenges: every field matches source (Challenge + Metadata + Evaluation) |
+| `TestDescriptionForUnknown` | Unknown ID returns zero-value Description and false |
 
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
 

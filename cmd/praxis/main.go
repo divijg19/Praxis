@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -89,12 +90,12 @@ func help() {
 }
 
 func describe(id string) {
-	json, ok := content.Describe(id)
+	d, ok := content.DescriptionFor(id)
 	if !ok {
 		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
 		os.Exit(1)
 	}
-	fmt.Println(json)
+	json.NewEncoder(os.Stdout).Encode(d)
 }
 
 func catalog() {
@@ -133,6 +134,17 @@ func attempt(id string) {
 }
 
 func record(id, movesStr, timeStr string) {
+	found := false
+	for _, c := range content.All() {
+		if c.ID == id {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Fprintln(os.Stderr, "unknown challenge:", id)
+		os.Exit(1)
+	}
 	moves, _ := strconv.Atoi(movesStr)
 	timeMs, _ := strconv.Atoi(timeStr)
 	m, _ := stats.Load()

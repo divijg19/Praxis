@@ -40,6 +40,32 @@ challenge.Challenge{
 | `Layer` | STABLE | `"Tutorial"`, `"Training"`, `"Trial"`, or `"Boss"`. |
 | `Evaluation` | STABLE | Non-nil only for `"composite"`. Contains `MaxMoves` threshold. |
 
+### Canonical Representation
+
+`content.DescriptionFor(id)` is the canonical way to obtain a challenge's full representation. It returns a `Description` struct combining challenge data, curriculum metadata, and (for composite challenges) evaluation:
+
+```go
+type Description struct {
+    ID         string                `json:"id"`
+    Name       string                `json:"name"`
+    Verify     string                `json:"verify"`
+    Layer      string                `json:"layer"`
+    Stage      string                `json:"stage"`
+    Concept    string                `json:"concept"`
+    Context    string                `json:"context"`
+    Target     string                `json:"target"`
+    Content    []string              `json:"content"`
+    Result     []string              `json:"result"`
+    Evaluation *challenge.Evaluation `json:"evaluation,omitempty"`
+}
+```
+
+All consumers (CLI, Lua frontend, replay tool, catalog generator) must obtain challenge data through `DescriptionFor`. The `Description` struct is the single source of truth; JSON is a transport format.
+
+**Stability:** The JSON field names and types are stable for the v0.2.x series. New fields may be added but existing fields will not be renamed, removed, or have their types changed.
+
+Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
+
 ### Adding a New Challenge
 
 1. Add the challenge to the end of `All()` in `internal/content/content.go`
@@ -154,7 +180,7 @@ func Exists(name string) bool {
 
 Buffer is set to `Content` with `modifiable=false`. A `CursorMoved` autocommand checks if the character under the cursor matches `Target`. Uses `byte_to_char()` normalization to handle multi-byte content correctly. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 19 challenges (movement, search, navigation, UTF-8 proof).
+**Used by:** 20 challenges (movement, search, navigation, UTF-8 proof).
 
 **Formal specification:**
 
@@ -399,8 +425,8 @@ Three sections:
 
 | Section | Content | Source |
 |---|---|---|
-| **Location** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis stage`, `praxis stats` |
-| **Direction** | Next challenge + stage, review recommendation + stage | `praxis next`, `praxis stage`, `praxis stats` |
+| **Location** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis stats` |
+| **Direction** | Next challenge + stage, review recommendation + stage | `praxis next`, `praxis stats` |
 | **Data** | Mastery distribution (compact one-line) | `praxis stats` |
 
 ### Actions
@@ -414,7 +440,7 @@ Three sections:
 - **Hub is for orientation.** You visit it when you need context (starting Praxis, returning after a break, wondering where you are).
 - **Result screen is for momentum.** After completing a challenge, Enter goes directly to the next challenge — never through Hub.
 - **Practice flow:** Challenge → Result → Next Challenge. Navigation only when you explicitly choose it.
-- **Zero Go changes.** All data is sourced from `praxis next`, `praxis stage`, `praxis stats`.
+- **Zero Go changes.** All data is sourced from `praxis next`, `praxis stats`.
 
 ## Integrity Guarantees
 
@@ -438,7 +464,7 @@ Three sections:
 | `TestChallengeCount` | No accidental addition/removal |
 | `TestNoValidatorDrift` | Validator usage stays current |
 | `TestChallengeIDsStable` | IDs never renamed |
-| `TestCurriculumContextsComplete` | Every challenge has Concept, Context, Stage |
+| `TestCurriculumCoverage` | Every challenge has Concept, Context, Stage |
 | `TestConceptContextPairsUnique` | No duplicate (Concept, Context) pairs |
 | `TestProgressionCoverage` | All progression stages have challenges |
 | `TestStageIntroductionOrder` | Stages introduced in pedagogical order |
