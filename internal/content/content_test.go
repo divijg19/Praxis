@@ -58,6 +58,11 @@ var stableChallengeIDs = []string{
 	"yank_paste_combo",
 	"dd_paste_combo",
 	"dd_paste_before_combo",
+	"trial_find_delete",
+	"trial_find_change",
+	"trial_dot_repeat",
+	"trial_delete_choice",
+	"trial_repeat_choice",
 }
 
 func TestUniqueChallengeIDs(t *testing.T) {
@@ -218,6 +223,11 @@ var stableChallengeNames = []string{
 	"Yank + Paste",
 	"Cut + Paste",
 	"Cut + Paste Before",
+	"Find + Delete Trial",
+	"Find + Change Trial",
+	"Dot Repeat Trial",
+	"Delete Choice Trial",
+	"Repeat Choice Trial",
 }
 
 func TestChallengeCount(t *testing.T) {
@@ -343,34 +353,20 @@ func TestLayerValidValues(t *testing.T) {
 	}
 }
 
-func TestAllCurrentChallengesAreTutorials(t *testing.T) {
+func TestCurriculumLayerDistribution(t *testing.T) {
+	counts := map[string]int{}
 	for _, c := range All() {
-		if c.Layer != "Tutorial" && c.Layer != "Training" {
-			t.Errorf("challenge %s has unexpected Layer %q", c.ID, c.Layer)
-		}
+		counts[c.Layer]++
 	}
-	t.Run("tutorial_count", func(t *testing.T) {
-		var count int
-		for _, c := range All() {
-			if c.Layer == "Tutorial" {
-				count++
-			}
-		}
-		if count != 41 {
-			t.Errorf("expected 41 Tutorial challenges, got %d", count)
-		}
-	})
-	t.Run("training_count", func(t *testing.T) {
-		var count int
-		for _, c := range All() {
-			if c.Layer == "Training" {
-				count++
-			}
-		}
-		if count != 10 {
-			t.Errorf("expected 10 Training challenges, got %d", count)
-		}
-	})
+	if counts["Tutorial"] != 41 {
+		t.Errorf("Tutorial = %d, want 41", counts["Tutorial"])
+	}
+	if counts["Training"] != 10 {
+		t.Errorf("Training = %d, want 10", counts["Training"])
+	}
+	if counts["Trial"] != 5 {
+		t.Errorf("Trial = %d, want 5", counts["Trial"])
+	}
 }
 
 func TestContentResultLineCountReasonable(t *testing.T) {

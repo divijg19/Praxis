@@ -45,7 +45,6 @@ These are the most important tests. They protect the challenge registry from acc
 | `TestAllChallengesHaveVerify` | Missing Verify field |
 | `TestAllChallengesHaveLayer` | Missing Layer field |
 | `TestLayerValidValues` | Invalid Layer value (typo, wrong case, stray whitespace) |
-| `TestAllCurrentChallengesAreTutorials` | Challenge unexpectedly tagged non-Tutorial/non-Training; counts drift |
 | `TestValidatorCoverage` | Unknown validator type |
 | `TestNoValidatorDrift` | Registered validator unused by any challenge |
 | `TestResultMatchesVerify` | Buffer/composite without Result / cursor with Result |
@@ -84,7 +83,7 @@ These tests enforce the Concept–Context–Stage metadata model, which is the s
 
 | Test | What it catches |
 |---|---|
-| `TestDescriptionForCompleteness` | DescriptionFor returns complete and correct data for all 51 challenges: every field matches source (Challenge + Metadata + Evaluation) |
+| `TestDescriptionForCompleteness` | DescriptionFor returns complete and correct data for all 56 challenges: every field matches source (Challenge + Metadata + Evaluation) |
 | `TestDescriptionForUnknown` | Unknown ID returns zero-value Description and false |
 
 ## Validator Tests (`internal/validator/validator_test.go`, `utf8_test.go`)
@@ -140,7 +139,7 @@ The script:
 1. Builds the Go binary to `/tmp/praxis`
 2. Runs Neovim headless with `tools/replay/replay.lua`
 3. Prints PASS/FAIL for each challenge
-4. Reports per-layer summary and total: `ALL 51/51 REPLAY TESTS PASS`
+4. Reports per-layer summary and total: `ALL 56/56 REPLAY TESTS PASS`
 
 ### Interpreting Results
 
@@ -151,7 +150,7 @@ Each challenge reports `PASS <id>` or `FAIL <id>`.
 - The **UTF-8 challenge** passes when byte-to-character normalization correctly identifies the star at bytecol=9, charcol=6
 - A **composite challenge** passes when setting the buffer content matches and moves ≤ MaxMoves
 
-The summary shows per-layer breakout and final count. All 51 must pass.
+The summary shows per-layer breakout and final count. All 56 must pass.
 
 To add a new challenge: add its ID to `all_ids` in `tools/replay/replay.lua`, run the replay to verify, then commit the updated file.
 

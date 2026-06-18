@@ -100,3 +100,37 @@ func TestCurriculumMapComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestTrialIntegrity(t *testing.T) {
+	allIDs := make(map[string]bool)
+	for _, c := range All() {
+		allIDs[c.ID] = true
+	}
+
+	for _, c := range All() {
+		m, ok := MetadataFor(c.ID)
+		if !ok {
+			t.Errorf("challenge %q missing from curriculum", c.ID)
+			continue
+		}
+
+		switch c.Layer {
+		case "Trial":
+			if c.Evaluation == nil {
+				t.Errorf("Trial %q: missing Evaluation", c.ID)
+			}
+			if len(m.DerivedFrom) == 0 {
+				t.Errorf("Trial %q: empty DerivedFrom", c.ID)
+			}
+			for _, dep := range m.DerivedFrom {
+				if !allIDs[dep] {
+					t.Errorf("Trial %q: DerivedFrom target %q not found in challenges", c.ID, dep)
+				}
+			}
+		default:
+			if len(m.DerivedFrom) != 0 {
+				t.Errorf("non-Trial %q (layer=%q): unexpected DerivedFrom %v", c.ID, c.Layer, m.DerivedFrom)
+			}
+		}
+	}
+}

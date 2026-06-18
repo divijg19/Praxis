@@ -241,8 +241,8 @@ func TestStatsSummary(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "2/51") {
-		t.Errorf("expected 2/51 completed, got: %s", out)
+	if !strings.Contains(out, "2/56") {
+		t.Errorf("expected 2/56 completed, got: %s", out)
 	}
 	if !strings.Contains(out, "Total Attempts: 0") {
 		t.Errorf("expected Total Attempts: 0, got: %s", out)
@@ -250,8 +250,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Mastery:") {
 		t.Errorf("expected Mastery header, got: %s", out)
 	}
-	if !strings.Contains(out, "Unseen: 49") {
-		t.Errorf("expected Unseen: 49, got: %s", out)
+	if !strings.Contains(out, "Unseen: 54") {
+		t.Errorf("expected Unseen: 54, got: %s", out)
 	}
 	if !strings.Contains(out, "Learning: 2") {
 		t.Errorf("expected Learning: 2, got: %s", out)

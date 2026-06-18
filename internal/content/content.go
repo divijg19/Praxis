@@ -816,5 +816,95 @@ func All() []challenge.Challenge {
 			Layer:      "Training",
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
+		// Trial
+		{
+			ID:     "trial_find_delete",
+			Name:   "Find + Delete Trial",
+			Verify: "composite",
+			Content: []string{
+				"Remove the third word.",
+				"",
+				"apple banana cherry date",
+			},
+			Result: []string{
+				"Remove the third word.",
+				"",
+				"apple banana date",
+			},
+			Layer:      "Trial",
+			Evaluation: &challenge.Evaluation{MaxMoves: 6},
+		},
+		{
+			ID:     "trial_find_change",
+			Name:   "Find + Change Trial",
+			Verify: "composite",
+			Content: []string{
+				"Replace the value with DONE.",
+				"",
+				`status = "pending"`,
+			},
+			Result: []string{
+				"Replace the value with DONE.",
+				"",
+				`status = "DONE"`,
+			},
+			Layer:      "Trial",
+			Evaluation: &challenge.Evaluation{MaxMoves: 8},
+		},
+		{
+			ID:     "trial_dot_repeat",
+			Name:   "Dot Repeat Trial",
+			Verify: "composite",
+			Content: []string{
+				"Remove every occurrence of the.",
+				"",
+				"the fox and the dog and the bird",
+			},
+			Result: []string{
+				"Remove every occurrence of the.",
+				"",
+				"fox and dog and bird",
+			},
+			Layer:      "Trial",
+			Evaluation: &challenge.Evaluation{MaxMoves: 12},
+		},
+		{
+			ID:     "trial_delete_choice",
+			Name:   "Delete Choice Trial",
+			Verify: "composite",
+			Content: []string{
+				"Remove the bracketed content.",
+				"",
+				"keep [remove] keep",
+			},
+			Result: []string{
+				"Remove the bracketed content.",
+				"",
+				"keep  keep",
+			},
+			Layer:      "Trial",
+			Evaluation: &challenge.Evaluation{MaxMoves: 6},
+		},
+		{
+			ID:     "trial_repeat_choice",
+			Name:   "Repeat Choice Trial",
+			Verify: "composite",
+			Content: []string{
+				"Normalize all values to done.",
+				"",
+				"item = alpha",
+				"item = beta",
+				"item = gamma",
+			},
+			Result: []string{
+				"Normalize all values to done.",
+				"",
+				"item = done",
+				"item = done",
+				"item = done",
+			},
+			Layer:      "Trial",
+			Evaluation: &challenge.Evaluation{MaxMoves: 12},
+		},
 	}
 }

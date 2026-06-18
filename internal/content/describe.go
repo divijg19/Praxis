@@ -3,17 +3,18 @@ package content
 import "github.com/divijg19/Praxis/internal/challenge"
 
 type Description struct {
-	ID         string                `json:"id"`
-	Name       string                `json:"name"`
-	Verify     string                `json:"verify"`
-	Layer      string                `json:"layer"`
-	Stage      string                `json:"stage"`
-	Concept    string                `json:"concept"`
-	Context    string                `json:"context"`
-	Target     string                `json:"target"`
-	Content    []string              `json:"content"`
-	Result     []string              `json:"result"`
-	Evaluation *challenge.Evaluation `json:"evaluation,omitempty"`
+	ID          string                `json:"id"`
+	Name        string                `json:"name"`
+	Verify      string                `json:"verify"`
+	Layer       string                `json:"layer"`
+	Stage       string                `json:"stage"`
+	Concept     string                `json:"concept"`
+	Context     string                `json:"context"`
+	Target      string                `json:"target"`
+	Content     []string              `json:"content"`
+	Result      []string              `json:"result"`
+	Evaluation  *challenge.Evaluation `json:"evaluation,omitempty"`
+	DerivedFrom []string              `json:"derived_from,omitempty"`
 }
 
 func DescriptionFor(id string) (Description, bool) {
@@ -33,6 +34,7 @@ func DescriptionFor(id string) (Description, bool) {
 				d.Stage = m.Stage
 				d.Concept = m.Concept
 				d.Context = m.Context
+				d.DerivedFrom = m.DerivedFrom
 			}
 			return d, true
 		}

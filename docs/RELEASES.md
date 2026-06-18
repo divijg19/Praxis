@@ -61,3 +61,4 @@ This is enforced by `TestChallengeIDsStable` and `TestChallengeNamesStable`.
 | **v0.2.2** | **Production Curriculum Metadata** | **41** | **90** |
 | **v0.2.3** | **Challenge Description + Training** | **51** | **87** |
 | **v0.2.4** | **Canonicalization** | **51** | **87** |
+| **v0.2.5** | **Trials** | **56** | **92** |

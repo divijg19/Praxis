@@ -1,6 +1,6 @@
 # Challenge Catalog
 
-Total: **51 challenges** — **41 Tutorial** + **10 Training**.
+Total: **56 challenges** — **41 Tutorial** + **10 Training** + **5 Trial**.
 
 Generated from `internal/content/describe.go` via `content.DescriptionFor`.
 
@@ -52,8 +52,8 @@ Move your cursor to the star ★
 - **Verify:** `cursor`
 - **Layer:** `Tutorial`
 - **Target:** `★`
-- **Primary Concept:** `f`
-- **Context:** `multi-byte search`
+- **Primary Concept:** `utf8`
+- **Context:** `multibyte navigation`
 - **Stage:** `Movement`
 
 #### Content
@@ -1314,6 +1314,161 @@ Swap two lines using dd and P
 
 second
 first
+```
+
+---
+
+## Trial
+
+### Editing
+
+#### Dot Repeat Trial
+
+- **ID:** `trial_dot_repeat`
+- **Verify:** `composite`
+- **Layer:** `Trial`
+- **Primary Concept:** `dw`
+- **Context:** `recognition: dot repeat of edit`
+- **Stage:** `Editing`
+- **Derived From:** `dw_dot_combo`
+- **Max Moves:** `12`
+
+#### Content
+
+```text
+Remove every occurrence of the.
+
+the fox and the dog and the bird
+```
+
+#### Result
+
+```text
+Remove every occurrence of the.
+
+fox and dog and bird
+```
+
+---
+
+#### Repeat Choice Trial
+
+- **ID:** `trial_repeat_choice`
+- **Verify:** `composite`
+- **Layer:** `Trial`
+- **Primary Concept:** `dw/ciw`
+- **Context:** `recognition: repeat vs re-execute`
+- **Stage:** `Editing`
+- **Derived From:** `dw_dot_combo`, `ciw_dot_combo`
+- **Max Moves:** `12`
+
+#### Content
+
+```text
+Normalize all values to done.
+
+item = alpha
+item = beta
+item = gamma
+```
+
+#### Result
+
+```text
+Normalize all values to done.
+
+item = done
+item = done
+item = done
+```
+
+---
+
+### Text Objects
+
+#### Find + Delete Trial
+
+- **ID:** `trial_find_delete`
+- **Verify:** `composite`
+- **Layer:** `Trial`
+- **Primary Concept:** `f`
+- **Context:** `recognition: f+diw on third argument`
+- **Stage:** `Text Objects`
+- **Derived From:** `find_diw_combo`
+- **Max Moves:** `6`
+
+#### Content
+
+```text
+Remove the third word.
+
+apple banana cherry date
+```
+
+#### Result
+
+```text
+Remove the third word.
+
+apple banana date
+```
+
+---
+
+#### Find + Change Trial
+
+- **ID:** `trial_find_change`
+- **Verify:** `composite`
+- **Layer:** `Trial`
+- **Primary Concept:** `f`
+- **Context:** `recognition: f+ca quote replacement`
+- **Stage:** `Text Objects`
+- **Derived From:** `find_ca_quote_combo`
+- **Max Moves:** `8`
+
+#### Content
+
+```text
+Replace the value with DONE.
+
+status = "pending"
+```
+
+#### Result
+
+```text
+Replace the value with DONE.
+
+status = "DONE"
+```
+
+---
+
+#### Delete Choice Trial
+
+- **ID:** `trial_delete_choice`
+- **Verify:** `composite`
+- **Layer:** `Trial`
+- **Primary Concept:** `diw/daw`
+- **Context:** `recognition: inner vs around word`
+- **Stage:** `Text Objects`
+- **Derived From:** `find_diw_combo`, `find_daw_combo`
+- **Max Moves:** `6`
+
+#### Content
+
+```text
+Remove the bracketed content.
+
+keep [remove] keep
+```
+
+#### Result
+
+```text
+Remove the bracketed content.
+
+keep  keep
 ```
 
 ---

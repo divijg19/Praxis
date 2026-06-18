@@ -78,3 +78,27 @@ func TestDescriptionForUnknown(t *testing.T) {
 		t.Errorf("expected zero-value Description, got ID=%q", d.ID)
 	}
 }
+
+func TestDescriptionDerivedFromRoundTrip(t *testing.T) {
+	for _, c := range All() {
+		t.Run(c.ID, func(t *testing.T) {
+			d, ok := DescriptionFor(c.ID)
+			if !ok {
+				t.Fatal("DescriptionFor returned false")
+			}
+			m, ok := MetadataFor(c.ID)
+			if !ok {
+				t.Fatal("MetadataFor returned false")
+			}
+			if !reflect.DeepEqual(d.DerivedFrom, m.DerivedFrom) {
+				t.Errorf("DerivedFrom = %v, want %v", d.DerivedFrom, m.DerivedFrom)
+			}
+			if d.Layer != m.Layer {
+				t.Errorf("Layer = %q, want %q", d.Layer, m.Layer)
+			}
+			if d.Stage != m.Stage {
+				t.Errorf("Stage = %q, want %q", d.Stage, m.Stage)
+			}
+		})
+	}
+}

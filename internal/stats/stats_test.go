@@ -249,9 +249,9 @@ func TestMasteryExperienced(t *testing.T) {
 
 func TestMasteryDistributionEmpty(t *testing.T) {
 	m := make(map[string]Stats)
-	d := MasteryDistribution(m, 41)
-	if d["Unseen"] != 41 {
-		t.Errorf("Unseen = %d, want 41", d["Unseen"])
+	d := MasteryDistribution(m, 56)
+	if d["Unseen"] != 56 {
+		t.Errorf("Unseen = %d, want 56", d["Unseen"])
 	}
 	if d["Learning"] != 0 {
 		t.Errorf("Learning = %d, want 0", d["Learning"])
@@ -271,9 +271,9 @@ func TestMasteryDistributionMixed(t *testing.T) {
 		"c": {Completions: 5},
 		"d": {Completions: 10},
 	}
-	d := MasteryDistribution(m, 41)
-	if d["Unseen"] != 37 {
-		t.Errorf("Unseen = %d, want 37", d["Unseen"])
+	d := MasteryDistribution(m, 56)
+	if d["Unseen"] != 52 {
+		t.Errorf("Unseen = %d, want 52", d["Unseen"])
 	}
 	if d["Learning"] != 2 {
 		t.Errorf("Learning = %d, want 2", d["Learning"])
