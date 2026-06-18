@@ -69,7 +69,7 @@ function M.open()
   else
     table.insert(display, "  Location: Complete")
   end
-  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "51"))
+  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or tostring(#vim.fn.systemlist({ "praxis", "catalog" }))))
   table.insert(display, "")
 
   table.insert(display, "  Direction:")

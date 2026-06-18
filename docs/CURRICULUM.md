@@ -1,6 +1,6 @@
 # Curriculum
 
-Total: **51 challenges** across **2 layers**.
+Total: **56 challenges** across **3 layers**.
 
 ## Tutorial
 
@@ -25,14 +25,23 @@ Total: **51 challenges** across **2 layers**.
 | Editing | 3 | composite |
 | Registers | 3 | composite |
 
+## Trial
+
+5 challenges testing composition recognition under move constraints.
+
+| Stage | Challenges | Verify |
+|---|---|---|
+| Text Objects | 3 | composite |
+| Editing | 2 | composite |
+
 ## Totals
 
 | Verify | Count |
 |---|---|
 | cursor | 20 |
 | buffer | 21 |
-| composite | 10 |
-| **Total** | **51** |
+| composite | 15 |
+| **Total** | **56** |
 
 - **Pedagogical order** → [`PROGRESSION.md`](PROGRESSION.md)
 - **Challenge catalog** → [`CHALLENGES.md`](CHALLENGES.md)

@@ -27,7 +27,7 @@ func stageRank(stage string) int {
 }
 
 func main() {
-	layerOrder := []string{"Tutorial", "Training"}
+	layerOrder := []string{"Tutorial", "Training", "Trial"}
 
 	// Collect challenges grouped by layer then stage, preserving curriculum order
 	type entry struct {
@@ -97,6 +97,9 @@ func main() {
 				fmt.Printf("- **Primary Concept:** `%s`\n", d.Concept)
 				fmt.Printf("- **Context:** `%s`\n", d.Context)
 				fmt.Printf("- **Stage:** `%s`\n", d.Stage)
+				if len(d.DerivedFrom) > 0 {
+					fmt.Printf("- **Derived From:** `%s`\n", strings.Join(d.DerivedFrom, "`, `"))
+				}
 				if d.Evaluation != nil {
 					fmt.Printf("- **Max Moves:** `%d`\n", d.Evaluation.MaxMoves)
 				}

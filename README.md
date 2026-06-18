@@ -135,7 +135,7 @@ If not, it doesn't belong.
 
 Early development.
 
-**Implemented:** Vim challenge engine (51 challenges across Tutorial + Training layers), persistent stats, mastery tiers, practice guidance, composite validator, Neovim frontend, CLI.
+**Implemented:** Vim challenge engine (56 challenges across Tutorial + Training + Trial layers), persistent stats, mastery tiers, practice guidance, composite validator, Neovim frontend, CLI.
 
 **Future:** DSA Mastery campaign, Boss Battles, rank progression, standalone TUI, additional disciplines.
 

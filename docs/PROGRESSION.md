@@ -4,7 +4,7 @@
 
 Praxis challenges are organized into six sequential stages. Each stage introduces a new category of Vim technique. Challenges within a stage build on skills from prior stages but may interleave with adjacent stages for pedagogical depth.
 
-> **Note:** Stages represent pedagogical dependencies (what should be learned before what). Packs (in CURRICULUM.md) represent historical release groupings (what was shipped together). These are intentionally separate taxonomies. A challenge belongs to exactly one stage but may appear inside a pack whose primary focus is different. For example, `utf8_cursor_hunter` belongs to the Movement stage but shipped in the Structural Editing pack; `slash_hunter`, `question_hunter`, and `repeat_hunter` belong to the Search stage but shipped in the Structural Navigation pack.
+> **Note:** Stages represent pedagogical dependencies (what should be learned before what). A challenge belongs to exactly one stage (skill domain) and exactly one layer (pedagogical intent: Tutorial, Training, or Trial). These are intentionally separate taxonomies.
 
 ```
 Movement → Search → Structural Navigation → Editing → Text Objects → Registers
@@ -109,15 +109,15 @@ Yanking, named registers, appending, and register-based replacement and duplicat
 
 ## Stage Totals
 
-| Stage | Tutorial | Training | Total |
-|---|---|---|---|
-| Movement | 3 | — | 3 |
-| Search | 7 | — | 7 |
-| Structural Navigation | 10 | — | 10 |
-| Editing | 7 | 3 | 10 |
-| Text Objects | 9 | 4 | 13 |
-| Registers | 5 | 3 | 8 |
-| **Total** | **41** | **10** | **51** |
+| Stage | Tutorial | Training | Trial | Total |
+|---|---|---|---|---|
+| Movement | 3 | — | — | 3 |
+| Search | 7 | — | — | 7 |
+| Structural Navigation | 10 | — | — | 10 |
+| Editing | 7 | 3 | 2 | 12 |
+| Text Objects | 9 | 4 | 3 | 16 |
+| Registers | 5 | 3 | — | 8 |
+| **Total** | **41** | **10** | **5** | **56** |
 
 ---
 
@@ -132,6 +132,24 @@ Training challenges teach **cross-family skill compositions**. While Tutorial ch
 Training challenges use the `composite` validator, which behaves like `buffer` (byte-exact buffer comparison) but enforces a `MaxMoves` threshold to prevent bruteforce approaches.
 
 All 10 Training challenges are listed in [`CHALLENGES.md`](CHALLENGES.md) under the Training section.
+
+---
+
+## Trial Layer
+
+Trial challenges test **composition recognition** under move constraints. Unlike Training (which teaches *how* to combine), Trial challenges present a goal without naming the technique. The user must recognize which composition applies and execute it within a declared move budget.
+
+Trial instructions describe **goals, never techniques**. Every Trial traces to one or more specific Training challenges it expects the user to have mastered.
+
+All 5 Trial challenges are listed in [`CHALLENGES.md`](CHALLENGES.md) under the Trial section.
+
+| Challenge | Tests recognition of |
+|---|---|
+| `trial_find_delete` | `find_diw_combo` |
+| `trial_find_change` | `find_ca_quote_combo` |
+| `trial_dot_repeat` | `dw_dot_combo` |
+| `trial_delete_choice` | `find_diw_combo` + `find_daw_combo` |
+| `trial_repeat_choice` | `dw_dot_combo` + `ciw_dot_combo` |
 
 ---
 

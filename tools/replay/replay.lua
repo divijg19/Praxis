@@ -1,4 +1,4 @@
--- End-to-end replay test for all 51 challenges
+-- End-to-end replay test for all 56 challenges
 -- Run via: tools/replay/replay.sh
 
 local function describe(id)
@@ -47,6 +47,8 @@ local all_ids = {
   "find_di_paren_combo","find_ca_quote_combo","find_ciw_combo",
   "dw_dot_combo","ciw_dot_combo",
   "yank_paste_combo","dd_paste_combo","dd_paste_before_combo",
+  "trial_find_delete","trial_find_change","trial_dot_repeat",
+  "trial_delete_choice","trial_repeat_choice",
 }
 
 local results = {}
@@ -123,6 +125,17 @@ for _, id in ipairs(all_ids) do
     end
   end
 
+  if results[id] == "PASS" and d.evaluation then
+    if d.evaluation.max_moves <= 0 then
+      print("FAIL " .. id .. ": invalid max_moves=" .. d.evaluation.max_moves)
+      results[id] = "FAIL"
+    end
+    if d.layer == "Trial" and (type(d.derived_from) ~= "table" or #d.derived_from == 0) then
+      print("FAIL " .. id .. ": missing derived_from")
+      results[id] = "FAIL"
+    end
+  end
+
   ::continue::
 end
 
@@ -132,8 +145,14 @@ local tutorial_buffer_pass = 0
 local tutorial_buffer_fail = 0
 local training_pass = 0
 local training_fail = 0
+local trial_pass = 0
+local trial_fail = 0
 local utf8_pass = 0
 local utf8_fail = 0
+local eval_ok = 0
+local eval_total = 0
+local training_eval_ok = 0
+local trial_eval_ok = 0
 
 for _, id in ipairs(all_ids) do
   local d = describe(id)
@@ -150,20 +169,32 @@ for _, id in ipairs(all_ids) do
     if is_pass then tutorial_buffer_pass = tutorial_buffer_pass + 1 else tutorial_buffer_fail = tutorial_buffer_fail + 1 end
   elseif d.layer == "Training" then
     if is_pass then training_pass = training_pass + 1 else training_fail = training_fail + 1 end
+  elseif d.layer == "Trial" then
+    if is_pass then trial_pass = trial_pass + 1 else trial_fail = trial_fail + 1 end
+  end
+
+  if d.evaluation and is_pass then
+    eval_total = eval_total + 1
+    if d.evaluation.max_moves > 0 then
+      eval_ok = eval_ok + 1
+      if d.layer == "Training" then training_eval_ok = training_eval_ok + 1 end
+      if d.layer == "Trial" then trial_eval_ok = trial_eval_ok + 1 end
+    end
   end
 
   ::next_id::
 end
 
-local total_pass = tutorial_cursor_pass + tutorial_buffer_pass + utf8_pass + training_pass
-local total_fail = tutorial_cursor_fail + tutorial_buffer_fail + utf8_fail + training_fail
+local total_pass = tutorial_cursor_pass + tutorial_buffer_pass + utf8_pass + training_pass + trial_pass
+local total_fail = tutorial_cursor_fail + tutorial_buffer_fail + utf8_fail + training_fail + trial_fail
 local total = total_pass + total_fail
 
 print("")
 print("Tutorial (cursor): " .. tutorial_cursor_pass .. "/" .. (tutorial_cursor_pass + tutorial_cursor_fail) .. " PASS")
 print("Tutorial (buffer): " .. tutorial_buffer_pass .. "/" .. (tutorial_buffer_pass + tutorial_buffer_fail) .. " PASS")
 print("Tutorial (utf-8):  " .. utf8_pass .. "/" .. (utf8_pass + utf8_fail) .. " PASS")
-print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS")
+print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS  (evaluation " .. training_eval_ok .. "/10)")
+print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS  (evaluation " .. trial_eval_ok .. "/5)")
 print("")
 if total_fail == 0 then
   print("ALL " .. total .. "/" .. total .. " REPLAY TESTS PASS")

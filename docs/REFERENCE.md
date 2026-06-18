@@ -46,17 +46,18 @@ challenge.Challenge{
 
 ```go
 type Description struct {
-    ID         string                `json:"id"`
-    Name       string                `json:"name"`
-    Verify     string                `json:"verify"`
-    Layer      string                `json:"layer"`
-    Stage      string                `json:"stage"`
-    Concept    string                `json:"concept"`
-    Context    string                `json:"context"`
-    Target     string                `json:"target"`
-    Content    []string              `json:"content"`
-    Result     []string              `json:"result"`
-    Evaluation *challenge.Evaluation `json:"evaluation,omitempty"`
+    ID          string                `json:"id"`
+    Name        string                `json:"name"`
+    Verify      string                `json:"verify"`
+    Layer       string                `json:"layer"`
+    Stage       string                `json:"stage"`
+    Concept     string                `json:"concept"`
+    Context     string                `json:"context"`
+    Target      string                `json:"target"`
+    Content     []string              `json:"content"`
+    Result      []string              `json:"result"`
+    Evaluation  *challenge.Evaluation `json:"evaluation,omitempty"`
+    DerivedFrom []string              `json:"derived_from,omitempty"`
 }
 ```
 
@@ -121,24 +122,24 @@ Returns a canonical JSON representation of the challenge including its metadata 
 ```json
 {
   "id": "find_diw_combo",
-  "name": "Find diw Combo",
+  "name": "Find + Delete Word",
   "verify": "composite",
   "layer": "Training",
   "target": "",
-  "content": ["Find and delete...", "", "a;lskdfj remove ;alskdfj"],
-  "result": ["Find and delete...", "", "a;lskdfj ;alskdfj"],
-  "concept": "f,diw",
-  "context": "search + delete inside word",
+  "content": ["Delete the word using f<char> and diw", "", "keep delete keep"],
+  "result": ["Delete the word using f<char> and diw", "", "keep  keep"],
+  "concept": "f",
+  "context": "composite deletion",
   "stage": "Text Objects",
   "evaluation": {
-    "max_moves": 10
+    "max_moves": 8
   }
 }
 ```
 
 The `evaluation` field is emitted only for `"composite"` challenges (via `json:"evaluation,omitempty"`). Non-composite challenges omit this field entirely.
 
-Enforced by: `TestDescribeCommand`, `TestDescribeComposite`, `TestDescribeUnknown`, `TestDescribeRoundTrip`, `TestDescribeEvaluation`.
+Enforced by: `TestDescribeCommand`, `TestDescribeComposite`, `TestDescribeUnknown`.
 
 ### `praxis catalog`
 
@@ -150,7 +151,7 @@ Enforced by: `TestCatalogOutputStable`.
 
 Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ LearningMax=2). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
 
-Enforced by: `TestStatsCommand`, `TestStatsSummary`, `TestRecordStats`, `TestStatsCommandConfidenceLevels`
+Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextCommandComplete`
 
 ## Validators
 
@@ -409,7 +410,7 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ── Praxis ──────────────────────────────────────
 
   Location: Search
-  Progress: 4/41
+  Progress: 4/56
 
   Direction:
     Next: find_hunter — Search
@@ -483,7 +484,7 @@ Three sections:
 2. **Build** — `go build ./...` — all packages compile
 3. **Vet** — `go vet ./...` — all packages pass static analysis
 4. **Test** — `go test ./...` — all packages report `ok`
-5. **Replay** — `tools/replay/replay.sh` — reports `ALL 51/51 REPLAY TESTS PASS`
+5. **Replay** — `tools/replay/replay.sh` — reports `ALL 56/56 REPLAY TESTS PASS`
 6. **Documentation** — If content changed: `go run scripts/generate_catalog.go > docs/CHALLENGES.md`. Update `docs/RELEASES.md` with new version row.
 7. **Stage** — `git add -A && git status` — verify staged files
 8. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
