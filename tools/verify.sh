@@ -30,4 +30,8 @@ echo "=== tools/replay/replay.sh ==="
 bash "$PROJECT_DIR/tools/replay/replay.sh"
 
 echo ""
+echo "=== tools/journey/journey.sh ==="
+bash "$PROJECT_DIR/tools/journey/journey.sh"
+
+echo ""
 echo "=== ALL CHECKS PASS ==="

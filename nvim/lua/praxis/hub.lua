@@ -1,12 +1,12 @@
 local M = {}
 
-local function stage_for_id(id)
+local function tier_for_id(id)
   local raw = vim.fn.systemlist({ "praxis", "describe", id })
   local desc = vim.fn.json_decode(table.concat(raw, ""))
   if type(desc) == "table" then
-    return desc.stage or ""
+    return desc.layer or "", desc.stage or ""
   end
-  return ""
+  return "", ""
 end
 
 function M.open()
@@ -57,13 +57,13 @@ function M.open()
     end
   end
 
-  local stage = ""
+  local layer, stage = "", ""
   if next_id ~= "" then
-    stage = stage_for_id(next_id)
+    layer, stage = tier_for_id(next_id)
   end
 
-  if stage ~= "" then
-    table.insert(display, "  Location: " .. stage)
+  if layer ~= "" then
+    table.insert(display, "  Location: " .. layer .. " — " .. stage)
   else
     table.insert(display, "  Location: Complete")
   end
@@ -77,7 +77,7 @@ function M.open()
     table.insert(display, "    Complete")
   end
   if review_challenge and review_challenge ~= "" then
-    local review_stage = stage_for_id(review_challenge)
+    local _, review_stage = tier_for_id(review_challenge)
     table.insert(display, "    Review: " .. review_challenge .. " — " .. review_stage)
   end
   table.insert(display, "")
@@ -94,12 +94,13 @@ function M.open()
   table.insert(display, "")
 
   if next_id ~= "" then
-    table.insert(display, "  Press Enter to continue, or r to review.")
+    table.insert(display, "  [Enter] Continue, or [r] Review.")
   else
     table.insert(display, "  Curriculum complete.")
+    table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "0"))
     table.insert(display, "")
-    table.insert(display, "  Press r to review.")
-    table.insert(display, "  Press q to finish.")
+    table.insert(display, "  [r] Review.")
+    table.insert(display, "  [q] Finish.")
   end
 
   local buf = ui.create_buffer("Praxis")
@@ -127,7 +128,10 @@ function M.open()
 
   vim.keymap.set("n", "q", function()
     pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    vim.cmd("q")
+    local rb = vim.g.praxis_return_buf
+    if rb and vim.api.nvim_buf_is_valid(rb) then
+      vim.api.nvim_set_current_buf(rb)
+    end
   end, { buffer = buf, nowait = true, silent = true })
 end
 

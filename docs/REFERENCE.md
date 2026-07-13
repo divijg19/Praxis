@@ -355,13 +355,12 @@ Derived from `Completions`:
 
 `RecommendedReview()` returns the oldest Practiced challenge by LastPlayed date, falling back to the oldest Experienced if no Practiced challenges exist. Practiced challenges are preferred because they are more likely to benefit from review than deeply-ingrained Experienced ones.
 
-## Session (Internal)
+## Reflection (Internal)
 
-Session tracking is an internal implementation detail — no public command or surface. Ephemeral per-Neovim-instance counters (challenges attempted, completions, moves) used internally by `challenge.lua`.
+Per-challenge tracking is an internal implementation detail — no public command or surface. Ephemeral per-challenge counters (moves, elapsed time) live in the `state` table inside `challenge.lua` and are aggregated via the `praxis record` CLI on completion.
 
-- **No persistence.** Discarded on Neovim exit.
+- **No persistence.** Discarded when the challenge buffer closes.
 - **No public command.** No `:PraxisSession`.
-- **Lua-only.** Lives in `nvim/lua/praxis/session.lua`.
 
 ## Hub
 
