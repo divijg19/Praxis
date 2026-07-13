@@ -10,7 +10,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Move your cursor to the star ★",
+				"Use h, j, k and l to move to the star ★",
 			},
 			Layer: "Tutorial",
 		},
@@ -20,6 +20,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
+				"Use h, j, k and l to move to the star ★",
 				". . . . .",
 				". . . ★ .",
 				". . . . .",
@@ -32,7 +33,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"find motions are fast",
+				"Use f to jump to the next character",
 				"",
 				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★",
 			},
@@ -44,7 +45,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"word motions are fast",
+				"Use w to jump to the next word",
 				"",
 				"alpha beta gamma delta epsilon ★",
 			},
@@ -56,7 +57,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "@",
 			Content: []string{
-				"find the target symbol",
+				"Use f to find the target symbol",
 				"",
 				".......................@",
 			},
@@ -68,7 +69,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Move to the line with the star",
+				"Use j and k to move to the line with the star",
 				"",
 				"line one",
 				"line two",
@@ -85,7 +86,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Jump to the matching paren",
+				"Use % to jump to the matching parenthesis",
 				"",
 				"(                         )★",
 			},
@@ -97,7 +98,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Jump between sentences",
+				"Use ( and ) to jump between sentences",
 				"",
 				"First sentence ends here.",
 				"Second. Third.",
@@ -111,7 +112,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Search forward to find the target",
+				"Use / to search forward for the target",
 				"",
 				"alpha  bravo  charlie  delta  echo  foxtrot  golf  ★",
 			},
@@ -123,7 +124,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Search backward to find the target",
+				"Use ? to search backward for the target",
 				"",
 				"line one",
 				"line two",
@@ -152,7 +153,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "@",
 			Content: []string{
-				"Search for ★, then repeat to find @",
+				"Use ; to repeat the last search",
 				"",
 				"★  ★  ★  ★  ★  ★  ★  ★  @",
 			},
@@ -164,7 +165,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Select inside the parentheses",
+				"Use i( to target inside the parentheses",
 				"",
 				"(hello★)",
 			},
@@ -176,7 +177,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: ")",
 			Content: []string{
-				"Select around the parentheses",
+				"Use a( to target around the parentheses",
 				"",
 				"(hello)★",
 			},
@@ -188,7 +189,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Select inside the brackets",
+				"Use i[ to target inside the brackets",
 				"",
 				"[hello★]",
 			},
@@ -200,7 +201,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "]",
 			Content: []string{
-				"Select around the brackets",
+				"Use a[ to target around the brackets",
 				"",
 				"[hello]★",
 			},
@@ -212,7 +213,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Select inside the quotes",
+				"Use i\" to target inside the quotes",
 				"",
 				"x\"magnificent★\"",
 			},
@@ -224,7 +225,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Select around the quotes",
+				"Use a\" to target around the quotes",
 				"",
 				"x\"magnificent\"★",
 			},
@@ -236,7 +237,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "Z",
 			Content: []string{
-				"Jump to the last paragraph",
+				"Use { and } to jump between paragraphs",
 				"",
 				"first paragraph",
 				"",
@@ -252,7 +253,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Jump to the matching delimiter",
+				"Use % to jump to the matching delimiter",
 				"",
 				"[         ]★",
 			},
@@ -264,12 +265,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete the extra letter",
+				"Use x to delete the extra letter",
 				"",
 				"helllo",
 			},
 			Result: []string{
-				"Delete the extra letter",
+				"Use x to delete the extra letter",
 				"",
 				"hello",
 			},
@@ -281,12 +282,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Replace the wrong letter",
+				"Use r to replace the wrong letter",
 				"",
 				"hallo",
 			},
 			Result: []string{
-				"Replace the wrong letter",
+				"Use r to replace the wrong letter",
 				"",
 				"hello",
 			},
@@ -298,12 +299,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Toggle the case of each letter",
+				"Use ~ to toggle the case of each letter",
 				"",
 				"HELLO",
 			},
 			Result: []string{
-				"Toggle the case of each letter",
+				"Use ~ to toggle the case of each letter",
 				"",
 				"hello",
 			},
@@ -315,12 +316,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete the middle word",
+				"Use daw to delete the middle word",
 				"",
 				"keep lose keep",
 			},
 			Result: []string{
-				"Delete the middle word",
+				"Use daw to delete the middle word",
 				"",
 				"keep  keep",
 			},
@@ -332,12 +333,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Change the word using ciw",
+				"Use ciw to change the word",
 				"",
 				"foo",
 			},
 			Result: []string{
-				"Change the word using ciw",
+				"Use ciw to change the word",
 				"",
 				"bar",
 			},
@@ -349,7 +350,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "★",
 			Content: []string{
-				"Navigate past multi-byte characters to the star",
+				"Use h to move past multi-byte characters to the star ★",
 				"",
 				"α β γ ★",
 			},
@@ -361,14 +362,14 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete the middle line",
+				"Use dd to delete the middle line",
 				"",
 				"keep",
 				"remove",
 				"keep",
 			},
 			Result: []string{
-				"Delete the middle line",
+				"Use dd to delete the middle line",
 				"",
 				"keep",
 				"keep",
@@ -381,12 +382,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete from cursor to end of line",
+				"Use d$ to delete from cursor to end of line",
 				"",
 				"keep this text remove_this_part",
 			},
 			Result: []string{
-				"Delete from cursor to end of line",
+				"Use d$ to delete from cursor to end of line",
 				"",
 				"keep this text",
 			},
@@ -398,12 +399,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete inside the middle word",
+				"Use diw to delete inside the middle word",
 				"",
 				"keep remove keep",
 			},
 			Result: []string{
-				"Delete inside the middle word",
+				"Use diw to delete inside the middle word",
 				"",
 				"keep  keep",
 			},
@@ -415,12 +416,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete around the middle word",
+				"Use daw to delete around the middle word",
 				"",
 				"keep remove keep",
 			},
 			Result: []string{
-				"Delete around the middle word",
+				"Use daw to delete around the middle word",
 				"",
 				"keep keep",
 			},
@@ -432,12 +433,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete inside parentheses",
+				"Use di( to delete inside parentheses",
 				"",
 				"func(remove)",
 			},
 			Result: []string{
-				"Delete inside parentheses",
+				"Use di( to delete inside parentheses",
 				"",
 				"func()",
 			},
@@ -449,12 +450,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete around parentheses",
+				"Use da( to delete around parentheses",
 				"",
 				"func(remove)",
 			},
 			Result: []string{
-				"Delete around parentheses",
+				"Use da( to delete around parentheses",
 				"",
 				"func",
 			},
@@ -466,12 +467,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete inside quotes",
+				"Use di\" to delete inside quotes",
 				"",
 				"\"remove\"",
 			},
 			Result: []string{
-				"Delete inside quotes",
+				"Use di\" to delete inside quotes",
 				"",
 				"\"\"",
 			},
@@ -483,12 +484,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Delete around quotes",
+				"Use da\" to delete around quotes",
 				"",
 				"\"remove\"",
 			},
 			Result: []string{
-				"Delete around quotes",
+				"Use da\" to delete around quotes",
 				"",
 				"",
 			},
@@ -500,12 +501,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Change the first word",
+				"Use ciw to change the first word",
 				"",
 				"goodbye world",
 			},
 			Result: []string{
-				"Change the first word",
+				"Use ciw to change the first word",
 				"",
 				"hello world",
 			},
@@ -517,12 +518,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Change inside parentheses",
+				"Use ci( to change inside parentheses",
 				"",
 				"func(remove)",
 			},
 			Result: []string{
-				"Change inside parentheses",
+				"Use ci( to change inside parentheses",
 				"",
 				"func(hello)",
 			},
@@ -534,12 +535,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Change inside quotes",
+				"Use ci\" to change inside quotes",
 				"",
 				"\"remove\"",
 			},
 			Result: []string{
-				"Change inside quotes",
+				"Use ci\" to change inside quotes",
 				"",
 				"\"hello\"",
 			},
@@ -551,12 +552,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Every yank enters a register. Yank and paste to see.",
+				"Use yy to yank, then p to paste",
 				"",
 				"copy me",
 			},
 			Result: []string{
-				"Every yank enters a register. Yank and paste to see.",
+				"Use yy to yank, then p to paste",
 				"",
 				"copy me",
 				"copy me",
@@ -569,12 +570,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Store and retrieve with register a",
+				"Use \"ayy to store, then \"ap to retrieve",
 				"",
 				"copy me",
 			},
 			Result: []string{
-				"Store and retrieve with register a",
+				"Use \"ayy to store, then \"ap to retrieve",
 				"",
 				"copy me",
 				"copy me",
@@ -587,12 +588,12 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Store a word in register a, then append it",
+				"Use \"ayw to store a word, then \"ap to paste it",
 				"",
 				"alpha beta",
 			},
 			Result: []string{
-				"Store a word in register a, then append it",
+				"Use \"ayw to store a word, then \"ap to paste it",
 				"",
 				"alpha beta alpha",
 			},
@@ -604,13 +605,13 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Store 'correct' in register a, then replace 'wrong'",
+				"Use \"ayy to store 'correct', then \"ap to replace 'wrong'",
 				"",
 				"correct",
 				"wrong",
 			},
 			Result: []string{
-				"Store 'correct' in register a, then replace 'wrong'",
+				"Use \"ayy to store 'correct', then \"ap to replace 'wrong'",
 				"",
 				"correct",
 				"correct",
@@ -623,13 +624,13 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Duplicate 'foo' below 'bar' using register a",
+				"Use \"ayy to store 'foo', then \"ap to paste below 'bar'",
 				"",
 				"foo",
 				"bar",
 			},
 			Result: []string{
-				"Duplicate 'foo' below 'bar' using register a",
+				"Use \"ayy to store 'foo', then \"ap to paste below 'bar'",
 				"",
 				"foo",
 				"bar",
@@ -642,12 +643,12 @@ func All() []challenge.Challenge {
 			Name:   "Find + Delete Word",
 			Verify: "composite",
 			Content: []string{
-				"Delete the word using f<char> and diw",
+				"Use f then a letter, followed by diw.",
 				"",
 				"keep delete keep",
 			},
 			Result: []string{
-				"Delete the word using f<char> and diw",
+				"Use f then a letter, followed by diw.",
 				"",
 				"keep  keep",
 			},

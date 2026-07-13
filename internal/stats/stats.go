@@ -64,6 +64,17 @@ func Save(m map[string]Stats) error {
 	return os.Rename(tmp.Name(), Path())
 }
 
+func Reset() error {
+	path := Path()
+	if err := os.Remove(path); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
 func Attempt(m map[string]Stats, id string) Stats {
 	s := m[id]
 	s.Attempts++

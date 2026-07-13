@@ -147,6 +147,8 @@ func TestHelpCommand(t *testing.T) {
 }
 
 func TestBarePraxis(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
 	out, code := runPraxis(t)
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
@@ -388,6 +390,28 @@ func TestNextCommandAfterCompletion(t *testing.T) {
 	}
 	if out != "find_hunter\n" {
 		t.Errorf("expected 'find_hunter', got %q", out)
+	}
+}
+
+func TestResetCommand(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	m := map[string]stats.Stats{
+		"motion_rush": {Attempts: 5, Completions: 4},
+	}
+	if err := stats.Save(m); err != nil {
+		t.Fatal(err)
+	}
+	out, code := runPraxis(t, "reset", "--yes")
+	if code != 0 {
+		t.Fatalf("exit code %d, output: %s", code, out)
+	}
+	if !strings.Contains(out, "reset") {
+		t.Errorf("expected reset message, got: %s", out)
+	}
+	loaded, _ := stats.Load()
+	if len(loaded) != 0 {
+		t.Errorf("stats not cleared, got %d entries", len(loaded))
 	}
 }
 

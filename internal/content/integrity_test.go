@@ -1,8 +1,11 @@
 package content
 
 import (
+	"sort"
 	"strings"
 	"testing"
+
+	"github.com/divijg19/Praxis/internal/stats"
 )
 
 func TestCoreConceptCoverage(t *testing.T) {
@@ -130,6 +133,153 @@ func TestTrialIntegrity(t *testing.T) {
 		default:
 			if len(m.DerivedFrom) != 0 {
 				t.Errorf("non-Trial %q (layer=%q): unexpected DerivedFrom %v", c.ID, c.Layer, m.DerivedFrom)
+			}
+		}
+	}
+}
+
+func equalStringSet(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	sorted := make([]string, len(a))
+	copy(sorted, a)
+	sort.Strings(sorted)
+
+	other := make([]string, len(b))
+	copy(other, b)
+	sort.Strings(other)
+
+	for i := range sorted {
+		if sorted[i] != other[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestDerivedFromAcyclic(t *testing.T) {
+	adj := make(map[string][]string)
+	for _, c := range All() {
+		m, ok := MetadataFor(c.ID)
+		if !ok {
+			continue
+		}
+		if len(m.DerivedFrom) > 0 {
+			adj[c.ID] = m.DerivedFrom
+		}
+	}
+
+	white := make(map[string]bool)
+	gray := make(map[string]bool)
+	black := make(map[string]bool)
+
+	for id := range adj {
+		white[id] = true
+	}
+
+	var dfs func(id string) bool
+	dfs = func(id string) bool {
+		delete(white, id)
+		gray[id] = true
+
+		for _, dep := range adj[id] {
+			if gray[dep] {
+				return true
+			}
+			if white[dep] {
+				if dfs(dep) {
+					return true
+				}
+			}
+		}
+
+		delete(gray, id)
+		black[id] = true
+		return false
+	}
+
+	for id := range adj {
+		if white[id] {
+			if dfs(id) {
+				t.Errorf("DerivedFrom cycle detected involving %q", id)
+			}
+		}
+	}
+}
+
+func TestCurriculumReachable(t *testing.T) {
+	challenges := All()
+
+	if len(challenges) == 0 {
+		t.Fatal("All() returned empty")
+	}
+
+	seen := make(map[string]bool)
+	ids := make([]string, len(challenges))
+	for i, c := range challenges {
+		if seen[c.ID] {
+			t.Fatalf("duplicate ID %q at index %d", c.ID, i)
+		}
+		seen[c.ID] = true
+		ids[i] = c.ID
+	}
+
+	m := make(map[string]stats.Stats)
+	next := stats.NextChallenge(m, ids)
+	if next != ids[0] {
+		t.Fatalf("NextChallenge with empty stats: got %q, want %q", next, ids[0])
+	}
+
+	visited := make(map[string]bool)
+	for i, id := range ids {
+		m[id] = stats.Stats{Completions: 3}
+		visited[id] = true
+
+		if i < len(ids)-1 {
+			next = stats.NextChallenge(m, ids)
+			if next != ids[i+1] {
+				t.Fatalf("after completing %q (index %d): NextChallenge = %q, want %q", id, i, next, ids[i+1])
+			}
+		} else {
+			next = stats.NextChallenge(m, ids)
+			if next != "" {
+				t.Fatalf("after final challenge %q: NextChallenge = %q, want \"\"", id, next)
+			}
+		}
+	}
+
+	for _, id := range ids {
+		if !visited[id] {
+			t.Errorf("challenge %q was never visited during traversal", id)
+		}
+	}
+}
+
+func TestTrialObjectivesDistinct(t *testing.T) {
+	type trialMeta struct {
+		id   string
+		meta Metadata
+	}
+	var trials []trialMeta
+	for _, c := range All() {
+		m, ok := MetadataFor(c.ID)
+		if !ok {
+			continue
+		}
+		if c.Layer == "Trial" {
+			trials = append(trials, trialMeta{c.ID, m})
+		}
+	}
+
+	for i := 0; i < len(trials); i++ {
+		for j := i + 1; j < len(trials); j++ {
+			a, b := trials[i], trials[j]
+			if equalStringSet(a.meta.DerivedFrom, b.meta.DerivedFrom) &&
+				a.meta.Concept == b.meta.Concept &&
+				a.meta.Context == b.meta.Context {
+				t.Errorf("Trials %q and %q have identical DerivedFrom, Concept, and Context:\n  DerivedFrom: %v\n  Concept: %q\n  Context: %q",
+					a.id, b.id, a.meta.DerivedFrom, a.meta.Concept, a.meta.Context)
 			}
 		}
 	}

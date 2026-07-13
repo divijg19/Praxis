@@ -1,6 +1,3 @@
-local ui = require('praxis.ui')
-local challenge = require('praxis.challenge')
-
 local M = {}
 
 local function stage_for_id(id)
@@ -13,6 +10,7 @@ local function stage_for_id(id)
 end
 
 function M.open()
+  local ui = require('praxis.ui')
   local next_id = vim.fn.systemlist({ "praxis", "next" })[1] or ""
   local stats_lines = vim.fn.systemlist({ "praxis", "stats" })
 
@@ -95,18 +93,41 @@ function M.open()
   end
   table.insert(display, "")
 
-  table.insert(display, "  Press Enter to continue.")
+  if next_id ~= "" then
+    table.insert(display, "  Press Enter to continue, or r to review.")
+  else
+    table.insert(display, "  Curriculum complete.")
+    table.insert(display, "")
+    table.insert(display, "  Press r to review.")
+    table.insert(display, "  Press q to finish.")
+  end
 
   local buf = ui.create_buffer("Praxis")
   ui.set_lines(buf, display)
   ui.set_modifiable(buf, false)
   vim.api.nvim_set_current_buf(buf)
 
+  local function open_target(id)
+    if not id or id == "" then return end
+    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    require('praxis.challenge').open(id)
+  end
+
   vim.keymap.set("n", "<CR>", function()
     if next_id and next_id ~= "" then
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
-      challenge.open(next_id)
+      open_target(next_id)
+    else
+      open_target(review_challenge)
     end
+  end, { buffer = buf, nowait = true, silent = true })
+
+  vim.keymap.set("n", "r", function()
+    open_target(review_challenge)
+  end, { buffer = buf, nowait = true, silent = true })
+
+  vim.keymap.set("n", "q", function()
+    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    vim.cmd("q")
   end, { buffer = buf, nowait = true, silent = true })
 end
 

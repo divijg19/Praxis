@@ -1,1 +1,1 @@
-require('praxis')
+require("praxis")

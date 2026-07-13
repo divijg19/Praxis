@@ -1,8 +1,3 @@
-local challenge = require('praxis.challenge')
-local session = require('praxis.session')
-local onboarding = require('praxis.onboarding')
-local hub = require('praxis.hub')
-
 local M = {}
 
 local function first_time()
@@ -17,19 +12,14 @@ function M.show(opts)
   local is_challenge = opts and opts.args and opts.args ~= ""
 
   if is_challenge then
-    challenge.open(opts.args)
+    require("praxis.challenge").open(opts.args)
   elseif first_time() then
-    onboarding.open()
+    require("praxis.onboarding").open()
   else
-    hub.open()
+    require("praxis.hub").open()
   end
 end
 
-function M.show_session()
-  session.show()
-end
-
 vim.api.nvim_create_user_command("Praxis", M.show, { nargs = "?" })
-vim.api.nvim_create_user_command("PraxisSession", M.show_session, {})
 
 return M
