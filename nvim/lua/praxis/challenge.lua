@@ -1,8 +1,7 @@
-local ui = require('praxis.ui')
-
 local M = {}
 
 function M.open(id)
+  local ui = require('praxis.ui')
   local desc_raw = vim.fn.systemlist({ "praxis", "describe", id })
   local desc = vim.fn.json_decode(table.concat(desc_raw, ""))
   if type(desc) ~= "table" then
@@ -15,8 +14,6 @@ function M.open(id)
   ui.set_modifiable(buf, desc.verify == "buffer" or desc.verify == "composite")
   vim.api.nvim_set_current_buf(buf)
 
-  local session = require('praxis.session')
-  session.start()
   vim.fn.system({ "praxis", "attempt", id })
 
   local function byte_to_char(line, bytecol)
@@ -35,24 +32,9 @@ function M.open(id)
     maxmoves        = desc.evaluation and desc.evaluation.max_moves,
   }
 
-  local function check_buffer()
-    local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    if #current ~= #state.result_lines then return end
-    for i = 1, #current do
-      if current[i] ~= state.result_lines[i] then return end
-    end
-    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-      vim.api.nvim_echo({ { "Too many moves! Press r to retry.", "WarningMsg" } }, false, {})
-      return
-    end
-    state.done = true
-    vim.api.nvim_echo({ { "Success" } }, false, {})
-    render_result()
-  end
-
   local function render_result()
     local elapsed_ms = math.floor((vim.uv.hrtime() - state.start_ns) / 1e6)
-    session.record(id, state.moves, elapsed_ms)
+    vim.fn.system({ "praxis", "record", id, tostring(state.moves), tostring(elapsed_ms) })
     local stats_out = vim.fn.systemlist({ "praxis", "stats", id })
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
@@ -69,11 +51,26 @@ function M.open(id)
       table.insert(display, line)
     end
     table.insert(display, "")
-    table.insert(display, "[r] Replay")
+    table.insert(display, "[r] Retry")
     table.insert(display, "[Enter] Continue Journey")
     table.insert(display, "[q] Quit")
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
     vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+  end
+
+  local function check_buffer()
+    local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    if #current ~= #state.result_lines then return end
+    for i = 1, #current do
+      if current[i] ~= state.result_lines[i] then return end
+    end
+    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
+      vim.api.nvim_echo({ { "Too many moves! Press r to retry.", "WarningMsg" } }, false, {})
+      return
+    end
+    state.done = true
+    vim.api.nvim_echo({ { "Success" } }, false, {})
+    render_result()
   end
 
   local function reset_challenge()
@@ -131,7 +128,7 @@ function M.open(id)
   })
 
   vim.keymap.set("n", "r", function()
-    if state.done then reset_challenge() end
+    reset_challenge()
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.keymap.set("n", "<CR>", function()
@@ -147,10 +144,8 @@ function M.open(id)
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.keymap.set("n", "q", function()
-    if state.done then
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
-      vim.cmd("Praxis")
-    end
+    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    vim.cmd("Praxis")
   end, { buffer = buf, nowait = true, silent = true })
 end
 

@@ -70,24 +70,75 @@ type Evaluation struct {
 }
 ```
 
+### Curriculum Metadata
+
+Challenge distribution across stages and layers. Enforced by tests in `internal/content/content_test.go`.
+
+#### Stage taxonomy
+
+| Stage | Purpose | Primitives | Challenges |
+|---|---|---|---|
+| Movement | cursor control | h, j, k, l, UTF-8 navigation | 3 |
+| Search | target acquisition | f, F, w, W, /, ?, ; | 7 |
+| Structural Navigation | semantic movement | %, ), (, {, }, i(, a(, i[, a[, i", a" | 10 |
+| Editing | mutation | x, r, ~, dw, ciw, dd, D | 7 |
+| Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ciw, ci(, ci" | 9 |
+| Registers | memory | yy, "a, "A, "ap | 5 |
+
+#### Layer taxonomy
+
+| Layer | Purpose | Scaffolding | Challenges |
+|---|---|---|---|
+| Tutorial | primitive introduction | Observe → Practice → Apply | 41 |
+| Training | composition formation | combine primitives, MaxMoves constraint | 10 |
+| Trial | recognition under pressure | select correct composition, budget enforcement | 5 |
+| Boss | mastery | (deferred to v0.3) | 0 |
+
+#### Distribution matrix
+
+```
+                     Tutorial  Training  Trial  Total
+Movement             3         0         0      3
+Search               7         0         0      7
+Structural Nav       10        0         0      10
+Editing              7         3         2      12
+Text Objects         9         4         3      16
+Registers            5         3         0      8
+Total                41        10        5      56
+```
+
+#### DerivedFrom lineage
+
+Trials declare the Training challenges they derive from:
+
+| Trial | DerivedFrom | Composition tested |
+|---|---|---|
+| trial_find_delete | find_diw_combo | f + diw |
+| trial_find_change | find_ca_quote_combo | f + ca" |
+| trial_dot_repeat | dw_dot_combo | dw + . |
+| trial_delete_choice | find_diw_combo, find_daw_combo | diw vs daw |
+| trial_repeat_choice | dw_dot_combo, ciw_dot_combo | . vs re-execute |
+
+Enforced by `TestTrialIntegrity` (all targets exist) and `TestDerivedFromAcyclic` (no cycles).
+
 ## Neovim Frontend (Lua)
 
-The Neovim frontend is loaded via `nvim/plugin/praxis.lua` which requires `nvim/lua/praxis/init.lua`.
+The Neovim frontend is loaded on demand — `:Praxis` triggers `require('praxis')` via the plugin manager's `cmd` lazy-loading.
 
 ### Module layout
 
 | Module | Surface | Responsibility |
 |---|---|---|
 | `init.lua` | — | Command registration, dispatch, first-time detection |
-| `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, replay |
-| `session.lua` | Reflection | Session tracking: start, record, `:PraxisSession` |
+| `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, retry |
+| `session.lua` | — | Session tracking: start, record (internal, no public surface) |
 | `ui.lua` | — | Scratch buffer creation and content helpers |
 | `onboarding.lua` | Arrival | First-time welcome flow |
-| `hub.lua` | Journey | Hub surface (reserved for future use) |
+| `hub.lua` | Progress | Hub surface — stats, location, direction, mastery |
 
 ### Practice Surface (challenge.lua)
 
-- Fetch challenge data from the Go binary (`/tmp/praxis`)
+- Fetch challenge data from the `praxis` CLI binary
 - Create buffer with challenge content
 - Set up autocmds for validation:
   - `CursorMoved` — cursor challenges (target reached check)
@@ -112,7 +163,6 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 - Ephemeral session state (moves, time, completion counts)
 - `session.start()` — initializes or continues session tracking per challenge
 - `session.record()` — persists completion via `praxis record` CLI, aggregates counters
-- `session.show()` — renders `:PraxisSession` buffer
 
 ### Arrival Surface (onboarding.lua)
 
@@ -130,15 +180,34 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
   - **Data:** mastery distribution (compact one-line format)
 - `<CR>` opens the next challenge directly via `challenge.open()`
 - Data sourced from `praxis next`, `praxis describe`, `praxis stats`
-- Zero Go changes, zero schema changes
 
 ### Journey Surface (challenge.lua — result screen)
 
 - Result screen displays stats with action options:
-  - `[r] Replay` — reset and retry the challenge
+  - `[r] Retry` — reset and retry the challenge
   - `[Enter] Continue Journey` — opens the next curriculum challenge
   - `[q] Quit` — returns to the Hub
 - Enter on result screen skips Hub entirely (Challenge → Result → Next Challenge)
+
+### Runtime Loop
+
+A challenge is a scratch (`nofile`) buffer; exactly one "Praxis" surface
+is visible at a time. The loop:
+
+1. `:Praxis [<id>]` (or onboarding `s` / hub `<CR>`) → `challenge.open(id)`.
+2. `challenge.open` fetches the description from the `praxis` CLI, renders
+   `content`, and arms an autocmd: `CursorMoved` for cursor challenges,
+   or `TextChanged` / `TextChangedI` for buffer / composite challenges.
+3. The learner edits. Each relevant event increments `moves` and, on a
+   successful verify, calls `render_result()`.
+4. `render_result()` records the attempt (`praxis record`), refreshes stats
+   (`praxis stats`), and replaces the buffer with the result view
+   (`[r] Retry`, `[Enter] Continue Journey`, `[q] Quit`).
+5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
+   `praxis next` (or returns to the Hub); `q` returns to the Hub.
+
+`ui.create_buffer` reuses or uniquifies the buffer name so surfaces that
+share the "Praxis" label never collide.
 
 ## External interface contracts
 

@@ -73,8 +73,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
 3. Update `stableChallengeIDs` and `stableChallengeNames` in `internal/content/content_test.go`
 4. Add the ID to the `all_ids` list in `tools/replay/replay.lua`
-5. Run `go test ./...` to verify
-6. Run `tools/replay/replay.sh` to verify
+5. Run `tools/verify.sh` to verify
 
 ## CLI Surface
 
@@ -356,49 +355,13 @@ Derived from `Completions`:
 
 `RecommendedReview()` returns the oldest Practiced challenge by LastPlayed date, falling back to the oldest Experienced if no Practiced challenges exist. Practiced challenges are preferred because they are more likely to benefit from review than deeply-ingrained Experienced ones.
 
-## Sessions
+## Session (Internal)
 
-Sessions represent a contiguous period of deliberate practice within a single Neovim instance. Ephemeral — discarded on Neovim exit.
+Session tracking is an internal implementation detail — no public command or surface. Ephemeral per-Neovim-instance counters (challenges attempted, completions, moves) used internally by `challenge.lua`.
 
-### Command
-
-```
-:PraxisSession
-```
-
-Opens a read-only scratch buffer showing the current session's aggregated metrics.
-
-```
-Challenges: 8
-Completions: 5
-Session Length: 18m42s
-Practice Time: 6m12s
-Moves: 74
-Avg Moves: 14
-Avg Time: 74s
-```
-
-### Fields
-
-| Field | Meaning |
-|---|---|
-| **Challenges** | Total `:Praxis <id>` invocations in this session |
-| **Completions** | Total successful completions (including replays) |
-| **Session Length** | Wall-clock time since first `:Praxis <id>` |
-| **Practice Time** | Sum of individual challenge completion times |
-| **Moves** | Total moves across all completions |
-| **Avg Moves** | Moves / Completions |
-| **Avg Time** | Practice Time / Completions |
-
-Completions includes replays via the `r` key, so it can exceed `Challenges`.
-
-### Design Decisions
-
-- **No persistence.** Sessions are Neovim-scoped ephemeral state.
-- **No automatic popup.** `:PraxisSession` is user-invoked only.
-- **Lua-only, no Go.** Lives in `nvim/lua/praxis/init.lua`.
-- **Challenges and Completions are separate counters.** The gap shows unfinished attempts.
-- **Session Length tracks wall-clock time.** Honest but approximate (not idle-adjusted).
+- **No persistence.** Discarded on Neovim exit.
+- **No public command.** No `:PraxisSession`.
+- **Lua-only.** Lives in `nvim/lua/praxis/session.lua`.
 
 ## Hub
 
@@ -480,15 +443,12 @@ Three sections:
 
 ## Release Procedure
 
-1. **Format** — `gofmt -l .` — must produce no output
+1. **Verify** — `tools/verify.sh` — runs format, vet, tests, and replay. All checks must pass.
 2. **Build** — `go build ./...` — all packages compile
-3. **Vet** — `go vet ./...` — all packages pass static analysis
-4. **Test** — `go test ./...` — all packages report `ok`
-5. **Replay** — `tools/replay/replay.sh` — reports `ALL 56/56 REPLAY TESTS PASS`
-6. **Documentation** — If content changed: `go run scripts/generate_catalog.go > docs/CHALLENGES.md`. Update `docs/RELEASES.md` with new version row.
-7. **Stage** — `git add -A && git status` — verify staged files
-8. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
-9. **Tag** — `git tag <version>` — must match release plan
-10. **Push and Release** — `git push origin <branch> <version>`. Create release and verification issues on GitHub.
+3. **Documentation** — If content changed: update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
+4. **Stage** — `git add -A && git status` — verify staged files
+5. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
+6. **Tag** — `git tag <version>` — must match release plan
+7. **Push and Release** — `git push origin <branch> <version>`. Create release and verification issues on GitHub.
 
 Every release follows the same process. Do not skip steps.

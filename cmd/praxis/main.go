@@ -37,6 +37,9 @@ func main() {
 				record(os.Args[2], os.Args[3], os.Args[4])
 				return
 			}
+		case "reset":
+			reset()
+			return
 		case "stats":
 			if len(os.Args) > 2 {
 				statsForID(os.Args[2])
@@ -114,6 +117,25 @@ func next() {
 	if id != "" {
 		fmt.Println(id)
 	}
+}
+
+func reset() {
+	yes := len(os.Args) > 2 && os.Args[2] == "--yes"
+	if !yes {
+		fmt.Print("This will erase all Praxis progress.\n\nType RESET to continue: ")
+		var input string
+		fmt.Scanln(&input)
+		if input != "RESET" {
+			fmt.Println("Reset cancelled.")
+			os.Exit(1)
+		}
+	}
+	if err := stats.Reset(); err != nil {
+		fmt.Fprintln(os.Stderr, "reset failed:", err)
+		os.Exit(1)
+	}
+	fmt.Println("Praxis has been reset.")
+	fmt.Println("Start fresh with: praxis next")
 }
 
 func attempt(id string) {
