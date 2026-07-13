@@ -42,7 +42,7 @@ function M.open()
     pcall(vim.api.nvim_buf_delete, buf, { force = true })
     local cat_buf = ui.create_buffer("Praxis Catalog")
     local catalog = vim.fn.systemlist({ "praxis", "catalog" })
-    local cat_lines = { "── Praxis Catalog ──", "" }
+    local cat_lines = { "── Praxis Catalog ──", "", "[q] Back.", "" }
     for _, c in ipairs(catalog) do
       table.insert(cat_lines, "  " .. c)
     end
@@ -50,6 +50,12 @@ function M.open()
     ui.set_modifiable(cat_buf, false)
     vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = cat_buf })
     vim.api.nvim_set_current_buf(cat_buf)
+    local function back()
+      pcall(vim.api.nvim_buf_delete, cat_buf, { force = true })
+      M.open()
+    end
+    vim.keymap.set("n", "q", back, { buffer = cat_buf, nowait = true, silent = true })
+    vim.keymap.set("n", "<CR>", back, { buffer = cat_buf, nowait = true, silent = true })
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.keymap.set("n", "h", function()
@@ -66,9 +72,11 @@ function M.open()
       "Each challenge you finish builds mastery. You can always",
       "return to where you left off with :Praxis.",
       "",
+      "Each challenge is solved a few times to build lasting mastery.",
+      "",
       "You are done when every challenge shows as complete.",
       "",
-      "Press q to go back.",
+      "[q] Back.",
     }
     ui.set_lines(about_buf, about_lines)
     ui.set_modifiable(about_buf, false)

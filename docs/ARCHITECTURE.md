@@ -129,12 +129,11 @@ The Neovim frontend is loaded on demand — `:Praxis` triggers `require('praxis'
 
 | Module | Surface | Responsibility |
 |---|---|---|
-| `init.lua` | — | Command registration, dispatch, first-time detection |
-| `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, retry |
-| `session.lua` | — | Session tracking: start, record (internal, no public surface) |
-| `ui.lua` | — | Scratch buffer creation and content helpers |
+| `init.lua` | — | Command registration, dispatch, binary availability check, recovery, orphan cleanup, first-time detection |
+| `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, retry, invalid-id recovery |
+| `ui.lua` | — | Scratch buffer creation, content helpers, `recovery()` screen |
 | `onboarding.lua` | Arrival | First-time welcome flow |
-| `hub.lua` | Progress | Hub surface — stats, location, direction, mastery |
+| `hub.lua` | Progress | Hub surface — stats, location, direction, mastery, return-to-previous-buffer |
 
 ### Practice Surface (challenge.lua)
 
@@ -158,11 +157,11 @@ end
 
 Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critical for multi-byte content (UTF-8 Greek, emoji, etc.).
 
-### Reflection Surface (session.lua)
+### Reflection (inline in challenge.lua)
 
-- Ephemeral session state (moves, time, completion counts)
-- `session.start()` — initializes or continues session tracking per challenge
-- `session.record()` — persists completion via `praxis record` CLI, aggregates counters
+- Ephemeral per-challenge state (`state` table): moves, elapsed time, target, verify mode
+- On completion, `render_result()` persists via `praxis record` CLI and aggregates counters
+- No separate session module — tracking lives in the challenge lifecycle
 
 ### Arrival Surface (onboarding.lua)
 

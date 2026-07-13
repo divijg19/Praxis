@@ -3,9 +3,12 @@ local M = {}
 function M.open(id)
   local ui = require('praxis.ui')
   local desc_raw = vim.fn.systemlist({ "praxis", "describe", id })
-  local desc = vim.fn.json_decode(table.concat(desc_raw, ""))
-  if type(desc) ~= "table" then
-    vim.api.nvim_echo({ { "Error: could not describe challenge: " .. id } }, false, {})
+  local ok, desc = pcall(vim.fn.json_decode, table.concat(desc_raw, ""))
+  if not ok or type(desc) ~= "table" then
+    require("praxis.ui").recovery("Unknown challenge: " .. id, {
+      "",
+      "Press [Enter] or [q] to return.",
+    })
     return
   end
 
@@ -52,7 +55,7 @@ function M.open(id)
     end
     table.insert(display, "")
     table.insert(display, "[r] Retry")
-    table.insert(display, "[Enter] Continue Journey")
+    table.insert(display, "[Enter] Continue")
     table.insert(display, "[q] Quit")
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
     vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
@@ -65,7 +68,7 @@ function M.open(id)
       if current[i] ~= state.result_lines[i] then return end
     end
     if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-      vim.api.nvim_echo({ { "Too many moves! Press r to retry.", "WarningMsg" } }, false, {})
+        vim.api.nvim_echo({ { "Too many moves! Press [r] to retry.", "WarningMsg" } }, false, {})
       return
     end
     state.done = true
