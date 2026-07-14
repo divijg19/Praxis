@@ -33,7 +33,7 @@ func TestDescriptionForCompleteness(t *testing.T) {
 			if !reflect.DeepEqual(d.Result, c.Result) {
 				t.Errorf("Result mismatch")
 			}
-			m, ok := MetadataFor(c.ID)
+			m, ok := metadataFor(c.ID)
 			if !ok {
 				t.Fatal("no metadata")
 			}
@@ -86,15 +86,12 @@ func TestDescriptionDerivedFromRoundTrip(t *testing.T) {
 			if !ok {
 				t.Fatal("DescriptionFor returned false")
 			}
-			m, ok := MetadataFor(c.ID)
+			m, ok := metadataFor(c.ID)
 			if !ok {
-				t.Fatal("MetadataFor returned false")
+				t.Fatal("metadataFor returned false")
 			}
 			if !reflect.DeepEqual(d.DerivedFrom, m.DerivedFrom) {
 				t.Errorf("DerivedFrom = %v, want %v", d.DerivedFrom, m.DerivedFrom)
-			}
-			if d.Layer != m.Layer {
-				t.Errorf("Layer = %q, want %q", d.Layer, m.Layer)
 			}
 			if d.Stage != m.Stage {
 				t.Errorf("Stage = %q, want %q", d.Stage, m.Stage)

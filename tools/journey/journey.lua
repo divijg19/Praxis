@@ -3,7 +3,8 @@
 -- not just content correctness (that is tools/replay/replay.lua's job).
 -- Run via: tools/journey/journey.sh
 
-local ROOT = "/home/kamikuma/Desktop/divijg19/Projects/Praxis"
+local self = debug.getinfo(1, "S").source:sub(2)
+local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 vim.cmd("runtime plugin/praxis.lua")
 vim.env.XDG_DATA_HOME = "/tmp/praxis_journey"
@@ -114,7 +115,7 @@ ok("no_orphan_buffers", count_praxis() == 1)
 
 -- 7. invalid challenge id -> recovery screen, not Lua error
 vim.cmd("Praxis does_not_exist")
-ok("invalid_id_recovery", has(snap(), "Unknown challenge: does_not_exist"))
+ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 
 -- 8. force completion of all 56, then completion screen
 local guard = 0
@@ -142,6 +143,6 @@ vim.fn.system({ "rm", "-rf", "/tmp/praxis_journey" })
 vim.fn.system({ "praxis", "reset", "--yes" })
 vim.env.PATH = "/usr/local/bin:/usr/bin:/bin"
 vim.cmd("Praxis")
-ok("missing_binary_recovery", has(snap(), "Praxis executable not found%."))
+ok("missing_binary_recovery", has(snap(), "Praxis isn't installed%."))
 
 vim.cmd("qa!")

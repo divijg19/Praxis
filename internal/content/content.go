@@ -316,14 +316,14 @@ func All() []challenge.Challenge {
 			Verify: "buffer",
 			Target: "",
 			Content: []string{
-				"Use daw to delete the middle word",
+				"Use dw to delete the middle word",
 				"",
-				"keep lose keep",
+				"alpha bravo charlie",
 			},
 			Result: []string{
-				"Use daw to delete the middle word",
+				"Use dw to delete the middle word",
 				"",
-				"keep  keep",
+				"alpha charlie",
 			},
 			Layer: "Tutorial",
 		},
@@ -908,4 +908,22 @@ func All() []challenge.Challenge {
 			Evaluation: &challenge.Evaluation{MaxMoves: 12},
 		},
 	}
+}
+
+func IDs() []string {
+	all := All()
+	ids := make([]string, 0, len(all))
+	for _, c := range all {
+		ids = append(ids, c.ID)
+	}
+	return ids
+}
+
+func Exists(id string) bool {
+	for _, c := range All() {
+		if c.ID == id {
+			return true
+		}
+	}
+	return false
 }

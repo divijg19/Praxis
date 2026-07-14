@@ -30,7 +30,7 @@ func DescriptionFor(id string) (Description, bool) {
 				Result:     c.Result,
 				Evaluation: c.Evaluation,
 			}
-			if m, ok := MetadataFor(id); ok {
+			if m, ok := metadataFor(id); ok {
 				d.Stage = m.Stage
 				d.Concept = m.Concept
 				d.Context = m.Context

@@ -5,17 +5,15 @@ function M.open(id)
   local desc_raw = vim.fn.systemlist({ "praxis", "describe", id })
   local ok, desc = pcall(vim.fn.json_decode, table.concat(desc_raw, ""))
   if not ok or type(desc) ~= "table" then
-    require("praxis.ui").recovery("Unknown challenge: " .. id, {
+    require("praxis.ui").recovery("That challenge doesn't exist.", {
       "",
-      "Press [Enter] or [q] to return.",
+      "[Enter] or [q] Back.",
     })
     return
   end
 
-  local buf = ui.create_buffer("Praxis")
-  ui.set_lines(buf, desc.content)
-  ui.set_modifiable(buf, desc.verify == "buffer" or desc.verify == "composite")
-  vim.api.nvim_set_current_buf(buf)
+  local editable = desc.verify == "buffer" or desc.verify == "composite"
+  local buf = ui.show("Praxis — " .. desc.name, desc.content, editable)
 
   vim.fn.system({ "praxis", "attempt", id })
 
@@ -33,6 +31,7 @@ function M.open(id)
     result_lines    = desc.result,
     challenge_id    = id,
     maxmoves        = desc.evaluation and desc.evaluation.max_moves,
+    editable        = editable,
   }
 
   local function render_result()
@@ -48,31 +47,42 @@ function M.open(id)
     else
       table.insert(display, "Moves: " .. state.moves)
     end
-    table.insert(display, "Time: "  .. elapsed_ms .. "ms")
+    table.insert(display, "Time: "  .. elapsed_ms .. " ms")
     table.insert(display, "")
+    local completions = 0
     for _, line in ipairs(stats_out) do
-      table.insert(display, line)
+      local n = line:match("^Completions: (%d+)")
+      if n then completions = tonumber(n) end
+    end
+    if completions > 0 then
+      table.insert(display, "Completed " .. completions .. " times.")
+    end
+    if completions < 3 then
+      table.insert(display, "Practice this " .. (3 - completions) .. " more times to build mastery.")
     end
     table.insert(display, "")
-    table.insert(display, "[r] Retry")
-    table.insert(display, "[Enter] Continue")
-    table.insert(display, "[q] Quit")
+    table.insert(display, "[r] Retry.")
+    table.insert(display, "[Enter] Continue.")
+    table.insert(display, "[q] Back.")
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
     vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
   end
 
   local function check_buffer()
+    if state.maxmoves then
+      vim.api.nvim_echo({ { "Moves: " .. state.moves .. " / " .. state.maxmoves } }, false, {})
+    end
     local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     if #current ~= #state.result_lines then return end
     for i = 1, #current do
       if current[i] ~= state.result_lines[i] then return end
     end
     if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-        vim.api.nvim_echo({ { "Too many moves! Press [r] to retry.", "WarningMsg" } }, false, {})
+      vim.api.nvim_echo({ { "Over the move limit — press [r] to retry." } }, false, {})
       return
     end
     state.done = true
-    vim.api.nvim_echo({ { "Success" } }, false, {})
+    vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
     render_result()
   end
 
@@ -82,7 +92,7 @@ function M.open(id)
     state.start_ns = vim.uv.hrtime()
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, state.challenge_lines)
-    if state.verify ~= "buffer" and state.verify ~= "composite" then
+    if not state.editable then
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
     vim.api.nvim_win_set_cursor(0, { 1, 0 })
@@ -93,15 +103,16 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
+      local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+      if #state.challenge_lines > 1 and row == 1 then return end
       state.moves = state.moves + 1
       if state.verify == "cursor" then
-        local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
         local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
         if line then
           local charcol = byte_to_char(line, col0)
           if vim.fn.strcharpart(line, charcol, 1) == state.target then
             state.done = true
-            vim.api.nvim_echo({ { "Success" } }, false, {})
+            vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
             render_result()
           end
         end
@@ -150,6 +161,8 @@ function M.open(id)
     pcall(vim.api.nvim_buf_delete, buf, { force = true })
     vim.cmd("Praxis")
   end, { buffer = buf, nowait = true, silent = true })
+
+  vim.api.nvim_echo({ { "[r] Retry   [q] Back.", "MsgArea" } }, false, {})
 end
 
 return M

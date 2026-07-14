@@ -31,9 +31,9 @@ challenge.Challenge{
 
 | Field | Stability | Rule |
 |---|---|---|
-| `ID` | STABLE | Globally unique. Never change after first release. `snake_case` with `_hunter` or `_combo` suffix. |
+| `ID` | STABLE | Globally unique. Never change after first release. `snake_case`: Tutorial/Training use `_hunter` or `_combo` suffix; Trials use a `trial_` prefix. |
 | `Name` | EVOLVABLE | Display name. May change as curriculum framing shifts. |
-| `Verify` | STABLE | `"cursor"`, `"buffer"`, or `"composite"`. Must match a registered validator. |
+| `Verify` | STABLE | `"cursor"`, `"buffer"`, or `"composite"`. Must be a valid Verify value. |
 | `Target` | STABLE | Required for cursor (non-empty). Empty for buffer/composite. |
 | `Content` | STABLE | First line is instruction. Buffer/composite: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
 | `Result` | STABLE | Required for buffer/composite (non-empty slice, exact target state). Nil for cursor. |
@@ -87,6 +87,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 | `praxis catalog` | One name per line, curriculum order | 0 | TestCatalogOutputStable |
 | `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
 | `praxis stats [id]` | Per-challenge or summary | 0 / 1 | TestStatsCommand, TestStatsSummary, TestRecordStats, TestStatsCommandConfidenceLevels |
+| `praxis reset [--yes]` | Erase all progress; interactive (type `RESET`), or `--yes` for automation | 0 / 1 | TestResetCommand |
 
 ### Internal (Frontend Transport API)
 
@@ -97,6 +98,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
 On unknown ID, stderr is `unknown challenge: <id>`.
 
+
 ### `praxis stats [id]`
 
 With an ID, shows per-challenge stats:
@@ -106,7 +108,7 @@ Attempts: 10
 Completions: 10
 Success Rate: 100%
 Best Moves: 2
-Best Time: 180ms
+Best Time: 180 ms
 Mastery: Experienced
 Confidence: High
 ```
@@ -115,7 +117,7 @@ Without arguments, shows summary with mastery distribution and practice guidance
 
 ### `praxis describe <id>`
 
-Returns a canonical JSON representation of the challenge including its metadata and (for composite challenges) evaluation. This single endpoint replaces the legacy `challenge`, `target`, `verify`, `result`, and `stage` commands.
+Returns a canonical JSON representation of the challenge including its metadata and (for composite challenges) evaluation.
 
 **Output schema:**
 ```json
@@ -142,7 +144,7 @@ Enforced by: `TestDescribeCommand`, `TestDescribeComposite`, `TestDescribeUnknow
 
 ### `praxis catalog`
 
-Returns the name of every registered challenge, one per line, in curriculum order. This is a literal rename of the legacy `list` command — same stable format, new name.
+Returns the name of every registered challenge, one per line, in curriculum order.
 
 Enforced by: `TestCatalogOutputStable`.
 
@@ -154,17 +156,7 @@ Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextComma
 
 ## Validators
 
-Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**.
-
-### Validator Registry
-
-Defined in `internal/validator/validator.go`:
-
-```go
-var valid = map[string]bool{
-    "cursor":    true,
-    "buffer":    true,
-    "composite": true,
+Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once in `internal/content/content_test.go` (`TestVerifyValuesValid`) and enforced for every challenge.
 }
 
 func Exists(name string) bool {
@@ -268,12 +260,12 @@ Comparison is byte-exact string equality:
 Behaviorally identical to the buffer validator (TextChanged + TextChangedI listeners, byte-exact comparison via `check_buffer()`). Additionally, the Lua frontend enforces a `MaxMoves` threshold:
 
 - On each Normal-mode edit (TextChanged), moves counter is incremented
-- If moves exceed `MaxMoves`, challenge is failed with "Too many moves! Press r to retry."
+- If moves exceed `MaxMoves`, challenge is failed with "Over the move limit — press [r] to retry."
 - Result screen shows `Moves: N / MaxMoves` instead of just `Moves: N`
 
-The `MaxMoves` value is transmitted via the `describe` JSON endpoint (`evaluation.max_moves`). It is an anti-bruteforce threshold, not a scoring target — thresholds are set at 2–4× the optimal move count.
+The `MaxMoves` value is transmitted via the `describe` JSON endpoint as `evaluation.max_moves`.
 
-**Used by:** 10 Training challenges.
+**Used by:** 15 challenges (10 Training + 5 Trial).
 
 ### Autocommand Dispatching
 
@@ -281,13 +273,7 @@ The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer chall
 
 ### Contract Enforcement
 
-| Test | Enforces |
-|---|---|
-| `TestValidatorCoverage` | Every challenge references a registered validator |
-| `TestNoValidatorDrift` | Every registered validator is used by at least one challenge |
-| `TestResultShapeMatchesVerify` | Cursor challenges forbid Result; buffer and composite forbid Target |
-| `TestExistsCursor` / `TestExistsBuffer` / `TestExistsComposite` | Validators are present in the registry |
-| `TestCompositeHasEvaluation` | Composite challenges always have non-nil Evaluation with positive MaxMoves |
+Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. Composite challenges always declare a positive `MaxMoves`. These invariants are enforced by the content test suite (see TESTING.md).
 
 ### Future Candidates
 
@@ -371,32 +357,35 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ```
 ── Praxis ──────────────────────────────────────
 
-  Location: Search
+  Current: Tutorial — Search
   Progress: 4/56
 
   Direction:
-    Next: find_hunter — Search
-    Review: motion_rush — Movement
+    Next: Find Hunter — Search
+    Review: Motion Rush — Movement
 
   Mastery:
     Unseen: 21   Learning: 16   Practiced: 3   Experienced: 1
 
-  Press Enter to continue.
+  [Enter] Continue, or [r] Review.
+  [q] Back.
 ```
 
 Three sections:
 
 | Section | Content | Source |
 |---|---|---|
-| **Location** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis stats` |
-| **Direction** | Next challenge + stage, review recommendation + stage | `praxis next`, `praxis stats` |
-| **Data** | Mastery distribution (compact one-line) | `praxis stats` |
+| **Current** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis describe`, `praxis stats` |
+| **Direction** | Next challenge (by name) + stage, review recommendation (by name) + stage | `praxis next`, `praxis describe`, `praxis stats` |
+| **Mastery** | Mastery distribution (compact one-line) | `praxis stats` |
 
 ### Actions
 
 | Key | Action |
 |---|---|
 | `<CR>` | Opens the next challenge directly (never opens Hub as intermediate step) |
+| `r` | Opens the recommended review challenge (only shown when a review is recommended) |
+| `q` | Returns to the previous buffer |
 
 ### Design Principles
 
@@ -409,28 +398,16 @@ Three sections:
 
 ### Principles
 
-1. **One concept per challenge.** Every challenge has a documented primary Concept, Context, and Stage. The curriculum metadata in `internal/content/taxonomy_test.go` is the single source of truth.
+1. **One concept per challenge.** Every challenge has a documented primary Concept, Context, and Stage. The `curriculum` map in `internal/content/curriculum.go` is the single source of truth.
 2. **IDs are permanent.** Challenge identifiers must never be renamed or removed.
-3. **Validators are stable.** Every registered validator must be used by at least one challenge.
+3. **Verify values are stable.** The set of valid Verify values (`cursor`, `buffer`, `composite`) is fixed and every challenge uses one.
 4. **Curriculum growth is intentional.** New challenges require a documented primary concept and must not duplicate existing content.
 5. **Replay verification is mandatory.** Every challenge must be solvable via the replay harness.
 6. **Duplicate challenge content is prohibited.** Challenges may share concepts when they teach the concept in a different context or composition.
 
 ### Test Suite
 
-| Test | Enforces |
-|---|---|
-| `TestCoreConceptCoverage` | Core Vim concepts remain represented |
-| `TestNoDuplicateChallengeContent` | No unintended duplicate exercises |
-| `TestCurriculumMapComplete` | Every challenge mapped, no orphaned entries |
-| `TestUniqueChallengeIDs` | No ID collisions |
-| `TestChallengeCount` | No accidental addition/removal |
-| `TestNoValidatorDrift` | Validator usage stays current |
-| `TestChallengeIDsStable` | IDs never renamed |
-| `TestCurriculumCoverage` | Every challenge has Concept, Context, Stage |
-| `TestConceptContextPairsUnique` | No duplicate (Concept, Context) pairs |
-| `TestProgressionCoverage` | All progression stages have challenges |
-| `TestStageIntroductionOrder` | Stages introduced in pedagogical order |
+These principles are enforced by the integrity and content test suites (see TESTING.md): unique and stable challenge IDs, a complete and acyclic curriculum map, no duplicate challenge content, full replay coverage, and single-owner validators for the verify/result/target shape.
 
 ### Anti-Goals
 

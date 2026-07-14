@@ -37,10 +37,10 @@ function M.show(opts)
   close_orphans()
 
   if not M.available() then
-    require("praxis.ui").recovery("Praxis executable not found.", {
+    require("praxis.ui").recovery("Praxis isn't installed.", {
       "Install or build Praxis, then restart Neovim.",
       "",
-      "See README for setup instructions.",
+      "[Enter] or [q] Back.",
     })
     return
   end

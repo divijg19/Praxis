@@ -12,7 +12,7 @@ Every test belongs to exactly one category.
 | --------------- | ---------------------------------------- | ----- |
 | Correctness     | Individual behavior of a unit or command  | `internal/**/*_test.go` |
 | Integrity       | Curriculum invariants (IDs, reachability, acyclicity) | `internal/content/*_test.go` |
-| Regression      | Prevent previously-fixed bugs from returning | `internal/**/*_test.go`, `docs/V0_2_6_FINDINGS.md` |
+| Regression      | Prevent previously-fixed bugs from returning | `internal/**/*_test.go` |
 | Replay          | Curriculum correctness, end-to-end content | `tools/replay/replay.lua`, `tools/verify.sh` |
 | Learner Journey | End-to-end experience, real product       | `tools/journey/journey.lua`, `tools/journey/journey.sh` |
 
@@ -43,7 +43,7 @@ These live in `internal/content/integrity_test.go` and must never be removed.
 
 ## Regression
 
-Behavior that once broke and must stay fixed. Each has a test and a note in `docs/V0_2_6_FINDINGS.md`. Examples:
+Behavior that once broke and must stay fixed. Each has a dedicated regression test. Examples:
 
 - no two challenges share an ID
 - `describe` on an unknown id returns a clean error (not a crash)
@@ -54,12 +54,14 @@ Behavior that once broke and must stay fixed. Each has a test and a note in `doc
 Drives all 56 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
 
 ```bash
+# Requires the `praxis` binary on PATH (the harness builds it to /tmp/praxis).
+# Prefer `tools/verify.sh`, which builds it for you.
 nvim --headless -l tools/replay/replay.lua
 ```
 
 ## Learner Journey
 
-Executes the real product — `:Praxis`, `:Praxis <id>`, real keystrokes — from first launch to completion and back. Validates recovery paths, voice, and navigation. Runs manually for v0.2.7; promoted into `verify.sh` once stable.
+Executes the real product — `:Praxis`, `:Praxis <id>`, real keystrokes — from first launch to completion and back. Validates recovery paths, voice, and navigation. Runs inside `tools/verify.sh` as one command covering all five test categories.
 
 ```bash
 bash tools/journey/journey.sh
@@ -73,4 +75,4 @@ bash tools/journey/journey.sh
 tools/verify.sh
 ```
 
-Runs: `go test`, `go vet`, `gofmt`, and replay (all 56 challenges). This is the single command to verify correctness, integrity, regression, and replay before committing. The learner journey is run separately until it is promoted into this gate.
+Runs: `go test`, `go vet`, `gofmt`, replay (all 56 challenges), and the learner journey. This is the single command to verify all five categories — Correctness, Integrity, Regression, Replay, and Learner Journey — before committing.

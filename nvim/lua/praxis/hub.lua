@@ -1,12 +1,12 @@
 local M = {}
 
-local function tier_for_id(id)
+local function describe_for_id(id)
   local raw = vim.fn.systemlist({ "praxis", "describe", id })
   local desc = vim.fn.json_decode(table.concat(raw, ""))
   if type(desc) == "table" then
-    return desc.layer or "", desc.stage or ""
+    return desc.name or "", desc.layer or "", desc.stage or ""
   end
-  return "", ""
+  return "", "", ""
 end
 
 function M.open()
@@ -41,7 +41,7 @@ function M.open()
       if n then mastery_practiced = n end
       n = line:match("^  Experienced: (%d+)")
       if n then mastery_experienced = n end
-      if line:match("^Highest Tier:") then
+      if line:match("^Most mastered:") then
         in_mastery = false
       end
     end
@@ -57,28 +57,28 @@ function M.open()
     end
   end
 
-  local layer, stage = "", ""
+  local name, layer, stage = "", "", ""
   if next_id ~= "" then
-    layer, stage = tier_for_id(next_id)
+    name, layer, stage = describe_for_id(next_id)
   end
 
   if layer ~= "" then
-    table.insert(display, "  Location: " .. layer .. " — " .. stage)
+    table.insert(display, "  Current: " .. layer .. " — " .. stage)
   else
-    table.insert(display, "  Location: Complete")
+    table.insert(display, "  Current: Complete")
   end
   table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or tostring(#vim.fn.systemlist({ "praxis", "catalog" }))))
   table.insert(display, "")
 
   table.insert(display, "  Direction:")
   if next_id ~= "" then
-    table.insert(display, "    Next: " .. next_id .. " — " .. stage)
+    table.insert(display, "    Next: " .. name .. " — " .. stage)
   else
     table.insert(display, "    Complete")
   end
   if review_challenge and review_challenge ~= "" then
-    local _, review_stage = tier_for_id(review_challenge)
-    table.insert(display, "    Review: " .. review_challenge .. " — " .. review_stage)
+    local review_name, _, review_stage = describe_for_id(review_challenge)
+    table.insert(display, "    Review: " .. review_name .. " — " .. review_stage)
   end
   table.insert(display, "")
 
@@ -94,19 +94,21 @@ function M.open()
   table.insert(display, "")
 
   if next_id ~= "" then
-    table.insert(display, "  [Enter] Continue, or [r] Review.")
+    if review_challenge and review_challenge ~= "" then
+      table.insert(display, "  [Enter] Continue, or [r] Review.")
+    else
+      table.insert(display, "  [Enter] Continue.")
+    end
+    table.insert(display, "  [q] Back.")
   else
     table.insert(display, "  Curriculum complete.")
-    table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "0"))
-    table.insert(display, "")
-    table.insert(display, "  [r] Review.")
-    table.insert(display, "  [q] Finish.")
+    if review_challenge and review_challenge ~= "" then
+      table.insert(display, "  [r] Review.")
+    end
+    table.insert(display, "  [q] Back.")
   end
 
-  local buf = ui.create_buffer("Praxis")
-  ui.set_lines(buf, display)
-  ui.set_modifiable(buf, false)
-  vim.api.nvim_set_current_buf(buf)
+  local buf = ui.show("Praxis", display, false)
 
   local function open_target(id)
     if not id or id == "" then return end

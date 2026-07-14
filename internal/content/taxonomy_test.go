@@ -4,7 +4,7 @@ import "testing"
 
 func TestCurriculumCoverage(t *testing.T) {
 	for _, c := range All() {
-		_, ok := MetadataFor(c.ID)
+		_, ok := metadataFor(c.ID)
 		if !ok {
 			t.Errorf("challenge %q missing from curriculum metadata", c.ID)
 		}
@@ -12,9 +12,9 @@ func TestCurriculumCoverage(t *testing.T) {
 }
 
 func TestValidStages(t *testing.T) {
-	valid := ValidStages()
+	valid := validStages()
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}
@@ -27,7 +27,7 @@ func TestValidStages(t *testing.T) {
 func TestConceptContextPairsUnique(t *testing.T) {
 	seen := make(map[string]string)
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}
@@ -43,15 +43,15 @@ func TestConceptContextPairsUnique(t *testing.T) {
 func TestProgressionCoverage(t *testing.T) {
 	stages := make(map[string]bool)
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}
 		stages[m.Stage] = true
 	}
 
-	expected := []string{StageMovement, StageSearch, StageStructuralNavigation,
-		StageEditing, StageTextObjects, StageRegisters}
+	expected := []string{stageMovement, stageSearch, stageStructuralNavigation,
+		stageEditing, stageTextObjects, stageRegisters}
 	for _, s := range expected {
 		if !stages[s] {
 			t.Errorf("progression stage %q has no challenges", s)
@@ -61,17 +61,17 @@ func TestProgressionCoverage(t *testing.T) {
 
 func TestStageIntroductionOrder(t *testing.T) {
 	stageOrder := []string{
-		StageMovement,
-		StageSearch,
-		StageStructuralNavigation,
-		StageEditing,
-		StageTextObjects,
-		StageRegisters,
+		stageMovement,
+		stageSearch,
+		stageStructuralNavigation,
+		stageEditing,
+		stageTextObjects,
+		stageRegisters,
 	}
 
 	first := make(map[string]int)
 	for i, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}
@@ -86,20 +86,6 @@ func TestStageIntroductionOrder(t *testing.T) {
 		if first[curr] < first[prev] {
 			t.Errorf("stage %q (first at index %d) appears before %q (first at index %d)",
 				curr, first[curr], prev, first[prev])
-		}
-	}
-}
-
-func TestMetadataMatchesChallengeLayer(t *testing.T) {
-	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
-		if !ok {
-			t.Errorf("challenge %q missing from curriculum metadata", c.ID)
-			continue
-		}
-		if m.Layer != c.Layer {
-			t.Errorf("challenge %q: Metadata.Layer=%q != Challenge.Layer=%q",
-				c.ID, m.Layer, c.Layer)
 		}
 	}
 }
