@@ -111,7 +111,7 @@ func TestTrialIntegrity(t *testing.T) {
 	}
 
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			t.Errorf("challenge %q missing from curriculum", c.ID)
 			continue
@@ -161,7 +161,7 @@ func equalStringSet(a, b []string) bool {
 func TestDerivedFromAcyclic(t *testing.T) {
 	adj := make(map[string][]string)
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}
@@ -263,7 +263,7 @@ func TestTrialObjectivesDistinct(t *testing.T) {
 	}
 	var trials []trialMeta
 	for _, c := range All() {
-		m, ok := MetadataFor(c.ID)
+		m, ok := metadataFor(c.ID)
 		if !ok {
 			continue
 		}

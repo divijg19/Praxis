@@ -79,15 +79,15 @@ menu hierarchy.
   the Onboarding; on later launches it opens the Hub. `:Praxis <id>`
   opens a specific challenge directly.
 - **Onboarding** (first launch only) offers four actions:
-  - `[s]` Start Learning → opens the next uncompleted challenge.
-  - `[e]` Explore Curriculum → the Catalog (a flat list of all challenges).
-  - `[h]` About Praxis → what Praxis teaches and how progression works.
-  - `[p]` View Progress → the Hub.
-- **Hub** (returning users) shows Location, Progress, Direction, and Mastery,
-  then: `[Enter]` continue to the next challenge, `[r]` review the
-  recommended challenge, `[q]` finish.
-- **Challenge** buffer: solve it to see the result, then `[r]` retry,
-  `[Enter]` continue, `[q]` back to the Hub.
+   - `[s]` Start → opens the next uncompleted challenge.
+   - `[e]` Explore → the Catalog (a flat list of all challenges).
+   - `[h]` About → what Praxis teaches and how progression works.
+   - `[p]` View progress → the Hub.
+- **Hub** (returning users) shows Current, Progress, Direction, and Mastery,
+   then: `[Enter]` Continue to the next challenge, `[r]` Review the
+   recommended challenge, `[q]` Back.
+- **Challenge** buffer: solve it to see the result, then `[r]` Retry,
+   `[Enter]` Continue, `[q]` Back.
 - **Catalog** is a flat, unordered list. It does not group by stage and does
   not bypass progression — it is a reference view.
 
@@ -128,7 +128,7 @@ solves, then continues.
 Movement → Search → Structural Navigation → Editing → Text Objects → Registers
 ```
 
-This order is enforced by `TestStageIntroductionOrder`. Rationale:
+This order is fixed by the curriculum definition. Rationale:
 
 1. **Movement first.** Everything requires cursor control.
 2. **Search second.** After basic movement, learn to jump directly.
@@ -143,7 +143,7 @@ This order is enforced by `TestStageIntroductionOrder`. Rationale:
 Tutorial → Training → Trial
 ```
 
-Enforced by curriculum order and `TestDerivedFromAcyclic`. Rationale:
+Enforced by curriculum order. Rationale:
 
 1. **Tutorial** — learn each primitive in isolation.
 2. **Training** — combine primitives into compositions.
@@ -169,11 +169,10 @@ Registers Tutorials → Training
 
 ### When to advance
 
-Progression is **count-based**, not stage-gated. `NextChallenge` returns the
-first challenge whose `Completions <= LearningMax` (LearningMax = 2). A
-challenge therefore advances out of the "next" slot only after it has been
-**completed 3 or more times**. Stages exist as metadata (the Hub shows the
-next challenge's stage as `Location`) but do not gate progression.
+Progression is **count-based**, not stage-gated. A challenge stays current
+until it has been **completed three times**, after which the next unpracticed
+challenge becomes current. Stages exist as metadata (the Hub shows the next
+challenge's stage as `Current`) but do not gate progression.
 
 Mastery tiers are also count-based (see `internal/stats`):
 
@@ -182,7 +181,7 @@ Mastery tiers are also count-based (see `internal/stats`):
 - **Practiced** — 3–7 completions
 - **Experienced** — 8+ completions
 
-The full curriculum is complete when every challenge has `Completions > LearningMax`. At that point `NextChallenge` returns empty and the Hub shows `Location: Complete`.
+The full curriculum is complete when every challenge has been completed three times. At that point the Hub shows `Current: Complete`.
 
 ### When to revisit
 
@@ -198,8 +197,8 @@ Revisiting is a pedagogical tool, not a penalty. Progress is preserved when retu
 
 ## 7. After the Curriculum
 
-The curriculum ends when every challenge has `Completions > LearningMax`
-(count-based; see §6). At that point the Hub shows `Location: Complete`
+The curriculum ends when every challenge has been completed three times
+(count-based; see §6). At that point the Hub shows `Current: Complete`
 and the learner can press `[r]` to review the recommended challenge or
 `[q]` to finish. Any challenge may be revisited at any time for practice
 or improvement.

@@ -28,11 +28,10 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats` (public); `attempt`, `record` (internal) |
+| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset` (public); `attempt`, `record` (internal) |
 | `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
-| `internal/content` | `All()`, `DescriptionFor()`, `MetadataFor()`, `ValidStages()` — challenge registry + curriculum metadata |
+| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()` — challenge registry + curriculum metadata |
 | `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
-| `internal/validator` | `Exists(name)` — validator dispatch registry (`cursor`, `buffer`, `composite`) |
 
 ### Data flow
 
@@ -44,7 +43,7 @@ cmd/praxis/main.go
     |
     ├── internal/content.All()      →  challenge.Challenge[]
     ├── internal/content.DescriptionFor(id)  →  (Description, bool)
-    ├── internal/content.MetadataFor(id)  →  content.Metadata{Concept, Context, Stage, Layer}
+     ├── internal/content.metadataFor(id)  →  content.Metadata{Concept, Context, Stage}
     ├── internal/stats.Load()       →  map[string]Stats
     |
     v
@@ -76,7 +75,7 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 
 #### Stage taxonomy
 
-| Stage | Purpose | Primitives | Challenges |
+| Stage | Purpose | Primitives | Tutorial Challenges |
 |---|---|---|---|
 | Movement | cursor control | h, j, k, l, UTF-8 navigation | 3 |
 | Search | target acquisition | f, F, w, W, /, ?, ; | 7 |
@@ -84,6 +83,8 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 | Editing | mutation | x, r, ~, dw, ciw, dd, D | 7 |
 | Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ciw, ci(, ci" | 9 |
 | Registers | memory | yy, "a, "A, "ap | 5 |
+
+> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 41 Tutorial challenges). The full per-stage distribution across all layers is the matrix below.
 
 #### Layer taxonomy
 
@@ -133,7 +134,7 @@ The Neovim frontend is loaded on demand — `:Praxis` triggers `require('praxis'
 | `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, retry, invalid-id recovery |
 | `ui.lua` | — | Scratch buffer creation, content helpers, `recovery()` screen |
 | `onboarding.lua` | Arrival | First-time welcome flow |
-| `hub.lua` | Progress | Hub surface — stats, location, direction, mastery, return-to-previous-buffer |
+| `hub.lua` | Progress | Hub surface — stats, current location, direction, mastery, return-to-previous-buffer |
 
 ### Practice Surface (challenge.lua)
 
@@ -146,7 +147,7 @@ The Neovim frontend is loaded on demand — `:Praxis` triggers `require('praxis'
 - Checks `state.verify` to decide which autocmd behavior to enable:
   - `"cursor"` → modifiable=false, CursorMoved listener, target check
   - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
-  - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Too many moves! Press r to retry." on exceed
+   - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Over the move limit — press [r] to retry." on exceed
 - Uses `byte_to_char()` normalization for multi-byte content:
 
 ```lua
@@ -167,25 +168,25 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 
 - First-time detection via stats file absence
 - Welcome buffer with orientation text
-- Enter → `challenge.open("motion_rush")`
+- `[s]` → `challenge.open("motion_rush")`
 - No persistence, no state, no wizard
 
 ### Hub Surface (hub.lua)
 
 - Returning users see Hub on `:Praxis` instead of raw CLI output
-- Layout: Location → Direction → Data
-  - **Location:** current stage (stage of first un-Practiced challenge), progress count
+- Layout: Current → Direction → Mastery
+  - **Current:** current stage (stage of first un-Practiced challenge), progress count
   - **Direction:** next challenge + its stage, review recommendation + its stage
-  - **Data:** mastery distribution (compact one-line format)
+  - **Mastery:** mastery distribution (compact one-line format)
 - `<CR>` opens the next challenge directly via `challenge.open()`
 - Data sourced from `praxis next`, `praxis describe`, `praxis stats`
 
 ### Journey Surface (challenge.lua — result screen)
 
 - Result screen displays stats with action options:
-  - `[r] Retry` — reset and retry the challenge
-  - `[Enter] Continue Journey` — opens the next curriculum challenge
-  - `[q] Quit` — returns to the Hub
+  - `[r] Retry.` — reset and retry the challenge
+  - `[Enter] Continue.` — opens the next curriculum challenge
+  - `[q] Back.` — returns to the Hub
 - Enter on result screen skips Hub entirely (Challenge → Result → Next Challenge)
 
 ### Runtime Loop
@@ -201,7 +202,7 @@ is visible at a time. The loop:
    successful verify, calls `render_result()`.
 4. `render_result()` records the attempt (`praxis record`), refreshes stats
    (`praxis stats`), and replaces the buffer with the result view
-   (`[r] Retry`, `[Enter] Continue Journey`, `[q] Quit`).
+    (`[r] Retry.`, `[Enter] Continue.`, `[q] Back.`).
 5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
    `praxis next` (or returns to the Hub); `q` returns to the Hub.
 
@@ -220,3 +221,4 @@ share the "Praxis" label never collide.
 | `praxis attempt <id>` | Neovim | Silent (internal) |
 | `praxis record <id> <moves> <time_ms>` | Neovim | Silent (internal) |
 | `praxis stats [id]` | CLI | Per-challenge or summary |
+| `praxis reset [--yes]` | CLI | Wipe all progress (confirm or pass `--yes`) |

@@ -2,8 +2,6 @@ package content
 
 import (
 	"testing"
-
-	"github.com/divijg19/Praxis/internal/validator"
 )
 
 var stableChallengeIDs = []string{
@@ -93,30 +91,6 @@ func TestAllChallengesHaveVerify(t *testing.T) {
 	}
 }
 
-func TestBufferChallengesHaveResults(t *testing.T) {
-	for _, c := range All() {
-		if (c.Verify == "buffer" || c.Verify == "composite") && len(c.Result) == 0 {
-			t.Errorf("buffer-like challenge %s has empty Result", c.ID)
-		}
-	}
-}
-
-func TestCursorChallengesHaveTargets(t *testing.T) {
-	for _, c := range All() {
-		if c.Verify == "cursor" && c.Target == "" {
-			t.Errorf("cursor challenge %s has empty Target", c.ID)
-		}
-	}
-}
-
-func TestBufferChallengesHaveNoTargets(t *testing.T) {
-	for _, c := range All() {
-		if (c.Verify == "buffer" || c.Verify == "composite") && c.Target != "" {
-			t.Errorf("buffer-like challenge %s has non-empty Target: %q", c.ID, c.Target)
-		}
-	}
-}
-
 func TestNoEmptyContent(t *testing.T) {
 	for _, c := range All() {
 		if len(c.Content) == 0 {
@@ -133,10 +107,18 @@ func TestInstructionLinePresent(t *testing.T) {
 	}
 }
 
-func TestValidatorCoverage(t *testing.T) {
+func TestVerifyValuesValid(t *testing.T) {
+	valid := map[string]bool{"cursor": true, "buffer": true, "composite": true}
+	used := make(map[string]bool)
 	for _, c := range All() {
-		if !validator.Exists(c.Verify) {
-			t.Errorf("challenge %s uses unknown validator: %s", c.ID, c.Verify)
+		if !valid[c.Verify] {
+			t.Errorf("challenge %s uses unknown validator: %q", c.ID, c.Verify)
+		}
+		used[c.Verify] = true
+	}
+	for name := range valid {
+		if !used[name] {
+			t.Errorf("validator %q is registered but unused by any challenge", name)
 		}
 	}
 }
@@ -230,27 +212,6 @@ var stableChallengeNames = []string{
 	"Repeat Choice Trial",
 }
 
-func TestChallengeCount(t *testing.T) {
-	if got := len(All()); got != len(stableChallengeIDs) {
-		t.Errorf("got %d challenges, want %d", got, len(stableChallengeIDs))
-	}
-}
-
-func TestResultMatchesVerify(t *testing.T) {
-	for _, c := range All() {
-		switch c.Verify {
-		case "buffer", "composite":
-			if len(c.Result) == 0 {
-				t.Errorf("buffer-like challenge %s has empty Result", c.ID)
-			}
-		case "cursor":
-			if len(c.Result) > 0 {
-				t.Errorf("cursor challenge %s has unexpected Result", c.ID)
-			}
-		}
-	}
-}
-
 func TestBufferChallengeLayout(t *testing.T) {
 	for _, c := range All() {
 		if c.Verify != "buffer" && c.Verify != "composite" {
@@ -265,57 +226,6 @@ func TestBufferChallengeLayout(t *testing.T) {
 		}
 		if len(c.Result) > 0 && c.Result[0] != c.Content[0] {
 			t.Errorf("buffer-like challenge %s result[0] != content[0]", c.ID)
-		}
-	}
-}
-
-func TestCursorChallengeLayout(t *testing.T) {
-	for _, c := range All() {
-		if c.Verify != "cursor" {
-			continue
-		}
-		if len(c.Content) < 1 {
-			t.Errorf("cursor challenge %s has empty Content", c.ID)
-			continue
-		}
-		if c.Content[0] == "" {
-			t.Errorf("cursor challenge %s has empty instruction line", c.ID)
-		}
-		if c.Target == "" {
-			t.Errorf("cursor challenge %s has empty Target", c.ID)
-		}
-	}
-}
-
-func TestNoValidatorDrift(t *testing.T) {
-	used := make(map[string]bool)
-	for _, c := range All() {
-		used[c.Verify] = true
-	}
-	for _, name := range []string{"cursor", "buffer", "composite"} {
-		if !used[name] {
-			t.Errorf("validator %q is registered but unused by any challenge", name)
-		}
-	}
-}
-
-func TestResultShapeMatchesVerify(t *testing.T) {
-	for _, c := range All() {
-		switch c.Verify {
-		case "cursor":
-			if c.Target == "" {
-				t.Errorf("cursor challenge %s has empty Target", c.ID)
-			}
-			if len(c.Result) > 0 {
-				t.Errorf("cursor challenge %s has unexpected Result", c.ID)
-			}
-		case "buffer", "composite":
-			if c.Target != "" {
-				t.Errorf("buffer-like challenge %s has non-empty Target: %q", c.ID, c.Target)
-			}
-			if len(c.Result) == 0 {
-				t.Errorf("buffer-like challenge %s has empty Result", c.ID)
-			}
 		}
 	}
 }

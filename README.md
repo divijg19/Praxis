@@ -6,11 +6,24 @@ Praxis teaches Vim through short, self-contained challenges — Tutorials, Train
 
 Install the `praxis` binary, open Neovim, and run `:Praxis`.
 
+## Quick Start
+
+Open Neovim and run `:Praxis`.
+
 ## Documentation
 
 - [CURRICULUM.md](docs/CURRICULUM.md) — what Praxis teaches
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — how it is built
 - [REFERENCE.md](docs/REFERENCE.md) — challenge model, CLI, stats
 - [TESTING.md](docs/TESTING.md) — how it is verified
-- [V0_2_6_FINDINGS.md](docs/V0_2_6_FINDINGS.md) — lessons from this release
-- [plans/v0.2.md](plans/v0.2.md) — release record
+- [RATIONALE.md](docs/RATIONALE.md) — why major decisions were made
+
+## Verify
+
+```bash
+bash tools/verify.sh
+```
+
+## Contribute
+
+Contributions follow the standard flow: branch, implement, run `tools/verify.sh`, and open a pull request.

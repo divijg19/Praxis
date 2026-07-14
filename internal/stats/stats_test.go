@@ -126,14 +126,6 @@ func TestConfidenceBoundaryMedium(t *testing.T) {
 	}
 }
 
-func TestConfidenceMedium(t *testing.T) {
-	s := Stats{Attempts: 10, Completions: 6}
-	got := Confidence(s)
-	if got != "Medium" {
-		t.Fatalf("Confidence(6/10) = %q, want %q", got, "Medium")
-	}
-}
-
 func TestConfidenceBoundaryHigh(t *testing.T) {
 	med := Stats{Attempts: 10, Completions: 7}
 	if got := Confidence(med); got != "Medium" {
@@ -141,14 +133,6 @@ func TestConfidenceBoundaryHigh(t *testing.T) {
 	}
 	high := Stats{Attempts: 10, Completions: 8}
 	if got := Confidence(high); got != "High" {
-		t.Fatalf("Confidence(8/10) = %q, want %q", got, "High")
-	}
-}
-
-func TestConfidenceHigh(t *testing.T) {
-	s := Stats{Attempts: 10, Completions: 8}
-	got := Confidence(s)
-	if got != "High" {
 		t.Fatalf("Confidence(8/10) = %q, want %q", got, "High")
 	}
 }
@@ -191,11 +175,15 @@ func TestLoadCorruptFile(t *testing.T) {
 	os.MkdirAll(filepath.Join(d, "praxis"), 0755)
 	os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("{broken"), 0644)
 	m, err := Load()
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("expected error for corrupt stats file, got nil")
 	}
 	if len(m) != 0 {
 		t.Errorf("got %d entries, want 0", len(m))
+	}
+	backup := filepath.Join(d, "praxis", "stats.json.corrupt")
+	if _, statErr := os.Stat(backup); statErr != nil {
+		t.Errorf("expected corrupt backup to be written: %v", statErr)
 	}
 }
 

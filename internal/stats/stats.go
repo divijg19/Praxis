@@ -2,6 +2,7 @@ package stats
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,7 +16,7 @@ type Stats struct {
 	LastPlayed  string `json:"last_played"`
 }
 
-func Path() string {
+func path() string {
 	xdg := os.Getenv("XDG_DATA_HOME")
 	if xdg == "" {
 		home, _ := os.UserHomeDir()
@@ -25,22 +26,27 @@ func Path() string {
 }
 
 func Load() (map[string]Stats, error) {
-	data, err := os.ReadFile(Path())
+	data, err := os.ReadFile(path())
 	if err != nil {
-		return make(map[string]Stats), nil
+		if os.IsNotExist(err) {
+			return make(map[string]Stats), nil
+		}
+		return make(map[string]Stats), err
 	}
 	var m map[string]Stats
 	if err := json.Unmarshal(data, &m); err != nil {
-		return make(map[string]Stats), nil
+		backup := path() + ".corrupt"
+		_ = os.WriteFile(backup, data, 0644)
+		return make(map[string]Stats), fmt.Errorf("corrupt progress file; backup saved to %s", backup)
 	}
 	if m == nil {
-		return make(map[string]Stats), nil
+		m = make(map[string]Stats)
 	}
 	return m, nil
 }
 
 func Save(m map[string]Stats) error {
-	dir := filepath.Dir(Path())
+	dir := filepath.Dir(path())
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
@@ -61,12 +67,12 @@ func Save(m map[string]Stats) error {
 		os.Remove(tmp.Name())
 		return err
 	}
-	return os.Rename(tmp.Name(), Path())
+	return os.Rename(tmp.Name(), path())
 }
 
 func Reset() error {
-	path := Path()
-	if err := os.Remove(path); err != nil {
+	p := path()
+	if err := os.Remove(p); err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -123,13 +129,13 @@ func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
 }
 
 const (
-	LearningMax    = 2
-	ExperiencedMin = 8
+	learningMax    = 2
+	experiencedMin = 8
 )
 
 func NextChallenge(m map[string]Stats, curriculum []string) string {
 	for _, id := range curriculum {
-		if m[id].Completions <= LearningMax {
+		if m[id].Completions <= learningMax {
 			return id
 		}
 	}
@@ -165,9 +171,9 @@ func RecommendedReview(m map[string]Stats, curriculum []string) string {
 
 func MasteryTier(s Stats) string {
 	switch {
-	case s.Completions >= ExperiencedMin:
+	case s.Completions >= experiencedMin:
 		return "Experienced"
-	case s.Completions > LearningMax:
+	case s.Completions > learningMax:
 		return "Practiced"
 	case s.Completions >= 1:
 		return "Learning"
