@@ -24,7 +24,6 @@ var curriculum = map[string]Metadata{
 	// Search
 	"find_hunter":     {"f", "character search", stageSearch, nil},
 	"word_hunter":     {"w", "word motion", stageSearch, nil},
-	"symbol_hunter":   {"f", "forward character search", stageSearch, nil},
 	"line_hunter":     {"j", "line navigation", stageSearch, nil},
 	"slash_hunter":    {"/", "forward search", stageSearch, nil},
 	"question_hunter": {"?", "backward search", stageSearch, nil},
@@ -39,7 +38,6 @@ var curriculum = map[string]Metadata{
 	"inner_quote_hunter":    {"i\"", "select inside quotes", stageStructuralNavigation, nil},
 	"around_quote_hunter":   {"a\"", "select around quotes", stageStructuralNavigation, nil},
 	"paragraph_hunter":      {"{", "paragraph navigation", stageStructuralNavigation, nil},
-	"match_hunter":          {"%", "nested delimiter matching", stageStructuralNavigation, nil},
 	// Editing
 	"delete_character_hunter":  {"x", "delete character", stageEditing, nil},
 	"replace_character_hunter": {"r", "replace character", stageEditing, nil},
@@ -55,17 +53,15 @@ var curriculum = map[string]Metadata{
 	"delete_around_paren_hunter": {"da(", "delete around parentheses", stageTextObjects, nil},
 	"delete_inner_quote_hunter":  {"di\"", "delete inside quotes", stageTextObjects, nil},
 	"delete_around_quote_hunter": {"da\"", "delete around quotes", stageTextObjects, nil},
-	"change_inner_word_hunter":   {"ciw", "word replacement within structural editing", stageTextObjects, nil},
 	"change_inner_paren_hunter":  {"ci(", "change inside parentheses", stageTextObjects, nil},
 	"change_inner_quote_hunter":  {"ci\"", "change inside quotes", stageTextObjects, nil},
 	// Registers
 	"yank_line_hunter":          {"yy", "yank line", stageRegisters, nil},
-	"named_register_hunter":     {"\"a", "named register", stageRegisters, nil},
 	"word_register_hunter":      {"\"a", "store word in register", stageRegisters, nil},
 	"register_replace_hunter":   {"\"ap", "replace content from named register", stageRegisters, nil},
 	"register_duplicate_hunter": {"\"ap", "duplicate content from named register", stageRegisters, nil},
 	// Training
-	"find_diw_combo":        {"f", "composite deletion", stageTextObjects, nil},
+	"find_diw_combo":        {"diw", "composite deletion", stageTextObjects, nil},
 	"find_daw_combo":        {"daw", "composite deletion around", stageTextObjects, nil},
 	"find_di_paren_combo":   {"di(", "composite delete inside parens", stageTextObjects, nil},
 	"find_ca_quote_combo":   {"ca\"", "composite change around quotes", stageTextObjects, nil},
@@ -76,8 +72,8 @@ var curriculum = map[string]Metadata{
 	"dd_paste_combo":        {"dd", "composite cut and paste", stageRegisters, nil},
 	"dd_paste_before_combo": {"dd", "composite cut and paste before", stageRegisters, nil},
 	// Trial
-	"trial_find_delete":   {"f", "recognition: f+diw on third argument", stageTextObjects, []string{"find_diw_combo"}},
-	"trial_find_change":   {"f", "recognition: f+ca quote replacement", stageTextObjects, []string{"find_ca_quote_combo"}},
+	"trial_find_delete":   {"diw", "recognition: f+diw on third argument", stageTextObjects, []string{"find_diw_combo"}},
+	"trial_find_change":   {"ca\"", "recognition: f+ca quote replacement", stageTextObjects, []string{"find_ca_quote_combo"}},
 	"trial_dot_repeat":    {"dw", "recognition: dot repeat of edit", stageEditing, []string{"dw_dot_combo"}},
 	"trial_delete_choice": {"diw/daw", "recognition: inner vs around word", stageTextObjects, []string{"find_diw_combo", "find_daw_combo"}},
 	"trial_repeat_choice": {"dw/ciw", "recognition: repeat vs re-execute", stageEditing, []string{"dw_dot_combo", "ciw_dot_combo"}},

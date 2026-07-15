@@ -162,7 +162,7 @@ function M.open(id)
     vim.cmd("Praxis")
   end, { buffer = buf, nowait = true, silent = true })
 
-  vim.api.nvim_echo({ { "[r] Retry   [q] Back.", "MsgArea" } }, false, {})
+  vim.api.nvim_echo({ { "[r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
 end
 
 return M

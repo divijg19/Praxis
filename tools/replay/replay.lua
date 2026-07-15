@@ -1,4 +1,4 @@
--- End-to-end replay test for all 56 challenges
+-- End-to-end replay test for all 52 challenges
 -- Run via: tools/replay/replay.sh
 
 local function describe(id)
@@ -27,11 +27,11 @@ end
 
 local all_ids = {
   "motion_rush","grid_rush","find_hunter","word_hunter",
-  "symbol_hunter","line_hunter","paren_hunter","sentence_hunter",
+  "line_hunter","paren_hunter","sentence_hunter",
   "slash_hunter","question_hunter","repeat_hunter",
   "inner_paren_hunter","around_paren_hunter","inner_bracket_hunter",
   "around_bracket_hunter","inner_quote_hunter","around_quote_hunter",
-  "paragraph_hunter","match_hunter",
+  "paragraph_hunter",
   "delete_character_hunter","replace_character_hunter",
   "toggle_case_hunter","delete_word_hunter","change_word_hunter",
   "utf8_cursor_hunter",
@@ -39,9 +39,9 @@ local all_ids = {
   "delete_inner_word_hunter","delete_around_word_hunter",
   "delete_inner_paren_hunter","delete_around_paren_hunter",
   "delete_inner_quote_hunter","delete_around_quote_hunter",
-  "change_inner_word_hunter","change_inner_paren_hunter",
-  "change_inner_quote_hunter","yank_line_hunter",
-  "named_register_hunter","word_register_hunter",
+  "change_inner_paren_hunter",
+  "change_inner_quote_hunter",  "yank_line_hunter",
+  "word_register_hunter",
   "register_replace_hunter","register_duplicate_hunter",
   "find_diw_combo","find_daw_combo",
   "find_di_paren_combo","find_ca_quote_combo","find_ciw_combo",

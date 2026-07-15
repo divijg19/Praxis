@@ -92,7 +92,11 @@ func SuccessRate(s Stats) float64 {
 	if s.Attempts == 0 {
 		return 0
 	}
-	return float64(s.Completions) / float64(s.Attempts)
+	r := float64(s.Completions) / float64(s.Attempts)
+	if r > 1 {
+		return 1
+	}
+	return r
 }
 
 func Confidence(s Stats) string {

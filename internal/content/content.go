@@ -52,18 +52,6 @@ func All() []challenge.Challenge {
 			Layer: "Tutorial",
 		},
 		{
-			ID:     "symbol_hunter",
-			Name:   "Symbol Hunter",
-			Verify: "cursor",
-			Target: "@",
-			Content: []string{
-				"Use f to find the target symbol",
-				"",
-				".......................@",
-			},
-			Layer: "Tutorial",
-		},
-		{
 			ID:     "line_hunter",
 			Name:   "Line Hunter",
 			Verify: "cursor",
@@ -153,7 +141,7 @@ func All() []challenge.Challenge {
 			Verify: "cursor",
 			Target: "@",
 			Content: []string{
-				"Use ; to repeat the last search",
+				"Use f to find a star, then ; to repeat across the row. Land on @ with l",
 				"",
 				"★  ★  ★  ★  ★  ★  ★  ★  @",
 			},
@@ -244,18 +232,6 @@ func All() []challenge.Challenge {
 				"second paragraph",
 				"",
 				"third Z",
-			},
-			Layer: "Tutorial",
-		},
-		{
-			ID:     "match_hunter",
-			Name:   "Match Hunter",
-			Verify: "cursor",
-			Target: "★",
-			Content: []string{
-				"Use % to jump to the matching delimiter",
-				"",
-				"[         ]★",
 			},
 			Layer: "Tutorial",
 		},
@@ -496,23 +472,6 @@ func All() []challenge.Challenge {
 			Layer: "Tutorial",
 		},
 		{
-			ID:     "change_inner_word_hunter",
-			Name:   "Change Inner Word Hunter",
-			Verify: "buffer",
-			Target: "",
-			Content: []string{
-				"Use ciw to change the first word",
-				"",
-				"goodbye world",
-			},
-			Result: []string{
-				"Use ciw to change the first word",
-				"",
-				"hello world",
-			},
-			Layer: "Tutorial",
-		},
-		{
 			ID:     "change_inner_paren_hunter",
 			Name:   "Change Inner Paren Hunter",
 			Verify: "buffer",
@@ -558,24 +517,6 @@ func All() []challenge.Challenge {
 			},
 			Result: []string{
 				"Use yy to yank, then p to paste",
-				"",
-				"copy me",
-				"copy me",
-			},
-			Layer: "Tutorial",
-		},
-		{
-			ID:     "named_register_hunter",
-			Name:   "Named Register Hunter",
-			Verify: "buffer",
-			Target: "",
-			Content: []string{
-				"Use \"ayy to store, then \"ap to retrieve",
-				"",
-				"copy me",
-			},
-			Result: []string{
-				"Use \"ayy to store, then \"ap to retrieve",
 				"",
 				"copy me",
 				"copy me",
@@ -694,12 +635,12 @@ func All() []challenge.Challenge {
 			Name:   "Find + Change Around",
 			Verify: "composite",
 			Content: []string{
-				"Change text inside quotes using f<char> and ca\"",
+				"Change text around quotes using f<char> and ca\"",
 				"",
 				"\"remove\"",
 			},
 			Result: []string{
-				"Change text inside quotes using f<char> and ca\"",
+				"Change text around quotes using f<char> and ca\"",
 				"",
 				"hello",
 			},
