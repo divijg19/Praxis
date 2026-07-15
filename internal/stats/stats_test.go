@@ -64,6 +64,24 @@ func TestAttemptIncrements(t *testing.T) {
 	}
 }
 
+func TestSuccessRateBounded(t *testing.T) {
+	if got := SuccessRate(Stats{}); got != 0 {
+		t.Errorf("SuccessRate(empty) = %v, want 0", got)
+	}
+	if got := SuccessRate(Stats{Attempts: 2, Completions: 1}); got != 0.5 {
+		t.Errorf("SuccessRate = %v, want 0.5", got)
+	}
+	if got := SuccessRate(Stats{Attempts: 1, Completions: 3}); got != 1 {
+		t.Errorf("SuccessRate = %v, want 1 (capped at 100%%)", got)
+	}
+}
+
+func TestConfidenceBounded(t *testing.T) {
+	if got := Confidence(Stats{Attempts: 1, Completions: 3}); got != "High" {
+		t.Errorf("Confidence = %q, want High (capped at 100%%)", got)
+	}
+}
+
 func TestAttemptNoSideEffects(t *testing.T) {
 	m := make(map[string]Stats)
 	Attempt(m, "a")
@@ -172,8 +190,12 @@ func TestUpdateLastPlayed(t *testing.T) {
 func TestLoadCorruptFile(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	os.MkdirAll(filepath.Join(d, "praxis"), 0755)
-	os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("{broken"), 0644)
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("{broken"), 0644); err != nil {
+		t.Fatal(err)
+	}
 	m, err := Load()
 	if err == nil {
 		t.Fatal("expected error for corrupt stats file, got nil")
@@ -237,9 +259,9 @@ func TestMasteryExperienced(t *testing.T) {
 
 func TestMasteryDistributionEmpty(t *testing.T) {
 	m := make(map[string]Stats)
-	d := MasteryDistribution(m, 56)
-	if d["Unseen"] != 56 {
-		t.Errorf("Unseen = %d, want 56", d["Unseen"])
+	d := MasteryDistribution(m, 52)
+	if d["Unseen"] != 52 {
+		t.Errorf("Unseen = %d, want 52", d["Unseen"])
 	}
 	if d["Learning"] != 0 {
 		t.Errorf("Learning = %d, want 0", d["Learning"])
@@ -259,9 +281,9 @@ func TestMasteryDistributionMixed(t *testing.T) {
 		"c": {Completions: 5},
 		"d": {Completions: 10},
 	}
-	d := MasteryDistribution(m, 56)
-	if d["Unseen"] != 52 {
-		t.Errorf("Unseen = %d, want 52", d["Unseen"])
+	d := MasteryDistribution(m, 52)
+	if d["Unseen"] != 48 {
+		t.Errorf("Unseen = %d, want 48", d["Unseen"])
 	}
 	if d["Learning"] != 2 {
 		t.Errorf("Learning = %d, want 2", d["Learning"])

@@ -128,6 +128,10 @@ func help() {
 	fmt.Println("Start:")
 	fmt.Println("  praxis next")
 	fmt.Println()
+	fmt.Println("Track:")
+	fmt.Println("  praxis attempt <id>")
+	fmt.Println("  praxis record <id> <moves> <time>")
+	fmt.Println()
 	fmt.Println("Progress:")
 	fmt.Println("  praxis stats")
 	fmt.Println("  praxis reset")
@@ -144,7 +148,10 @@ func describe(id string) {
 	if !ok {
 		unknown(id)
 	}
-	json.NewEncoder(os.Stdout).Encode(d)
+	if err := json.NewEncoder(os.Stdout).Encode(d); err != nil {
+		fmt.Fprintln(os.Stderr, "describe failed:", err)
+		os.Exit(1)
+	}
 }
 
 func catalog() {
@@ -165,7 +172,10 @@ func reset(yesArg string) {
 	if !yes {
 		fmt.Print("This will erase all Praxis progress.\n\nType RESET to continue: ")
 		var input string
-		fmt.Scanln(&input)
+		if _, err := fmt.Scanln(&input); err != nil {
+			fmt.Println("Reset cancelled.")
+			os.Exit(1)
+		}
 		if input != "RESET" {
 			fmt.Println("Reset cancelled.")
 			os.Exit(1)
@@ -185,7 +195,10 @@ func attempt(id string) {
 	}
 	m := loadOrFail()
 	stats.Attempt(m, id)
-	stats.Save(m)
+	if err := stats.Save(m); err != nil {
+		fmt.Fprintln(os.Stderr, "save failed:", err)
+		os.Exit(1)
+	}
 }
 
 func record(id, movesStr, timeStr string) {
@@ -202,7 +215,10 @@ func record(id, movesStr, timeStr string) {
 	}
 	m := loadOrFail()
 	stats.Update(m, id, moves, timeMs)
-	stats.Save(m)
+	if err := stats.Save(m); err != nil {
+		fmt.Fprintln(os.Stderr, "save failed:", err)
+		os.Exit(1)
+	}
 }
 
 func statsForID(id string) {
@@ -223,10 +239,16 @@ func statsForID(id string) {
 func statsSummary() {
 	m := loadOrFail()
 	ids := content.IDs()
+	valid := make(map[string]stats.Stats, len(ids))
+	for _, id := range ids {
+		if s, ok := m[id]; ok {
+			valid[id] = s
+		}
+	}
 	var completed int
 	var totalAttempts int
 	for _, id := range ids {
-		s := m[id]
+		s := valid[id]
 		if s.Completions > 0 {
 			completed++
 		}
@@ -235,7 +257,7 @@ func statsSummary() {
 	fmt.Printf("Challenges Completed: %d/%d\n", completed, len(ids))
 	fmt.Printf("Total Attempts: %d\n", totalAttempts)
 	fmt.Println()
-	dist := stats.MasteryDistribution(m, len(ids))
+	dist := stats.MasteryDistribution(valid, len(ids))
 	fmt.Println("Mastery:")
 	fmt.Printf("  Unseen: %d\n", dist["Unseen"])
 	fmt.Printf("  Learning: %d\n", dist["Learning"])

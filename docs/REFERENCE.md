@@ -172,7 +172,7 @@ func Exists(name string) bool {
 
 Buffer is set to `Content` with `modifiable=false`. A `CursorMoved` autocommand checks if the character under the cursor matches `Target`. Uses `byte_to_char()` normalization to handle multi-byte content correctly. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 20 challenges (movement, search, navigation, UTF-8 proof).
+**Used by:** 18 challenges (movement, search, navigation, UTF-8 proof).
 
 **Formal specification:**
 
@@ -198,7 +198,6 @@ Where:
 |---|---|---|---|
 | motion_rush | `Move your cursor to the star ★` | ★ | On the ★ character |
 | find_hunter | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★` | ★ | On the ★ (last character) |
-| symbol_hunter | `.......................@` | @ | On the @ (last character) |
 | utf8_cursor_hunter | `α β γ ★` | ★ | On the ★ (bytecol=9, charcol=6) |
 
 **FAIL examples:**
@@ -217,7 +216,7 @@ Where:
 
 Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and increments moves count. `TextChangedI` fires on Insert mode keystrokes but does NOT increment moves. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 21 challenges (editing, structural editing, registers).
+**Used by:** 19 challenges (editing, text objects, registers).
 
 **Formal specification:**
 
@@ -358,14 +357,14 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ── Praxis ──────────────────────────────────────
 
   Current: Tutorial — Search
-  Progress: 4/56
+  Progress: 4/52
 
   Direction:
     Next: Find Hunter — Search
     Review: Motion Rush — Movement
 
   Mastery:
-    Unseen: 21   Learning: 16   Practiced: 3   Experienced: 1
+    Unseen: 48   Learning: 2   Practiced: 1   Experienced: 1
 
   [Enter] Continue, or [r] Review.
   [q] Back.

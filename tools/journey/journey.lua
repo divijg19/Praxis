@@ -117,7 +117,7 @@ ok("no_orphan_buffers", count_praxis() == 1)
 vim.cmd("Praxis does_not_exist")
 ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 
--- 8. force completion of all 56, then completion screen
+-- 8. force completion of all 52, then completion screen
 local guard = 0
 while guard < 300 do
   local nid = vim.fn.systemlist({ "praxis", "next" })[1] or ""
@@ -130,7 +130,7 @@ while guard < 300 do
 end
 vim.cmd("Praxis")
 ok("completion_shown", has(snap(), "Curriculum complete%."))
-ok("completion_progress", has(snap(), "Progress: 56/56"))
+ok("completion_progress", has(snap(), "Progress: 52/52"))
 
 -- 9. completion review opens a challenge, then escape
 press("r")

@@ -97,12 +97,14 @@ menu hierarchy.
 
 Challenges are grouped into six stages. Each stage teaches techniques that the next stage builds on.
 
-- **Movement** — cursor control (h, j, k, l)
-- **Search** — target acquisition (f, w, /, ?)
-- **Structural Navigation** — semantic movement (%, (), {}, i(, a")
-- **Editing** — mutation (x, r, ~, dw, ciw, dd)
-- **Text Objects** — scoped mutation (diw, daw, di(, ciw)
-- **Registers** — memory (yy, "a, "A, "ap)
+- **Movement** — cursor control
+- **Search** — target acquisition
+- **Structural Navigation** — semantic movement
+- **Editing** — mutation
+- **Text Objects** — scoped mutation
+- **Registers** — memory
+
+The authoritative primitive breakdown per stage is in ARCHITECTURE.md (Stage taxonomy).
 
 ---
 

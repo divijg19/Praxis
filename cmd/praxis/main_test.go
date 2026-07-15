@@ -123,6 +123,12 @@ func TestHelpCommand(t *testing.T) {
 	if !strings.Contains(out, "catalog") {
 		t.Errorf("help output missing 'catalog', got:\n%s", out)
 	}
+	if !strings.Contains(out, "attempt") {
+		t.Errorf("help output missing 'attempt', got:\n%s", out)
+	}
+	if !strings.Contains(out, "record") {
+		t.Errorf("help output missing 'record', got:\n%s", out)
+	}
 	if !strings.Contains(out, "next") {
 		t.Errorf("help output missing 'next', got:\n%s", out)
 	}
@@ -321,8 +327,8 @@ func TestStatsSummary(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "2/56") {
-		t.Errorf("expected 2/56 completed, got: %s", out)
+	if !strings.Contains(out, "2/52") {
+		t.Errorf("expected 2/52 completed, got: %s", out)
 	}
 	if !strings.Contains(out, "Total Attempts: 0") {
 		t.Errorf("expected Total Attempts: 0, got: %s", out)
@@ -330,8 +336,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Mastery:") {
 		t.Errorf("expected Mastery header, got: %s", out)
 	}
-	if !strings.Contains(out, "Unseen: 54") {
-		t.Errorf("expected Unseen: 54, got: %s", out)
+	if !strings.Contains(out, "Unseen: 50") {
+		t.Errorf("expected Unseen: 50, got: %s", out)
 	}
 	if !strings.Contains(out, "Learning: 2") {
 		t.Errorf("expected Learning: 2, got: %s", out)
@@ -347,6 +353,26 @@ func TestStatsSummary(t *testing.T) {
 	}
 	if strings.Contains(out, "Recommended Review:") {
 		t.Errorf("unexpected Recommended Review section (no Practiced+ challenges), got: %s", out)
+	}
+}
+
+func TestStatsSummaryIgnoresStaleKeys(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	data := `{"motion_rush":{"attempts":1,"completions":1},"removed_challenge":{"attempts":3,"completions":3}}`
+	dir := filepath.Join(d, "praxis")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "stats.json"), []byte(data), 0644); err != nil {
+		t.Fatal(err)
+	}
+	out, code := runPraxis(t, "stats")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if !strings.Contains(out, "Unseen: 51") {
+		t.Errorf("expected Unseen: 51 (stale key ignored), got: %s", out)
 	}
 }
 

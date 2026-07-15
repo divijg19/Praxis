@@ -24,15 +24,8 @@
 ## word_hunter
 
 **Concept:** `w`
-**Why:** Introduces word-level motions (`w`, `W`, `e`, `E`, `b`, `B`). Teaches structured forward/backward navigation by word boundaries.
+**Why:** Introduces word-level forward motion (`w`). Teaches navigation by word boundaries, faster than character-by-character movement.
 **Not redundant:** Word motions enable faster navigation than character-by-character movement.
-**Followed by:** `symbol_hunter`
-
-## symbol_hunter
-
-**Concept:** `F`
-**Why:** Introduces backward search. Requires finding a specific symbol (`@`) rather than a generic target.
-**Not redundant:** Backward search (`F`) is the complement to forward search (`f`).
 **Followed by:** `line_hunter`
 
 ## line_hunter
@@ -47,7 +40,7 @@
 **Concept:** `%`
 **Why:** Introduces matching delimiter navigation. Teaches `%` for jumping between paired delimiters.
 **Not redundant:** Foundation structural navigation challenge. Teaches the `%` motion itself rather than nested matching.
-**Followed by:** `match_hunter`
+**Followed by:** `sentence_hunter`
 
 ## sentence_hunter
 
@@ -124,13 +117,6 @@
 **Concept:** `{`
 **Why:** Introduces paragraph-level navigation with `{` and `}`.
 **Not redundant:** Paragraph navigation is a block-level motion distinct from line, sentence, or delimiter motions.
-**Followed by:** `match_hunter`
-
-## match_hunter
-
-**Concept:** `%`
-**Why:** Teaches `%` for matching delimiters in mixed-bracket content. Builds on `paren_hunter`.
-**Not redundant:** Unlike `paren_hunter` (single pair, same delimiter), `match_hunter` requires navigating between different delimiter types in a nested structure.
 **Followed by:** `delete_character_hunter`
 
 ## delete_character_hunter
@@ -170,9 +156,9 @@
 
 ## utf8_cursor_hunter
 
-**Concept:** `f`
-**Why:** Validates that cursor positioning works correctly with multi-byte (UTF-8) characters. Uses `f` to navigate past Greek letters to a star target.
-**Not redundant:** UTF-8 correctness is a distinct guarantee from character-search skill. This challenge exists to verify encoding handling.
+**Concept:** `utf8`
+**Why:** Validates that cursor positioning works correctly with multi-byte (UTF-8) characters. Uses `h` to move left past Greek letters to a star target.
+**Not redundant:** UTF-8 correctness is a distinct guarantee from single-byte cursor movement. This challenge exists to verify encoding handling.
 **Followed by:** `delete_line_hunter`
 
 ## delete_line_hunter
@@ -184,9 +170,9 @@
 
 ## delete_to_end_hunter
 
-**Concept:** `D`
-**Why:** Introduces `D` for deleting from cursor to end of line.
-**Not redundant:** `D` is a shorthand for `d$` and teaches a distinct deletion range.
+**Concept:** `d$`
+**Why:** Introduces `d$` for deleting from cursor to end of line.
+**Not redundant:** `d$` is a distinct deletion range from word or character deletion.
 **Followed by:** `delete_inner_word_hunter`
 
 ## delete_inner_word_hunter
@@ -229,13 +215,6 @@
 **Concept:** `da"`
 **Why:** Introduces `da"` for deleting around quotes (including the quotes themselves).
 **Not redundant:** `da"` deletes the quotes, unlike `di"` which preserves them.
-**Followed by:** `change_inner_word_hunter`
-
-## change_inner_word_hunter
-
-**Concept:** `ciw`
-**Why:** Revisits `ciw` in a structural editing context. Teaches word replacement within a multi-word line.
-**Not redundant:** Unlike `change_word_hunter` (simple isolated word), this challenge requires replacing a word in context within a sentence.
 **Followed by:** `change_inner_paren_hunter`
 
 ## change_inner_paren_hunter
@@ -257,20 +236,13 @@
 **Concept:** `yy`
 **Why:** Introduces yanking (copying) with `yy`. First register-adjacent challenge.
 **Not redundant:** Yanking is a distinct operation from deleting or changing.
-**Followed by:** `named_register_hunter`
-
-## named_register_hunter
-
-**Concept:** `"a`
-**Why:** Introduces named registers. Teaches storing and retrieving content with `"a` / `"ap`.
-**Not redundant:** Named registers extend the unnamed register with persistent, user-chosen storage.
 **Followed by:** `word_register_hunter`
 
 ## word_register_hunter
 
-**Concept:** `"A`
-**Why:** Introduces register appending with `"A`. Teaches appending to an existing register.
-**Not redundant:** Appending (`"A`) is distinct from overwriting (`"a`).
+**Concept:** `"a`
+**Why:** Introduces storing a word in a named register with `"ayw`. Teaches scoped register storage beyond whole-line yanks.
+**Not redundant:** Storing a word (`"ayw`) is distinct from storing a whole line (`"ayy`).
 **Followed by:** `register_replace_hunter`
 
 ## register_replace_hunter

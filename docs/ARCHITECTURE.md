@@ -28,7 +28,7 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset` (public); `attempt`, `record` (internal) |
+| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
 | `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
 | `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()` — challenge registry + curriculum metadata |
 | `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
@@ -78,19 +78,19 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 | Stage | Purpose | Primitives | Tutorial Challenges |
 |---|---|---|---|
 | Movement | cursor control | h, j, k, l, UTF-8 navigation | 3 |
-| Search | target acquisition | f, F, w, W, /, ?, ; | 7 |
-| Structural Navigation | semantic movement | %, ), (, {, }, i(, a(, i[, a[, i", a" | 10 |
-| Editing | mutation | x, r, ~, dw, ciw, dd, D | 7 |
-| Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ciw, ci(, ci" | 9 |
-| Registers | memory | yy, "a, "A, "ap | 5 |
+| Search | target acquisition | f, w, j, /, ?, ; | 6 |
+| Structural Navigation | semantic movement | %, ), (, {, }, i(, a(, i[, a[, i", a" | 9 |
+| Editing | mutation | x, r, ~, dw, ciw, dd, d$ | 7 |
+| Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ci(, ci" | 8 |
+| Registers | memory | yy, "a, "ap | 4 |
 
-> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 41 Tutorial challenges). The full per-stage distribution across all layers is the matrix below.
+> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 37 Tutorial challenges). The full per-stage distribution across all layers is the matrix below.
 
 #### Layer taxonomy
 
 | Layer | Purpose | Scaffolding | Challenges |
 |---|---|---|---|
-| Tutorial | primitive introduction | Observe → Practice → Apply | 41 |
+| Tutorial | primitive introduction | Observe → Practice → Apply | 37 |
 | Training | composition formation | combine primitives, MaxMoves constraint | 10 |
 | Trial | recognition under pressure | select correct composition, budget enforcement | 5 |
 | Boss | mastery | (deferred to v0.3) | 0 |
@@ -100,12 +100,12 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 ```
                      Tutorial  Training  Trial  Total
 Movement             3         0         0      3
-Search               7         0         0      7
-Structural Nav       10        0         0      10
+Search               6         0         0      6
+Structural Nav       9         0         0      9
 Editing              7         3         2      12
-Text Objects         9         4         3      16
-Registers            5         3         0      8
-Total                41        10        5      56
+Text Objects         8         4         3      15
+Registers            4         3         0      7
+Total                37        10        5      52
 ```
 
 #### DerivedFrom lineage
@@ -167,8 +167,11 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 ### Arrival Surface (onboarding.lua)
 
 - First-time detection via stats file absence
-- Welcome buffer with orientation text
-- `[s]` → `challenge.open("motion_rush")`
+- Welcome buffer with orientation text and four actions:
+  - `[s]` Start → opens the next uncompleted challenge
+  - `[e]` Explore → opens the Catalog
+  - `[h]` About → what Praxis teaches and how progression works
+  - `[p]` View progress → opens the Hub
 - No persistence, no state, no wizard
 
 ### Hub Surface (hub.lua)

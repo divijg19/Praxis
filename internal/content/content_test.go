@@ -9,7 +9,6 @@ var stableChallengeIDs = []string{
 	"grid_rush",
 	"find_hunter",
 	"word_hunter",
-	"symbol_hunter",
 	"line_hunter",
 	"paren_hunter",
 	"sentence_hunter",
@@ -23,7 +22,6 @@ var stableChallengeIDs = []string{
 	"inner_quote_hunter",
 	"around_quote_hunter",
 	"paragraph_hunter",
-	"match_hunter",
 	"delete_character_hunter",
 	"replace_character_hunter",
 	"toggle_case_hunter",
@@ -38,11 +36,9 @@ var stableChallengeIDs = []string{
 	"delete_around_paren_hunter",
 	"delete_inner_quote_hunter",
 	"delete_around_quote_hunter",
-	"change_inner_word_hunter",
 	"change_inner_paren_hunter",
 	"change_inner_quote_hunter",
 	"yank_line_hunter",
-	"named_register_hunter",
 	"word_register_hunter",
 	"register_replace_hunter",
 	"register_duplicate_hunter",
@@ -158,7 +154,6 @@ var stableChallengeNames = []string{
 	"Grid Rush",
 	"Find Hunter",
 	"Word Hunter",
-	"Symbol Hunter",
 	"Line Hunter",
 	"Paren Hunter",
 	"Sentence Hunter",
@@ -172,7 +167,6 @@ var stableChallengeNames = []string{
 	"Inner Quote Hunter",
 	"Around Quote Hunter",
 	"Paragraph Hunter",
-	"Match Hunter",
 	"Delete Character Hunter",
 	"Replace Character Hunter",
 	"Toggle Case Hunter",
@@ -187,11 +181,9 @@ var stableChallengeNames = []string{
 	"Delete Around Paren Hunter",
 	"Delete Inner Quote Hunter",
 	"Delete Around Quote Hunter",
-	"Change Inner Word Hunter",
 	"Change Inner Paren Hunter",
 	"Change Inner Quote Hunter",
 	"Unnamed Register Hunter",
-	"Named Register Hunter",
 	"Word Register Hunter",
 	"Register Replace Hunter",
 	"Register Duplicate Hunter",
@@ -268,8 +260,8 @@ func TestCurriculumLayerDistribution(t *testing.T) {
 	for _, c := range All() {
 		counts[c.Layer]++
 	}
-	if counts["Tutorial"] != 41 {
-		t.Errorf("Tutorial = %d, want 41", counts["Tutorial"])
+	if counts["Tutorial"] != 37 {
+		t.Errorf("Tutorial = %d, want 37", counts["Tutorial"])
 	}
 	if counts["Training"] != 10 {
 		t.Errorf("Training = %d, want 10", counts["Training"])
