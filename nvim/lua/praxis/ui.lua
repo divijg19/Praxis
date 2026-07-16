@@ -25,16 +25,10 @@ function M.recovery(title, lines)
 	for _, l in ipairs(lines) do
 		table.insert(display, l)
 	end
-	local buf = M.show("Praxis", display, false)
+  local buf = M.show("Praxis", display, false)
 
   local function back()
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    local rb = vim.g.praxis_return_buf
-    if rb and vim.api.nvim_buf_is_valid(rb) then
-      vim.api.nvim_set_current_buf(rb)
-    else
-      vim.cmd("Praxis")
-    end
+    require("praxis.util").return_to_previous()
   end
 
   vim.keymap.set("n", "<CR>", back, { buffer = buf, nowait = true, silent = true })

@@ -79,42 +79,10 @@ func TestUniqueChallengeNames(t *testing.T) {
 	}
 }
 
-func TestAllChallengesHaveVerify(t *testing.T) {
-	for _, c := range All() {
-		if c.Verify == "" {
-			t.Errorf("challenge %s has empty Verify", c.ID)
-		}
-	}
-}
-
-func TestNoEmptyContent(t *testing.T) {
-	for _, c := range All() {
-		if len(c.Content) == 0 {
-			t.Errorf("challenge %s has empty Content", c.ID)
-		}
-	}
-}
-
 func TestInstructionLinePresent(t *testing.T) {
 	for _, c := range All() {
 		if len(c.Content) == 0 || c.Content[0] == "" {
 			t.Errorf("challenge %s has empty or missing instruction line", c.ID)
-		}
-	}
-}
-
-func TestVerifyValuesValid(t *testing.T) {
-	valid := map[string]bool{"cursor": true, "buffer": true, "composite": true}
-	used := make(map[string]bool)
-	for _, c := range All() {
-		if !valid[c.Verify] {
-			t.Errorf("challenge %s uses unknown validator: %q", c.ID, c.Verify)
-		}
-		used[c.Verify] = true
-	}
-	for name := range valid {
-		if !used[name] {
-			t.Errorf("validator %q is registered but unused by any challenge", name)
 		}
 	}
 }
@@ -222,17 +190,6 @@ func TestBufferChallengeLayout(t *testing.T) {
 	}
 }
 
-func TestCompositeHasEvaluation(t *testing.T) {
-	for _, c := range All() {
-		if c.Verify == "composite" && c.Evaluation == nil {
-			t.Errorf("composite challenge %s has nil Evaluation", c.ID)
-		}
-		if c.Verify == "composite" && c.Evaluation != nil && c.Evaluation.MaxMoves <= 0 {
-			t.Errorf("composite challenge %s has invalid MaxMoves: %d", c.ID, c.Evaluation.MaxMoves)
-		}
-	}
-}
-
 func TestAllChallengesHaveLayer(t *testing.T) {
 	for _, c := range All() {
 		if c.Layer == "" {
@@ -246,7 +203,6 @@ func TestLayerValidValues(t *testing.T) {
 		"Tutorial": true,
 		"Training": true,
 		"Trial":    true,
-		"Boss":     true,
 	}
 	for _, c := range All() {
 		if !allowed[c.Layer] {

@@ -83,14 +83,3 @@ func metadataFor(id string) (Metadata, bool) {
 	m, ok := curriculum[id]
 	return m, ok
 }
-
-func validStages() map[string]bool {
-	return map[string]bool{
-		stageMovement:             true,
-		stageSearch:               true,
-		stageStructuralNavigation: true,
-		stageEditing:              true,
-		stageTextObjects:          true,
-		stageRegisters:            true,
-	}
-}

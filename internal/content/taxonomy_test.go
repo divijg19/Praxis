@@ -2,28 +2,6 @@ package content
 
 import "testing"
 
-func TestCurriculumCoverage(t *testing.T) {
-	for _, c := range All() {
-		_, ok := metadataFor(c.ID)
-		if !ok {
-			t.Errorf("challenge %q missing from curriculum metadata", c.ID)
-		}
-	}
-}
-
-func TestValidStages(t *testing.T) {
-	valid := validStages()
-	for _, c := range All() {
-		m, ok := metadataFor(c.ID)
-		if !ok {
-			continue
-		}
-		if !valid[m.Stage] {
-			t.Errorf("challenge %q has invalid Stage %q", c.ID, m.Stage)
-		}
-	}
-}
-
 func TestConceptContextPairsUnique(t *testing.T) {
 	seen := make(map[string]string)
 	for _, c := range All() {

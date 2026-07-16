@@ -3,33 +3,17 @@ package content
 import "github.com/divijg19/Praxis/internal/challenge"
 
 type Description struct {
-	ID          string                `json:"id"`
-	Name        string                `json:"name"`
-	Verify      string                `json:"verify"`
-	Layer       string                `json:"layer"`
-	Stage       string                `json:"stage"`
-	Concept     string                `json:"concept"`
-	Context     string                `json:"context"`
-	Target      string                `json:"target"`
-	Content     []string              `json:"content"`
-	Result      []string              `json:"result"`
-	Evaluation  *challenge.Evaluation `json:"evaluation,omitempty"`
-	DerivedFrom []string              `json:"derived_from,omitempty"`
+	challenge.Challenge
+	Stage       string   `json:"stage"`
+	Concept     string   `json:"concept"`
+	Context     string   `json:"context"`
+	DerivedFrom []string `json:"derived_from,omitempty"`
 }
 
 func DescriptionFor(id string) (Description, bool) {
 	for _, c := range All() {
 		if c.ID == id {
-			d := Description{
-				ID:         c.ID,
-				Name:       c.Name,
-				Verify:     c.Verify,
-				Layer:      c.Layer,
-				Target:     c.Target,
-				Content:    c.Content,
-				Result:     c.Result,
-				Evaluation: c.Evaluation,
-			}
+			d := Description{Challenge: c}
 			if m, ok := metadataFor(id); ok {
 				d.Stage = m.Stage
 				d.Concept = m.Concept

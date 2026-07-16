@@ -48,19 +48,16 @@ The technique is executed independently. No scaffolding. The learner demonstrate
 
 Reflection is the period after execution where the learner compares intent, execution, and outcome. It follows each active phase. This is a contract, not an implementation — UI mechanisms (result screen, move count, mastery update) are deferred to UX design.
 
-### Attempt states
+### Attempt states (design intent)
 
-Every challenge has three attempts. Each attempt is a pedagogical state, not a retry count:
+Observe → Practice → Apply is the *intended* pedagogical curve, not a
+separate UI mode. Each challenge is one buffer the learner solves, then
+continues — the UI does not split attempts into distinct states. The
+phases describe the kind of experience a well-designed challenge should
+provide (introduction, guided execution, independent execution) rather
+than a retry count or enforced sequence.
 
-| State | Learner Experience |
-|---|---|
-| Observe | The technique is introduced and contextualized. The learner sees what to do and why. |
-| Practice | The technique is reproduced with support. Hints or guardrails are available. |
-| Apply | The technique is executed independently. No hints. The learner demonstrates understanding. |
-
-Attempts progress in order: Observe → Practice → Apply. A learner who succeeds at Apply in a given attempt is not required to repeat the state.
-
-### Layer × O/P/A matrix
+### Layer × O/P/A matrix (design intent)
 
 | Layer | Observe | Practice | Apply |
 |---|---|---|---|
@@ -95,88 +92,43 @@ menu hierarchy.
 
 ## 4. Stages
 
-Challenges are grouped into six stages. Each stage teaches techniques that the next stage builds on.
-
-- **Movement** — cursor control
-- **Search** — target acquisition
-- **Structural Navigation** — semantic movement
-- **Editing** — mutation
-- **Text Objects** — scoped mutation
-- **Registers** — memory
-
-The authoritative primitive breakdown per stage is in ARCHITECTURE.md (Stage taxonomy).
+Challenges are grouped into six stages (Movement, Search, Structural
+Navigation, Editing, Text Objects, Registers). The authoritative primitive
+breakdown per stage is in [ARCHITECTURE.md](./ARCHITECTURE.md) (Stage
+taxonomy).
 
 ---
 
 ## 5. Layers
 
-Every challenge belongs to one layer. Layers describe the depth of understanding expected.
-
-- **Tutorial** — learn a single technique in isolation, with a teaching hint in the instruction line.
-- **Training** — combine techniques into compositions under a move budget.
-- **Trial** — recognize the correct composition for an unfamiliar scenario, with no hint.
-
-The intended learning loop is Observe → Practice → Apply, but the UI does not
-separate these into distinct modes: each challenge is one buffer the learner
-solves, then continues.
+Every challenge belongs to one layer: Tutorial, Training, or Trial. The
+intended learning loop is Observe → Practice → Apply, but the UI does not
+separate these into distinct modes — each challenge is one buffer the
+learner solves, then continues. See [ARCHITECTURE.md](./ARCHITECTURE.md)
+(Layer taxonomy) for the per-layer purpose and challenge counts.
 
 ---
 
 ## 6. Progression
 
-### Stage progression
+### Stage & layer progression
+
+Progression order is fixed by the curriculum definition:
 
 ```
 Movement → Search → Structural Navigation → Editing → Text Objects → Registers
-```
-
-This order is fixed by the curriculum definition. Rationale:
-
-1. **Movement first.** Everything requires cursor control.
-2. **Search second.** After basic movement, learn to jump directly.
-3. **Structural Navigation third.** After search, learn semantic navigation.
-4. **Editing fourth.** After navigation, learn to modify text.
-5. **Text Objects fifth.** After basic editing, learn scoped operations.
-6. **Registers sixth.** After all navigation and editing, learn memory.
-
-### Layer progression
-
-```
 Tutorial → Training → Trial
 ```
 
-Enforced by curriculum order. Rationale:
-
-1. **Tutorial** — learn each primitive in isolation.
-2. **Training** — combine primitives into compositions.
-3. **Trial** — recognize the correct composition under pressure.
-
-### Full progression path
-
-```
-Onboarding
-    ↓
-Movement Tutorials
-    ↓
-Search Tutorials
-    ↓
-Structural Navigation Tutorials
-    ↓
-Editing Tutorials → Training → Trials
-    ↓
-Text Objects Tutorials → Training → Trials
-    ↓
-Registers Tutorials → Training
-```
+Stages exist as metadata (the Hub shows the next challenge's stage as
+`Current`) but do not gate progression.
 
 ### When to advance
 
 Progression is **count-based**, not stage-gated. A challenge stays current
 until it has been **completed three times**, after which the next unpracticed
-challenge becomes current. Stages exist as metadata (the Hub shows the next
-challenge's stage as `Current`) but do not gate progression.
-
-Mastery tiers are also count-based (see `internal/stats`):
+challenge becomes current. Mastery tiers are also count-based (see
+`internal/stats`):
 
 - **Unseen** — 0 completions
 - **Learning** — 1–2 completions

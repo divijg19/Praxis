@@ -22,7 +22,7 @@ challenge.Challenge{
         "",
         "edited content",
     },
-    Layer:   "Tutorial",       // "Tutorial", "Training", "Trial", "Boss"
+    Layer:   "Tutorial",       // "Tutorial", "Training", or "Trial"
     Evaluation: &challenge.Evaluation{MaxMoves: 10}, // composite only; nil otherwise
 }
 ```
@@ -37,7 +37,7 @@ challenge.Challenge{
 | `Target` | STABLE | Required for cursor (non-empty). Empty for buffer/composite. |
 | `Content` | STABLE | First line is instruction. Buffer/composite: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
 | `Result` | STABLE | Required for buffer/composite (non-empty slice, exact target state). Nil for cursor. |
-| `Layer` | STABLE | `"Tutorial"`, `"Training"`, `"Trial"`, or `"Boss"`. |
+| `Layer` | STABLE | `"Tutorial"`, `"Training"`, or `"Trial"`. |
 | `Evaluation` | STABLE | Non-nil only for `"composite"`. Contains `MaxMoves` threshold. |
 
 ### Canonical Representation
@@ -46,22 +46,17 @@ challenge.Challenge{
 
 ```go
 type Description struct {
-    ID          string                `json:"id"`
-    Name        string                `json:"name"`
-    Verify      string                `json:"verify"`
-    Layer       string                `json:"layer"`
-    Stage       string                `json:"stage"`
-    Concept     string                `json:"concept"`
-    Context     string                `json:"context"`
-    Target      string                `json:"target"`
-    Content     []string              `json:"content"`
-    Result      []string              `json:"result"`
-    Evaluation  *challenge.Evaluation `json:"evaluation,omitempty"`
-    DerivedFrom []string              `json:"derived_from,omitempty"`
+    challenge.Challenge                // embeds ID, Name, Verify, Layer, Target, Content, Result, Evaluation
+    Stage       string   `json:"stage"`
+    Concept     string   `json:"concept"`
+    Context     string   `json:"context"`
+    DerivedFrom []string `json:"derived_from,omitempty"`
 }
 ```
 
-All consumers (CLI, Lua frontend, replay tool, catalog generator) must obtain challenge data through `DescriptionFor`. The `Description` struct is the single source of truth; JSON is a transport format.
+All consumers (CLI, Lua frontend, replay tool) must obtain challenge data
+through `DescriptionFor`. The `Description` struct is the single source of
+truth; JSON is a transport format.
 
 **Stability:** The JSON field names and types are stable for the v0.3.x series (frozen). New fields may be added but existing fields will not be renamed, removed, or have their types changed.
 
@@ -156,13 +151,7 @@ Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextComma
 
 ## Validators
 
-Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once in `internal/content/content_test.go` (`TestVerifyValuesValid`) and enforced for every challenge.
-}
-
-func Exists(name string) bool {
-    return valid[name]
-}
-```
+Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once and enforced for every challenge by `Validate()` (`internal/content/validate.go`), which runs over all challenges via `TestValidateAll`.
 
 ### Cursor Validator
 
@@ -273,10 +262,6 @@ The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer chall
 ### Contract Enforcement
 
 Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. Composite challenges always declare a positive `MaxMoves`. These invariants are enforced by the content test suite (see TESTING.md).
-
-### Future Candidates
-
-Not implemented. Listed for architectural awareness: `selection`, `state`, `register`, `operator`.
 
 ## Stats
 
@@ -418,7 +403,7 @@ These principles are enforced by the integrity and content test suites (see TEST
 
 ## Release Procedure
 
-1. **Verify** — `tools/verify.sh` — runs build, lint (`go run golangci-lint`), format, vet, tests, replay, and journey. All checks must pass.
+1. **Verify** — `tools/verify.sh` — runs build, lint (`go run github.com/golangci/golangci-lint/cmd/golangci-lint run`), format, vet, tests, replay, and journey. All checks must pass.
 2. **Build** — `go build ./...` — all packages compile
 3. **Documentation** — If content changed: update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
 4. **Stage** — `git add -A && git status` — verify staged files

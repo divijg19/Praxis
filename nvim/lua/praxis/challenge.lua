@@ -2,6 +2,9 @@ local M = {}
 
 local util = require("praxis.util")
 
+-- Completions needed to reach the Practiced tier (mirrors stats.MasteryTier).
+local PRACTICED_THRESHOLD = 3
+
 function M.open(id)
   local ui = require('praxis.ui')
   local desc = util.describe(id)
@@ -54,8 +57,8 @@ function M.open(id)
     if completions > 0 then
       table.insert(display, "Completed " .. completions .. " times.")
     end
-    if completions < 3 then
-      table.insert(display, "Practice this " .. (3 - completions) .. " more times to build mastery.")
+    if completions < PRACTICED_THRESHOLD then
+      table.insert(display, "Practice this " .. (PRACTICED_THRESHOLD - completions) .. " more times to build mastery.")
     end
     table.insert(display, "")
     table.insert(display, "[r] Retry.")

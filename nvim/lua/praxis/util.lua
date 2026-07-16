@@ -29,4 +29,17 @@ function M.continue(id)
   end
 end
 
+-- Return to the buffer that was active before Praxis opened (the "return
+-- buffer"), or to the hub if none. Single owner of the back-navigation path
+-- used by the recovery screen and the hub.
+function M.return_to_previous()
+  pcall(vim.api.nvim_buf_delete, vim.api.nvim_get_current_buf(), { force = true })
+  local rb = vim.g.praxis_return_buf
+  if rb and vim.api.nvim_buf_is_valid(rb) then
+    vim.api.nvim_set_current_buf(rb)
+  else
+    vim.cmd("Praxis")
+  end
+end
+
 return M

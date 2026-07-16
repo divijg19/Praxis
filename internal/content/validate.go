@@ -6,6 +6,16 @@ import (
 	"github.com/divijg19/Praxis/internal/challenge"
 )
 
+// validStage reports whether s is one of the six curriculum stages. The set
+// lives here because Validate is the single owner of challenge-model validity.
+func validStage(s string) bool {
+	switch s {
+	case "Movement", "Search", "Structural Navigation", "Editing", "Text Objects", "Registers":
+		return true
+	}
+	return false
+}
+
 // Validate reports well-formedness problems for a single challenge. It is the
 // single source of challenge-model validation; tests run it over every
 // challenge so a misconfiguration fails fast and in one place, instead of
@@ -22,7 +32,7 @@ func Validate(c challenge.Challenge, m Metadata) []string {
 	if len(c.Content) == 0 {
 		problems = append(problems, fmt.Sprintf("%s: empty content", c.ID))
 	}
-	if !validStages()[m.Stage] {
+	if !validStage(m.Stage) {
 		problems = append(problems, fmt.Sprintf("%s: invalid or empty stage %q", c.ID, m.Stage))
 	}
 	if m.Concept == "" {
