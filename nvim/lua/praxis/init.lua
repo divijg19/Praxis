@@ -4,22 +4,26 @@ function M.available()
   return vim.fn.executable("praxis") == 1
 end
 
-local function first_time()
+local function xdg_data()
   local xdg = os.getenv("XDG_DATA_HOME")
   if not xdg or xdg == "" then
-    xdg = os.getenv("HOME") .. "/.local/share"
+    xdg = os.getenv("HOME")
+    if not xdg or xdg == "" then return nil end
+    xdg = xdg .. "/.local/share"
   end
+  return xdg
+end
+
+local function first_time()
+  local xdg = xdg_data()
+  if not xdg then return true end
   return vim.fn.filereadable(xdg .. "/praxis/stats.json") == 0
 end
 
+-- Close every open Praxis buffer before re-entering, so a fresh screen always
+-- starts from a clean slate. Running :Praxis is an explicit return to the entry
+-- point; any in-progress challenge is intentionally abandoned at that point.
 local function close_orphans()
-  local cur = vim.api.nvim_get_current_buf()
-  if vim.api.nvim_buf_get_name(cur):match("Praxis") then
-    local rb = vim.g.praxis_return_buf
-    if rb and vim.api.nvim_buf_is_valid(rb) then
-      pcall(vim.api.nvim_set_current_buf, rb)
-    end
-  end
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(b) and vim.api.nvim_buf_get_name(b):match("Praxis") then
       pcall(vim.api.nvim_buf_delete, b, { force = true })

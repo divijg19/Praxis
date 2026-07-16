@@ -80,6 +80,14 @@ vim.cmd("Praxis delete_character_hunter")
 ok("buffer_tutorial_open", has(snap(), "Use x to delete the extra letter"))
 ok("buffer_tutorial_solved", solve("delete_character_hunter"))
 ok("buffer_tutorial_result", has(snap(), "Complete%."))
+-- The solve path records the completion through the real praxis binary; verify
+-- progress was actually persisted and not silently dropped.
+local persisted = vim.fn.systemlist({ "praxis", "stats", "delete_character_hunter" })
+local saved = false
+for _, l in ipairs(persisted) do
+  if l:match("^Completions: (%d+)") and tonumber(l:match("(%d+)")) >= 1 then saved = true end
+end
+ok("buffer_tutorial_persisted", saved)
 press("q")
 ok("buffer_tutorial_escape", has(snap(), "Progress:"))
 

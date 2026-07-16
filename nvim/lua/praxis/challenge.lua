@@ -19,7 +19,14 @@ function M.open(id)
   local editable = desc.verify == "buffer" or desc.verify == "composite"
   local buf = ui.show("Praxis — " .. desc.name, desc.content, editable)
 
-  vim.fn.system({ "praxis", "attempt", id })
+  if not util.praxis({ "attempt", id }) then
+    ui.recovery("Praxis couldn't record this attempt.", {
+      "Your progress may not have been saved.",
+      "",
+      "[Enter] or [q] Back.",
+    })
+    return
+  end
 
   local state = {
     done            = false,
@@ -36,7 +43,19 @@ function M.open(id)
 
   local function render_result()
     local elapsed_ms = math.floor((vim.uv.hrtime() - state.start_ns) / 1e6)
-    vim.fn.system({ "praxis", "record", id, tostring(state.moves), tostring(elapsed_ms) })
+    if not util.praxis({ "record", id, tostring(state.moves), tostring(elapsed_ms) }) then
+      vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+        "Complete, but your progress wasn't saved.",
+        "",
+        "Praxis reported an error while recording this challenge.",
+        "Your edits are not lost, but stats were not updated.",
+        "",
+        "[Enter] or [q] Back.",
+      })
+      vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+      return
+    end
     local stats_out = vim.fn.systemlist({ "praxis", "stats", id })
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
@@ -96,7 +115,7 @@ function M.open(id)
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
     vim.api.nvim_win_set_cursor(0, { 1, 0 })
-    vim.fn.system({ "praxis", "attempt", state.challenge_id })
+    util.praxis({ "attempt", state.challenge_id })
   end
 
   vim.api.nvim_create_autocmd("CursorMoved", {
