@@ -6,6 +6,7 @@
 local self = debug.getinfo(1, "S").source:sub(2)
 local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
+local util = require("praxis.util")
 vim.cmd("runtime plugin/praxis.lua")
 vim.env.XDG_DATA_HOME = "/tmp/praxis_journey"
 vim.env.XDG_CONFIG_HOME = "/tmp/praxis_journey/cfg"
@@ -33,14 +34,9 @@ local function press(k)
   vim.cmd("normal " .. k)
 end
 
-local function describe(id)
-  local raw = vim.fn.systemlist({ "praxis", "describe", id })
-  return vim.fn.json_decode(table.concat(raw, ""))
-end
-
 -- Solve the CURRENT challenge buffer using real product logic.
 local function solve(id)
-  local d = describe(id)
+  local d = util.describe(id)
   if type(d) ~= "table" then return false end
   local buf = vim.api.nvim_get_current_buf()
   if d.verify == "cursor" then
@@ -102,6 +98,22 @@ ok("trial_solved", solve("trial_find_delete"))
 ok("trial_result", has(snap(), "Complete%."))
 press("q")
 ok("trial_escape", has(snap(), "Progress:"))
+
+-- 5b. move-counter determinism: cursor navigation must not inflate the move
+--     count for composite challenges. In production every cursor move fires
+--     CursorMoved; we simulate that with doautocmd so the test exercises the
+--     real event path. Navigation alone must leave moves at 0; only the
+--     solving edit increments it. Under the old logic, moving the cursor on a
+--     composite challenge inflated the count and could trip the move limit.
+vim.cmd("Praxis find_diw_combo")
+press("j")
+vim.cmd("doautocmd CursorMoved")   -- simulate real navigation (inflated moves under old logic)
+press("l")
+vim.cmd("doautocmd CursorMoved")
+press("l")
+vim.cmd("doautocmd CursorMoved")
+ok("moves_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Moves: 1 /"))
+press("q")
 
 -- 6. mid-challenge escape from a fresh challenge (recovery)
 vim.cmd("Praxis motion_rush")

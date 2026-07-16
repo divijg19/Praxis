@@ -327,8 +327,9 @@ func TestStatsSummary(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "2/52") {
-		t.Errorf("expected 2/52 completed, got: %s", out)
+	total := len(content.All())
+	if !strings.Contains(out, fmt.Sprintf("2/%d", total)) {
+		t.Errorf("expected 2/%d completed, got: %s", total, out)
 	}
 	if !strings.Contains(out, "Total Attempts: 0") {
 		t.Errorf("expected Total Attempts: 0, got: %s", out)
@@ -336,8 +337,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Mastery:") {
 		t.Errorf("expected Mastery header, got: %s", out)
 	}
-	if !strings.Contains(out, "Unseen: 50") {
-		t.Errorf("expected Unseen: 50, got: %s", out)
+	if !strings.Contains(out, fmt.Sprintf("Unseen: %d", total-2)) {
+		t.Errorf("expected Unseen: %d, got: %s", total-2, out)
 	}
 	if !strings.Contains(out, "Learning: 2") {
 		t.Errorf("expected Learning: 2, got: %s", out)
@@ -371,8 +372,9 @@ func TestStatsSummaryIgnoresStaleKeys(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "Unseen: 51") {
-		t.Errorf("expected Unseen: 51 (stale key ignored), got: %s", out)
+	total := len(content.All())
+	if !strings.Contains(out, fmt.Sprintf("Unseen: %d", total-1)) {
+		t.Errorf("expected Unseen: %d (stale key ignored), got: %s", total-1, out)
 	}
 }
 

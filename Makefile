@@ -1,4 +1,4 @@
-.PHONY: run build test
+.PHONY: run build test verify certify
 
 run:
 	go run ./cmd/praxis
@@ -8,3 +8,6 @@ build:
 
 test:
 	go test ./...
+
+verify certify:
+	bash tools/verify.sh

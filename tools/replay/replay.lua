@@ -1,16 +1,10 @@
 -- End-to-end replay test for all 52 challenges
 -- Run via: tools/replay/replay.sh
 
-local function describe(id)
-  local handle = io.popen("/tmp/praxis describe " .. id)
-  local raw = handle:read("*a")
-  handle:close()
-  return vim.fn.json_decode(raw)
-end
-
-local function byte_to_char(line, bytecol)
-  return vim.fn.strchars(string.sub(line, 1, bytecol))
-end
+local self = debug.getinfo(1, "S").source:sub(2)
+local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
+vim.opt.runtimepath:prepend(ROOT .. "/nvim")
+local util = require("praxis.util")
 
 local function check_buffer(buf, result_lines)
   local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -54,7 +48,7 @@ local all_ids = {
 local results = {}
 
 for _, id in ipairs(all_ids) do
-  local d = describe(id)
+  local d = util.describe(id, "/tmp/praxis")
   if type(d) ~= "table" then
     print("FAIL " .. id .. ": could not describe")
     results[id] = "FAIL"
@@ -74,7 +68,7 @@ for _, id in ipairs(all_ids) do
       local line = d.content[r]
       if line then
         for c = 0, #line do
-          local charcol = byte_to_char(line, c)
+           local charcol = util.byte_to_char(line, c)
           local ch = vim.fn.strcharpart(line, charcol, 1)
           if ch == d.target then
             vim.api.nvim_win_set_cursor(0, { r, c })
@@ -96,7 +90,7 @@ for _, id in ipairs(all_ids) do
     local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
     local completed = false
     if line then
-      local charcol = byte_to_char(line, col0)
+       local charcol = util.byte_to_char(line, col0)
       if vim.fn.strcharpart(line, charcol, 1) == d.target then
         completed = true
       end
@@ -155,7 +149,7 @@ local training_eval_ok = 0
 local trial_eval_ok = 0
 
 for _, id in ipairs(all_ids) do
-  local d = describe(id)
+  local d = util.describe(id, "/tmp/praxis")
   if type(d) ~= "table" then goto next_id end
 
   local result = results[id] or "FAIL"

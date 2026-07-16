@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  push:
+    branches: [v0.3.x, main]
+  pull_request:
+    branches: [v0.3.x, main]
+
+jobs:
+  certify:
+    uses: ./.github/workflows/ci-reuse.yml
+    with:
+      certify: true

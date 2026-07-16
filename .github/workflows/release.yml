@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  certify:
+    uses: ./.github/workflows/ci-reuse.yml
+    with:
+      certify: true
+
+  release:
+    needs: certify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Build binary
+        run: go build -o praxis ./cmd/praxis
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: praxis-${{ github.ref_name }}
+          path: praxis

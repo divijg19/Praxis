@@ -1,11 +1,12 @@
 local M = {}
 
+local util = require("praxis.util")
+
 function M.open(id)
   local ui = require('praxis.ui')
-  local desc_raw = vim.fn.systemlist({ "praxis", "describe", id })
-  local ok, desc = pcall(vim.fn.json_decode, table.concat(desc_raw, ""))
-  if not ok or type(desc) ~= "table" then
-    require("praxis.ui").recovery("That challenge doesn't exist.", {
+  local desc = util.describe(id)
+  if not desc then
+    ui.recovery("That challenge doesn't exist.", {
       "",
       "[Enter] or [q] Back.",
     })
@@ -16,10 +17,6 @@ function M.open(id)
   local buf = ui.show("Praxis — " .. desc.name, desc.content, editable)
 
   vim.fn.system({ "praxis", "attempt", id })
-
-  local function byte_to_char(line, bytecol)
-    return vim.fn.strchars(string.sub(line, 1, bytecol))
-  end
 
   local state = {
     done            = false,
@@ -103,18 +100,17 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
+      if state.verify ~= "cursor" then return end
       local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
       if #state.challenge_lines > 1 and row == 1 then return end
       state.moves = state.moves + 1
-      if state.verify == "cursor" then
-        local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-        if line then
-          local charcol = byte_to_char(line, col0)
-          if vim.fn.strcharpart(line, charcol, 1) == state.target then
-            state.done = true
-            vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
-            render_result()
-          end
+      local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
+      if line then
+        local charcol = util.byte_to_char(line, col0)
+        if vim.fn.strcharpart(line, charcol, 1) == state.target then
+          state.done = true
+          vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
+          render_result()
         end
       end
     end,
@@ -148,18 +144,12 @@ function M.open(id)
   vim.keymap.set("n", "<CR>", function()
     if state.done then
       local next_id = vim.fn.systemlist({ "praxis", "next" })[1]
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
-      if next_id and next_id ~= "" then
-        vim.cmd("Praxis " .. next_id)
-      else
-        vim.cmd("Praxis")
-      end
+      util.continue(next_id)
     end
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.keymap.set("n", "q", function()
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    vim.cmd("Praxis")
+    util.continue("")
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.api.nvim_echo({ { "[r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
