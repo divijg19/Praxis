@@ -63,7 +63,7 @@ type Description struct {
 
 All consumers (CLI, Lua frontend, replay tool, catalog generator) must obtain challenge data through `DescriptionFor`. The `Description` struct is the single source of truth; JSON is a transport format.
 
-**Stability:** The JSON field names and types are stable for the v0.2.x series. New fields may be added but existing fields will not be renamed, removed, or have their types changed.
+**Stability:** The JSON field names and types are stable for the v0.3.x series (frozen). New fields may be added but existing fields will not be renamed, removed, or have their types changed.
 
 Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
@@ -71,9 +71,9 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
 1. Add the challenge to the end of `All()` in `internal/content/content.go`
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
-3. Update `stableChallengeIDs` and `stableChallengeNames` in `internal/content/content_test.go`
-4. Add the ID to the `all_ids` list in `tools/replay/replay.lua`
-5. Run `tools/verify.sh` to verify
+3. Append the ID to `stableChallengeIDs` and the name to `stableChallengeNames` in `internal/content/content_test.go` (rename guard)
+4. Append the ID to the `all_ids` list in `tools/replay/replay.lua` (guarded by `TestReplayCoverage`)
+5. Run `tools/verify.sh` — total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required
 
 ## CLI Surface
 
@@ -418,7 +418,7 @@ These principles are enforced by the integrity and content test suites (see TEST
 
 ## Release Procedure
 
-1. **Verify** — `tools/verify.sh` — runs format, vet, tests, and replay. All checks must pass.
+1. **Verify** — `tools/verify.sh` — runs build, lint (`go run golangci-lint`), format, vet, tests, replay, and journey. All checks must pass.
 2. **Build** — `go build ./...` — all packages compile
 3. **Documentation** — If content changed: update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
 4. **Stage** — `git add -A && git status` — verify staged files

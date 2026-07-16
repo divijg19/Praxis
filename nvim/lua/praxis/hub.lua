@@ -1,11 +1,10 @@
 local M = {}
 
+local util = require("praxis.util")
+
 local function describe_for_id(id)
-  local raw = vim.fn.systemlist({ "praxis", "describe", id })
-  local desc = vim.fn.json_decode(table.concat(raw, ""))
-  if type(desc) == "table" then
-    return desc.name or "", desc.layer or "", desc.stage or ""
-  end
+  local d = util.describe(id)
+  if d then return d.name or "", d.layer or "", d.stage or "" end
   return "", "", ""
 end
 
@@ -112,8 +111,7 @@ function M.open()
 
   local function open_target(id)
     if not id or id == "" then return end
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    require('praxis.challenge').open(id)
+    util.continue(id)
   end
 
   vim.keymap.set("n", "<CR>", function()

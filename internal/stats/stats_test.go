@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/divijg19/Praxis/internal/content"
 )
 
 func TestLoadFileNotExist(t *testing.T) {
@@ -258,10 +260,11 @@ func TestMasteryExperienced(t *testing.T) {
 }
 
 func TestMasteryDistributionEmpty(t *testing.T) {
+	total := len(content.All())
 	m := make(map[string]Stats)
-	d := MasteryDistribution(m, 52)
-	if d["Unseen"] != 52 {
-		t.Errorf("Unseen = %d, want 52", d["Unseen"])
+	d := MasteryDistribution(m, total)
+	if d["Unseen"] != total {
+		t.Errorf("Unseen = %d, want %d", d["Unseen"], total)
 	}
 	if d["Learning"] != 0 {
 		t.Errorf("Learning = %d, want 0", d["Learning"])
@@ -275,15 +278,16 @@ func TestMasteryDistributionEmpty(t *testing.T) {
 }
 
 func TestMasteryDistributionMixed(t *testing.T) {
+	total := len(content.All())
 	m := map[string]Stats{
 		"a": {Completions: 1},
 		"b": {Completions: 2},
 		"c": {Completions: 5},
 		"d": {Completions: 10},
 	}
-	d := MasteryDistribution(m, 52)
-	if d["Unseen"] != 48 {
-		t.Errorf("Unseen = %d, want 48", d["Unseen"])
+	d := MasteryDistribution(m, total)
+	if d["Unseen"] != total-4 {
+		t.Errorf("Unseen = %d, want %d", d["Unseen"], total-4)
 	}
 	if d["Learning"] != 2 {
 		t.Errorf("Learning = %d, want 2", d["Learning"])
