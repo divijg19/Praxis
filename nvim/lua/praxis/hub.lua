@@ -13,6 +13,15 @@ function M.open()
   local next_id = vim.fn.systemlist({ "praxis", "next" })[1] or ""
   local stats_lines = vim.fn.systemlist({ "praxis", "stats" })
 
+  if #stats_lines == 0 then
+    ui.recovery("Praxis couldn't read your progress.", {
+      "The praxis command may be missing or your progress file is unavailable.",
+      "",
+      "[Enter] or [q] Back.",
+    })
+    return
+  end
+
   local display = {
     "── Praxis ──────────────────────────────────────",
     "",

@@ -17,6 +17,13 @@ function M.byte_to_char(line, bytecol)
   return vim.fn.strchars(string.sub(line, 1, bytecol))
 end
 
+-- Run a praxis subcommand. Returns true when it exited successfully, so callers
+-- can surface failures instead of silently assuming progress was saved.
+function M.praxis(args)
+  vim.fn.system(vim.list_extend({ "praxis" }, args))
+  return vim.v.shell_error == 0
+end
+
 -- Close the current Praxis buffer and open `id` (or the hub when id is empty)
 -- through the Praxis command, so navigation state resets cleanly. This is the
 -- single open-next/back path shared by the hub and the challenge screen.
