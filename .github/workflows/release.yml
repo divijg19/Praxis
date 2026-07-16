@@ -15,9 +15,9 @@ jobs:
     needs: certify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: stable
 
@@ -25,7 +25,7 @@ jobs:
         run: go build -o praxis ./cmd/praxis
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: praxis-${{ github.ref_name }}
           path: praxis

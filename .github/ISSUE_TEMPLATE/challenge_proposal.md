@@ -18,9 +18,9 @@ One sentence on the Vim skill being drilled.
 - Verify mode (`cursor` / `buffer` / `composite`)
 - For Trial: which challenges it is `derived_from`
 
-**Checklist (see docs/REFERENCE.md "Adding a New Challenge")**
-- [ ] Added to `All()` in `internal/content/content.go`
-- [ ] Added metadata to `curriculum` in `internal/content/curriculum.go`
-- [ ] Added to `stableChallengeIDs` / `stableChallengeNames` in `internal/content/content_test.go`
-- [ ] Added to `all_ids` in `tools/replay/replay.lua`
+**Checklist**
+
+See [docs/REFERENCE.md → "Adding a New Challenge"](../../docs/REFERENCE.md) for the full step-by-step checklist (registration, metadata, stable-ID test, replay list, and `tools/verify.sh`).
+
+- [ ] Implemented per the checklist above
 - [ ] `tools/verify.sh` passes

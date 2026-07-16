@@ -66,7 +66,7 @@ function M.open()
   else
     table.insert(display, "  Current: Complete")
   end
-  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or tostring(#vim.fn.systemlist({ "praxis", "catalog" }))))
+  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "0"))
   table.insert(display, "")
 
   table.insert(display, "  Direction:")
@@ -127,11 +127,7 @@ function M.open()
   end, { buffer = buf, nowait = true, silent = true })
 
   vim.keymap.set("n", "q", function()
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
-    local rb = vim.g.praxis_return_buf
-    if rb and vim.api.nvim_buf_is_valid(rb) then
-      vim.api.nvim_set_current_buf(rb)
-    end
+    util.return_to_previous()
   end, { buffer = buf, nowait = true, silent = true })
 end
 

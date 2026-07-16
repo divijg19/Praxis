@@ -5,12 +5,12 @@ type Evaluation struct {
 }
 
 type Challenge struct {
-	ID         string
-	Name       string
-	Verify     string
-	Content    []string
-	Result     []string
-	Target     string
-	Layer      string
-	Evaluation *Evaluation
+	ID         string      `json:"id"`
+	Name       string      `json:"name"`
+	Verify     string      `json:"verify"`
+	Content    []string    `json:"content"`
+	Result     []string    `json:"result"`
+	Target     string      `json:"target"`
+	Layer      string      `json:"layer"`
+	Evaluation *Evaluation `json:"evaluation,omitempty"`
 }

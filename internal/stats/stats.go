@@ -39,9 +39,6 @@ func Load() (map[string]Stats, error) {
 		_ = os.WriteFile(backup, data, 0644)
 		return make(map[string]Stats), fmt.Errorf("corrupt progress file; backup saved to %s", backup)
 	}
-	if m == nil {
-		m = make(map[string]Stats)
-	}
 	return m, nil
 }
 
@@ -103,10 +100,10 @@ func Confidence(s Stats) string {
 	if s.Attempts == 0 {
 		return "—"
 	}
-	switch {
-	case SuccessRate(s) >= 0.80:
+	switch r := SuccessRate(s); {
+	case r >= 0.80:
 		return "High"
-	case SuccessRate(s) >= 0.60:
+	case r >= 0.60:
 		return "Medium"
 	default:
 		return "Low"
@@ -147,7 +144,7 @@ func NextChallenge(m map[string]Stats, curriculum []string) string {
 }
 
 func RecommendedReview(m map[string]Stats, curriculum []string) string {
-	var oldestPracticed, oldestExperienced string
+	var practiced, experienced string
 	var practicedDate, experiencedDate string
 	for _, id := range curriculum {
 		s := m[id]
@@ -157,20 +154,18 @@ func RecommendedReview(m map[string]Stats, curriculum []string) string {
 		switch MasteryTier(s) {
 		case "Practiced":
 			if practicedDate == "" || s.LastPlayed < practicedDate {
-				practicedDate = s.LastPlayed
-				oldestPracticed = id
+				practicedDate, practiced = s.LastPlayed, id
 			}
 		case "Experienced":
 			if experiencedDate == "" || s.LastPlayed < experiencedDate {
-				experiencedDate = s.LastPlayed
-				oldestExperienced = id
+				experiencedDate, experienced = s.LastPlayed, id
 			}
 		}
 	}
-	if oldestPracticed != "" {
-		return oldestPracticed
+	if practiced != "" {
+		return practiced
 	}
-	return oldestExperienced
+	return experienced
 }
 
 func MasteryTier(s Stats) string {

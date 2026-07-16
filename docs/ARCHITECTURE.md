@@ -31,7 +31,17 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 | `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
 | `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
 | `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()` — challenge registry + curriculum metadata |
-| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — persistent progress tracking |
+| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — the **sole owner** of progress/score computation (mastery tiers, review selection). No other package computes stats. |
+
+### Ownership notes
+
+- **`internal/stats`** is the only package that computes progress, mastery
+  tiers, and review recommendations. `cmd/praxis` (`stats` command) is the
+  **sole CLI renderer** of that data.
+- **Stats-text contract:** `cmd/praxis` emits `Challenges Completed: N/M`
+  (where `M` is always the full catalog size). `hub.lua` consumes that line
+  directly. Any change to the `stats` command's output text is a breaking
+  change for the Neovim frontend and must be coordinated with `hub.lua`.
 
 ### Data flow
 
@@ -60,7 +70,7 @@ type Challenge struct {
     Target     string      // for cursor: the character to navigate to
     Content    []string    // buffer content lines
     Result     []string    // for buffer/composite: target buffer state
-    Layer      string      // "Tutorial", "Training", "Trial", "Boss"
+    Layer      string      // "Tutorial", "Training", or "Trial"
     Evaluation *Evaluation // non-nil only for "composite" challenges
 }
 
@@ -93,7 +103,6 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 | Tutorial | primitive introduction | Observe → Practice → Apply | 37 |
 | Training | composition formation | combine primitives, MaxMoves constraint | 10 |
 | Trial | recognition under pressure | select correct composition, budget enforcement | 5 |
-| Boss | mastery | (deferred to v0.3) | 0 |
 
 #### Distribution matrix
 
@@ -164,33 +173,9 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 - On completion, `render_result()` persists via `praxis record` CLI and aggregates counters
 - No separate session module — tracking lives in the challenge lifecycle
 
-### Arrival Surface (onboarding.lua)
-
-- First-time detection via stats file absence
-- Welcome buffer with orientation text and four actions:
-  - `[s]` Start → opens the next uncompleted challenge
-  - `[e]` Explore → opens the Catalog
-  - `[h]` About → what Praxis teaches and how progression works
-  - `[p]` View progress → opens the Hub
-- No persistence, no state, no wizard
-
-### Hub Surface (hub.lua)
-
-- Returning users see Hub on `:Praxis` instead of raw CLI output
-- Layout: Current → Direction → Mastery
-  - **Current:** current stage (stage of first un-Practiced challenge), progress count
-  - **Direction:** next challenge + its stage, review recommendation + its stage
-  - **Mastery:** mastery distribution (compact one-line format)
-- `<CR>` opens the next challenge directly via `challenge.open()`
-- Data sourced from `praxis next`, `praxis describe`, `praxis stats`
-
-### Journey Surface (challenge.lua — result screen)
-
-- Result screen displays stats with action options:
-  - `[r] Retry.` — reset and retry the challenge
-  - `[Enter] Continue.` — opens the next curriculum challenge
-  - `[q] Back.` — returns to the Hub
-- Enter on result screen skips Hub entirely (Challenge → Result → Next Challenge)
+See [REFERENCE.md](./REFERENCE.md) for the surface-by-surface walkthrough
+(onboarding, hub, result screen) and the full external interface contract
+table.
 
 ### Runtime Loop
 
@@ -205,23 +190,9 @@ is visible at a time. The loop:
    successful verify, calls `render_result()`.
 4. `render_result()` records the attempt (`praxis record`), refreshes stats
    (`praxis stats`), and replaces the buffer with the result view
-    (`[r] Retry.`, `[Enter] Continue.`, `[q] Back.`).
+   (`[r] Retry.`, `[Enter] Continue.`, `[q] Back.`).
 5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
    `praxis next` (or returns to the Hub); `q` returns to the Hub.
 
 `ui.create_buffer` reuses or uniquifies the buffer name so surfaces that
 share the "Praxis" label never collide.
-
-## External interface contracts
-
-| Interface | Consumer | Format |
-|---|---|---|
-| `praxis help` | CLI | CLI reference, commands listed with descriptions |
-| `praxis` (bare) | CLI | Next challenge ID + `praxis help` hint |
-| `praxis describe <id>` | Neovim, replay | JSON: `Description` struct (challenge + metadata + evaluation) |
-| `praxis catalog` | CLI | One challenge name per line (flat, no grouping) |
-| `praxis next` | Neovim, hub | Challenge ID or empty |
-| `praxis attempt <id>` | Neovim | Silent (internal) |
-| `praxis record <id> <moves> <time_ms>` | Neovim | Silent (internal) |
-| `praxis stats [id]` | CLI | Per-challenge or summary |
-| `praxis reset [--yes]` | CLI | Wipe all progress (confirm or pass `--yes`) |
