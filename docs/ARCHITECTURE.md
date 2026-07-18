@@ -110,11 +110,11 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
                      Tutorial  Training  Trial  Total
 Movement             3         0         0      3
 Search               6         0         0      6
-Structural Nav       9         0         0      9
+Structural Nav       7         0         0      7
 Editing              7         3         2      12
 Text Objects         8         4         3      15
-Registers            4         3         0      7
-Total                37        10        5      52
+Registers            3         3         0      6
+Total                34        10        5      49
 ```
 
 #### DerivedFrom lineage
