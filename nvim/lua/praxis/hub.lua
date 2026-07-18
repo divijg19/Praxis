@@ -24,6 +24,7 @@ function M.open()
 
   local display = {
     "── Praxis ──────────────────────────────────────",
+    "  Welcome back. Pick up where you left off, or explore.",
     "",
   }
 
@@ -105,17 +106,6 @@ function M.open()
   end
   table.insert(display, "")
 
-  table.insert(display, "  Mastery:")
-  local parts = {}
-  if mastery_unseen then table.insert(parts, "Unseen: " .. mastery_unseen) end
-  if mastery_learning then table.insert(parts, "Learning: " .. mastery_learning) end
-  if mastery_practiced then table.insert(parts, "Practiced: " .. mastery_practiced) end
-  if mastery_experienced then table.insert(parts, "Experienced: " .. mastery_experienced) end
-  if #parts > 0 then
-    table.insert(display, "    " .. table.concat(parts, "   "))
-  end
-  table.insert(display, "")
-
   if next_id ~= "" then
     if review_challenge and review_challenge ~= "" then
       table.insert(display, "  [Enter] Continue, or [r] Review.")
@@ -129,6 +119,16 @@ function M.open()
       table.insert(display, "  [r] Review.")
     end
     table.insert(display, "  [q] Back.")
+  end
+
+  local parts = {}
+  if mastery_unseen then table.insert(parts, "Unseen: " .. mastery_unseen) end
+  if mastery_learning then table.insert(parts, "Learning: " .. mastery_learning) end
+  if mastery_practiced then table.insert(parts, "Practiced: " .. mastery_practiced) end
+  if mastery_experienced then table.insert(parts, "Experienced: " .. mastery_experienced) end
+  if #parts > 0 then
+    table.insert(display, "")
+    table.insert(display, "  So far: " .. table.concat(parts, "   "))
   end
 
   local buf = ui.show("Praxis", display, false)

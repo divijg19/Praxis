@@ -1,6 +1,6 @@
-# Praxis
+# `Praxis`
 
-Praxis teaches Vim through short, self-contained challenges: Tutorials, Training, and Trials, all inside Neovim.
+Praxis teaches Vim through short, self-contained challenges: Tutorials, Training, and Trials, all inside Neovim. It is deliberate practice, not a course, and is meant to become a place you return to in order to improve.
 
 ## Install
 
@@ -17,6 +17,7 @@ Open Neovim and run `:Praxis`.
 - [REFERENCE.md](docs/REFERENCE.md): challenge model, CLI, stats
 - [TESTING.md](docs/TESTING.md): how it is verified
 - [RATIONALE.md](docs/RATIONALE.md): why major decisions were made
+- [PRACTICE_SYSTEM.md](docs/PRACTICE_SYSTEM.md): how Praxis should live as a long-term practice system
 
 ## Verify
 

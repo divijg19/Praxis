@@ -197,3 +197,7 @@ The curriculum ends when every challenge has been completed three times
 and the learner can press `[r]` to review the recommended challenge or
 `[q]` to finish. Any challenge may be revisited at any time for practice
 or improvement.
+
+How Praxis should function as a long-term practice system, once the
+curriculum is behind the learner, is the subject of
+[PRACTICE_SYSTEM.md](./PRACTICE_SYSTEM.md).
