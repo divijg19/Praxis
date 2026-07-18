@@ -3,6 +3,7 @@ package content
 import (
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -67,6 +68,36 @@ func TestReplayCoverage(t *testing.T) {
 		if !Exists(id) {
 			t.Errorf("replay.lua all_ids contains unknown id %q", id)
 		}
+	}
+}
+
+// H2b: the learner journey harness completes the full curriculum and asserts
+// "Progress: N/N" where N is the challenge count. That total is hand-maintained
+// in journey.lua and must stay in lockstep with content.All(). Guard against
+// the harness silently passing with a stale count when the curriculum grows or
+// shrinks (mirrors TestReplayCoverage for the journey harness).
+func TestJourneyCoverage(t *testing.T) {
+	data, err := os.ReadFile("../../tools/journey/journey.lua")
+	if err != nil {
+		t.Fatalf("cannot read journey.lua: %v", err)
+	}
+	raw := string(data)
+
+	// Match the "Progress: 49/49" assertion the harness makes on completion.
+	re := regexp.MustCompile(`Progress: (\d+)/(\d+)`)
+	m := re.FindStringSubmatch(raw)
+	if m == nil {
+		t.Fatal("journey.lua completion count assertion (Progress: N/N) not found")
+	}
+	// Both halves must agree (it asserts a fully-completed curriculum).
+	if m[1] != m[2] {
+		t.Fatalf("journey.lua completion count is inconsistent: %s/%s", m[1], m[2])
+	}
+	harnessTotal, _ := strconv.Atoi(m[1])
+
+	want := len(All())
+	if harnessTotal != want {
+		t.Errorf("journey.lua completion count %d does not match curriculum size %d; update the assertion in journey.lua", harnessTotal, want)
 	}
 }
 
