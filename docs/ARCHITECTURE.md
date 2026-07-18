@@ -29,9 +29,9 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 | Package | Responsibility |
 |---|---|---|
 | `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
-| `internal/challenge` | `Challenge` struct — the core data model, `Evaluation` for composite challenges |
-| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()` — challenge registry + curriculum metadata |
-| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update` — the **sole owner** of progress/score computation (mastery tiers, review selection). No other package computes stats. |
+| `internal/challenge` | `Challenge` struct: the core data model, plus `Evaluation` for composite challenges |
+| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()`: challenge registry and curriculum metadata |
+| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update`: the **sole owner** of progress and score computation (mastery tiers, review selection). No other package computes stats. |
 
 ### Ownership notes
 
@@ -94,15 +94,16 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 | Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ci(, ci" | 8 |
 | Registers | memory | yy, "a, "ap | 4 |
 
-> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 37 Tutorial challenges). The full per-stage distribution across all layers is the matrix below.
+> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 34 Tutorial challenges: 10 Core + 24 Additional Lessons). The full per-stage distribution across all layers is the matrix below.
 
 #### Layer taxonomy
 
-| Layer | Purpose | Scaffolding | Challenges |
+| Layer | Purpose (contract) | Scaffolding | Challenges |
 |---|---|---|---|
-| Tutorial | primitive introduction | Observe → Practice → Apply | 37 |
-| Training | composition formation | combine primitives, MaxMoves constraint | 10 |
-| Trial | recognition under pressure | select correct composition, budget enforcement | 5 |
+| Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 10 |
+| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 24 |
+| Training | never teaches mechanics; refines fluency | combine primitives, MaxMoves constraint | 10 |
+| Trial | integrate; solve your own way | select composition, budget enforcement | 5 |
 
 #### Distribution matrix
 
@@ -133,30 +134,30 @@ Enforced by `TestTrialIntegrity` (all targets exist) and `TestDerivedFromAcyclic
 
 ## Neovim Frontend (Lua)
 
-The Neovim frontend is loaded on demand — `:Praxis` triggers `require('praxis')` via the plugin manager's `cmd` lazy-loading.
+The Neovim frontend is loaded on demand. The `:Praxis` command triggers `require('praxis')` via the plugin manager's `cmd` lazy-loading.
 
 ### Module layout
 
 | Module | Surface | Responsibility |
 |---|---|---|
-| `init.lua` | — | Command registration, dispatch, binary availability check, recovery, orphan cleanup, first-time detection |
+| `init.lua` | none | Command registration, dispatch, binary availability check, recovery, orphan cleanup, first-time detection |
 | `challenge.lua` | Practice | Challenge lifecycle: open, verify, autocmds, result, retry, invalid-id recovery |
-| `ui.lua` | — | Scratch buffer creation, content helpers, `recovery()` screen |
+| `ui.lua` | none | Scratch buffer creation, content helpers, `recovery()` screen |
 | `onboarding.lua` | Arrival | First-time welcome flow |
-| `hub.lua` | Progress | Hub surface — stats, current location, direction, mastery, return-to-previous-buffer |
+| `hub.lua` | Progress | Hub surface: stats, current location, direction, mastery, return-to-previous-buffer |
 
 ### Practice Surface (challenge.lua)
 
 - Fetch challenge data from the `praxis` CLI binary
 - Create buffer with challenge content
 - Set up autocmds for validation:
-  - `CursorMoved` — cursor challenges (target reached check)
-  - `TextChanged` — buffer challenges (buffer matches result, Normal mode edits increment moves)
-  - `TextChangedI` — buffer challenges (Insert mode keystrokes, no move increment)
+  - `CursorMoved`: cursor challenges (target reached check)
+  - `TextChanged`: buffer challenges (buffer matches result, Normal mode edits increment moves)
+  - `TextChangedI`: buffer challenges (Insert mode keystrokes, no move increment)
 - Checks `state.verify` to decide which autocmd behavior to enable:
   - `"cursor"` → modifiable=false, CursorMoved listener, target check
   - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
-   - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Over the move limit — press [r] to retry." on exceed
+   - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Over the move limit. Press [r] to retry." on exceed
 - Uses `byte_to_char()` normalization for multi-byte content:
 
 ```lua
@@ -171,7 +172,7 @@ Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critica
 
 - Ephemeral per-challenge state (`state` table): moves, elapsed time, target, verify mode
 - On completion, `render_result()` persists via `praxis record` CLI and aggregates counters
-- No separate session module — tracking lives in the challenge lifecycle
+- No separate session module. Tracking lives in the challenge lifecycle
 
 See [REFERENCE.md](./REFERENCE.md) for the surface-by-surface walkthrough
 (onboarding, hub, result screen) and the full external interface contract

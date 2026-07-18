@@ -104,6 +104,16 @@ func main() {
 	}
 }
 
+func tutorialProgress(m map[string]stats.Stats) (done, total int) {
+	for _, id := range content.CoreTutorialIDs() {
+		total++
+		if s, ok := m[id]; ok && s.Completions > 0 {
+			done++
+		}
+	}
+	return done, total
+}
+
 func entrypoint() {
 	banner()
 	fmt.Println()
@@ -256,6 +266,13 @@ func statsSummary() {
 	}
 	fmt.Printf("Challenges Completed: %d/%d\n", completed, len(ids))
 	fmt.Printf("Total Attempts: %d\n", totalAttempts)
+	fmt.Println()
+	coreDone, coreTotal := tutorialProgress(m)
+	if coreDone >= coreTotal {
+		fmt.Println("Tutorial: Complete")
+	} else {
+		fmt.Printf("Tutorial: %d/%d core\n", coreDone, coreTotal)
+	}
 	fmt.Println()
 	dist := stats.MasteryDistribution(valid, len(ids))
 	fmt.Println("Mastery:")

@@ -257,4 +257,4 @@
 **Concept:** `"ap`
 **Why:** Teaches register-based duplication. Stores content, then appends a copy of it elsewhere.
 **Not redundant:** Duplication demonstrates a different register use case than replacement.
-**Followed by:** (none — final challenge)
+**Followed by:** (none, this is the final challenge)

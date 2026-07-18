@@ -1,6 +1,6 @@
 # Curriculum
 
-**Purpose:** What Praxis teaches — vocabulary, learning loop, navigation, stages, layers, progression, and what happens after the trial.
+**Purpose:** What Praxis teaches, including vocabulary, the learning loop, navigation, stages, layers, progression, and what happens after the trial.
 
 ---
 
@@ -26,25 +26,67 @@ Consistently recognizing and executing the correct composition.
 
 ## 2. Learning Model
 
-Praxis is deliberate practice, not a course. The three layers map to a
-single arc:
+Praxis is deliberate practice, not a course. Each mode makes a different
+educational contract with the learner:
 
 ```
-Onboard  →  Practice  →  Improve  →  Return forever
+Tutorial ──┬── Core      teaches, mandatory, finite: "I will make you independent."
+           └── Additional Lessons  teaches, never blocks: "Learn this when you're curious."
+Training                improves: "You know it; I will help you master it."
+Trials                  integrates: "Solve the problem your own way."
 ```
 
 **Tutorial is the end of onboarding, not the beginning of a curriculum.** Its
 only job is to teach the few essentials so a learner can genuinely use Praxis
-on their own. Everything after Tutorial *is* the product.
+on their own. When the Core is complete, Tutorial is *finished*, not paused,
+not 50% done. Everything after Tutorial *is* the product.
 
-- **Tutorial** teaches the few essential primitives, with a hint.
-- **Training** is repetition and composition — the learner practices and
-  chooses what to improve.
+- **Tutorial (Core)** is the mandatory, carefully ordered, confidence-building
+  onboarding. Finish it and you are independent.
+- **Tutorial (Additional Lessons)** is the rest of the lesson library. It still
+  teaches, but never blocks Training, Trials, or exploration. It is the same
+  Tutorial experience. The learner is simply browsing more Tutorial material,
+  not entering a different product.
+- **Training** never teaches mechanics. It refines fluency.
 - **Trial** is open problem-solving with no prescribed keystrokes.
 
 Each challenge is one buffer the learner solves, then continues. The UI does
 not separate these into distinct modes; the layers describe the *kind* of
 experience, not a retry count or enforced sequence.
+
+### The one-need principle
+
+Every educational mode exists to answer exactly one learner need:
+
+| Mode | The learner's need |
+|---|---|
+| Tutorial | "I don't know." |
+| Training | "I know, but I'm slow." |
+| Trials | "I think I know." |
+
+If a proposed feature can't be placed under one of these three sentences, it
+does not belong in the educational model. This is the litmus test for future
+design debates.
+
+### What "finished" means
+
+Praxis distinguishes three milestones so the learner is never confused about
+where they stand:
+
+- **Tutorial Complete**: Core onboarding is finished. You are now independent.
+  This is the only milestone the system announces as "complete."
+- **Practice Ongoing**: Training and Trials never truly finish. Fluency is a
+  process, not a checkbox.
+- **Curriculum Complete**: every exercise has been experienced at least once.
+  This is an achievement, not the educational goal.
+
+### Why Additional Lessons exist
+
+Optional Tutorial material exists to **remove unnecessary prerequisites
+without removing instruction**. Someone can ignore it, return to it later,
+study it before Training, or consult it after failing a Trial. It adapts to the
+learner instead of forcing them. This is exactly why it is part of Tutorial
+and never a separate mode.
 
 ---
 
@@ -67,7 +109,7 @@ menu hierarchy.
 - **Challenge** buffer: solve it to see the result, then `[r]` Retry,
    `[Enter]` Continue, `[q]` Back.
 - **Catalog** is a flat, unordered list. It does not group by stage and does
-  not bypass progression — it is a reference view.
+  not bypass progression. It is a reference view.
 
 ---
 
@@ -82,11 +124,29 @@ taxonomy).
 
 ## 5. Layers
 
-Every challenge belongs to one layer: Tutorial, Training, or Trial. The
-intended learning loop is Observe → Practice → Apply, but the UI does not
-separate these into distinct modes — each challenge is one buffer the
-learner solves, then continues. See [ARCHITECTURE.md](./ARCHITECTURE.md)
-(Layer taxonomy) for the per-layer purpose and challenge counts.
+Every challenge belongs to one layer: Tutorial, Training, or Trial. Each
+layer makes a distinct educational contract (see §2), and the UI does not
+separate them into distinct modes. Each challenge is one buffer the learner
+solves, then continues. See [ARCHITECTURE.md](./ARCHITECTURE.md) (Layer
+taxonomy) for the per-layer purpose and challenge counts.
+
+### Tutorial: Core and Additional Lessons
+
+Tutorial is split by *purpose*, not difficulty. Internally this is the
+`core` / `optional` tier on each Tutorial challenge; externally it is presented
+as Core and Additional Lessons so the learner never feels they have entered a
+separate product.
+
+- **Core**: the mandatory onboarding (currently ten exercises: movement,
+  search, line movement, character delete, word delete, character replace,
+  word change, line yank, plus two foundational extras). Completing Core
+  finishes Tutorial.
+- **Additional Lessons**: every other Tutorial challenge (internally
+  `optional`). It teaches, but never blocks progression. The learner explores
+  it from the Catalog when curious. See §2 for why it exists.
+
+A challenge's tier is part of its metadata (`Tier: core | optional`) and is
+assigned in `internal/content/curriculum.go`.
 
 ---
 
@@ -111,10 +171,10 @@ until it has been **completed three times**, after which the next unpracticed
 challenge becomes current. Mastery tiers are also count-based (see
 `internal/stats`):
 
-- **Unseen** — 0 completions
-- **Learning** — 1–2 completions
-- **Practiced** — 3–7 completions
-- **Experienced** — 8+ completions
+- **Unseen**: 0 completions
+- **Learning**: 1 to 2 completions
+- **Practiced**: 3 to 7 completions
+- **Experienced**: 8 or more completions
 
 The full curriculum is complete when every challenge has been completed three times. At that point the Hub shows `Current: Complete`.
 

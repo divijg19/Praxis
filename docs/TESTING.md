@@ -61,7 +61,7 @@ nvim --headless -l tools/replay/replay.lua
 
 ## Learner Journey
 
-Executes the real product — `:Praxis`, `:Praxis <id>`, real keystrokes — from first launch to completion and back. Validates recovery paths, voice, and navigation. Runs inside `tools/verify.sh` as one command covering all five test categories.
+Executes the real product, namely `:Praxis`, `:Praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `tools/verify.sh` as one command covering all five test categories.
 
 ```bash
 bash tools/journey/journey.sh
@@ -75,4 +75,4 @@ bash tools/journey/journey.sh
 tools/verify.sh
 ```
 
-Runs: `go test`, `go vet`, `gofmt`, replay (all 52 challenges), and the learner journey. This is the single command to verify all five categories — Correctness, Integrity, Regression, Replay, and Learner Journey — before committing.
+Runs: `go test`, `go vet`, `gofmt`, replay (all 52 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.

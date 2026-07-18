@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// H1 — every Tutorial teaches exactly the primitive its metadata claims.
+// H1: every Tutorial teaches exactly the primitive its metadata claims.
 // The curriculum is the executable specification: metadata, instruction, replay,
 // tests, and docs must all agree. Tutorials each teach one primitive,
 // so its Concept must appear in the instruction line. Topic labels (utf8,
@@ -35,7 +35,7 @@ func TestConceptInstructionAgreement(t *testing.T) {
 	}
 }
 
-// H2 — the replay harness must exercise every challenge. Guard against a
+// H2: the replay harness must exercise every challenge. Guard against a
 // forgotten ID in replay.lua's hand-maintained all_ids (integrity
 // principle: every challenge must be solvable via the replay harness).
 func TestReplayCoverage(t *testing.T) {
@@ -70,7 +70,7 @@ func TestReplayCoverage(t *testing.T) {
 	}
 }
 
-// H3 — single owner for the verify/result/target shape invariant.
+// H3: single owner for the verify/result/target shape invariant.
 func TestVerifyResultTargetInvariant(t *testing.T) {
 	for _, c := range All() {
 		switch c.Verify {
@@ -93,7 +93,7 @@ func TestVerifyResultTargetInvariant(t *testing.T) {
 
 }
 
-// H4 — a challenge name must match its identity. The "Unnamed Register Hunter"
+// H4: a challenge name must match its identity. The "Unnamed Register Hunter"
 // regression showed names can drift from their lesson; the name must contain a
 // recognizable form of the challenge's human-readable purpose, not the bare ID.
 func TestChallengeNameNotBareID(t *testing.T) {
@@ -111,7 +111,7 @@ func TestChallengeNameNotBareID(t *testing.T) {
 	}
 }
 
-// H5 — every instruction line ends with a period, enforcing one editorial
+// H5: every instruction line ends with a period, enforcing one editorial
 // voice. Trial challenges use imperative goal statements ("Remove the third
 // word.") which also end with a period, so the rule is uniform across layers.
 func TestInstructionLineTerminates(t *testing.T) {
