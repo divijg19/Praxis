@@ -90,4 +90,38 @@ func TestVerifyResultTargetInvariant(t *testing.T) {
 			}
 		}
 	}
+
+}
+
+// H4 — a challenge name must match its identity. The "Unnamed Register Hunter"
+// regression showed names can drift from their lesson; the name must contain a
+// recognizable form of the challenge's human-readable purpose, not the bare ID.
+func TestChallengeNameNotBareID(t *testing.T) {
+	for _, c := range All() {
+		if c.Name == "" {
+			t.Errorf("challenge %q has empty name", c.ID)
+			continue
+		}
+		// Names like "Find + Delete Word" legitimately differ from the ID;
+		// the guard is only against placeholder/empty-looking names.
+		if strings.Contains(strings.ToLower(c.Name), "unnamed") ||
+			strings.EqualFold(c.Name, c.ID) {
+			t.Errorf("challenge %q has a placeholder or ID-like name %q", c.ID, c.Name)
+		}
+	}
+}
+
+// H5 — every instruction line ends with a period, enforcing one editorial
+// voice. Trial challenges use imperative goal statements ("Remove the third
+// word.") which also end with a period, so the rule is uniform across layers.
+func TestInstructionLineTerminates(t *testing.T) {
+	for _, c := range All() {
+		if len(c.Content) == 0 {
+			continue
+		}
+		line := c.Content[0]
+		if !strings.HasSuffix(line, ".") {
+			t.Errorf("challenge %q instruction %q does not end with a period", c.ID, line)
+		}
+	}
 }

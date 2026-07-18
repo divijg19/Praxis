@@ -17,8 +17,6 @@ var stableChallengeIDs = []string{
 	"repeat_hunter",
 	"inner_paren_hunter",
 	"around_paren_hunter",
-	"inner_bracket_hunter",
-	"around_bracket_hunter",
 	"inner_quote_hunter",
 	"around_quote_hunter",
 	"paragraph_hunter",
@@ -41,7 +39,6 @@ var stableChallengeIDs = []string{
 	"yank_line_hunter",
 	"word_register_hunter",
 	"register_replace_hunter",
-	"register_duplicate_hunter",
 	"find_diw_combo",
 	"find_daw_combo",
 	"find_di_paren_combo",
@@ -130,8 +127,6 @@ var stableChallengeNames = []string{
 	"Repeat Hunter",
 	"Inner Paren Hunter",
 	"Around Paren Hunter",
-	"Inner Bracket Hunter",
-	"Around Bracket Hunter",
 	"Inner Quote Hunter",
 	"Around Quote Hunter",
 	"Paragraph Hunter",
@@ -151,10 +146,9 @@ var stableChallengeNames = []string{
 	"Delete Around Quote Hunter",
 	"Change Inner Paren Hunter",
 	"Change Inner Quote Hunter",
-	"Unnamed Register Hunter",
+	"Line Yank Hunter",
 	"Word Register Hunter",
 	"Register Replace Hunter",
-	"Register Duplicate Hunter",
 	"Find + Delete Word",
 	"Find + Delete Around",
 	"Find + Delete Inside",
@@ -216,8 +210,8 @@ func TestCurriculumLayerDistribution(t *testing.T) {
 	for _, c := range All() {
 		counts[c.Layer]++
 	}
-	if counts["Tutorial"] != 37 {
-		t.Errorf("Tutorial = %d, want 37", counts["Tutorial"])
+	if counts["Tutorial"] != 34 {
+		t.Errorf("Tutorial = %d, want 34", counts["Tutorial"])
 	}
 	if counts["Training"] != 10 {
 		t.Errorf("Training = %d, want 10", counts["Training"])

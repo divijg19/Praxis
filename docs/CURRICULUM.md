@@ -24,46 +24,27 @@ Consistently recognizing and executing the correct composition.
 
 ---
 
-## 2. Learning Loop
+## 2. Learning Model
 
-Every challenge follows a four-phase learning loop:
+Praxis is deliberate practice, not a course. The three layers map to a
+single arc:
 
 ```
-Observe → Practice → Apply → Reflect
+Onboard  →  Practice  →  Improve  →  Return forever
 ```
 
-### Observe
+**Tutorial is the end of onboarding, not the beginning of a curriculum.** Its
+only job is to teach the few essentials so a learner can genuinely use Praxis
+on their own. Everything after Tutorial *is* the product.
 
-The technique is introduced, explained, and contextualized. The learner sees the technique demonstrated and understands why it exists.
+- **Tutorial** teaches the few essential primitives, with a hint.
+- **Training** is repetition and composition — the learner practices and
+  chooses what to improve.
+- **Trial** is open problem-solving with no prescribed keystrokes.
 
-### Practice
-
-The technique is reproduced with support. The learner executes with scaffolding (hints, guidance, guardrails) that prevents frustration while building muscle memory.
-
-### Apply
-
-The technique is executed independently. No scaffolding. The learner demonstrates understanding by completing the task without support.
-
-### Reflect
-
-Reflection is the period after execution where the learner compares intent, execution, and outcome. It follows each active phase. This is a contract, not an implementation — UI mechanisms (result screen, move count, mastery update) are deferred to UX design.
-
-### Attempt states (design intent)
-
-Observe → Practice → Apply is the *intended* pedagogical curve, not a
-separate UI mode. Each challenge is one buffer the learner solves, then
-continues — the UI does not split attempts into distinct states. The
-phases describe the kind of experience a well-designed challenge should
-provide (introduction, guided execution, independent execution) rather
-than a retry count or enforced sequence.
-
-### Layer × O/P/A matrix (design intent)
-
-| Layer | Observe | Practice | Apply |
-|---|---|---|---|
-| Tutorial | Learn a single primitive | Guided primitive execution | Use the primitive independently |
-| Training | Learn a composition | Guided composition execution | Use the composition within budget |
-| Trial | Understand the scenario | Recognize the correct composition | Execute the composition within budget |
+Each challenge is one buffer the learner solves, then continues. The UI does
+not separate these into distinct modes; the layers describe the *kind* of
+experience, not a retry count or enforced sequence.
 
 ---
 
@@ -139,10 +120,10 @@ The full curriculum is complete when every challenge has been completed three ti
 
 ### When to revisit
 
-A learner revisits an earlier stage when:
+A learner revisits earlier material when:
 
 1. **Stuck on a composition.** Repeatedly failing a Training or Trial that depends on earlier primitives.
-2. **Low confidence.** A primitive has been used primarily in Apply mode without sufficient Observe or Practice grounding.
+2. **Low confidence.** A primitive has not been practiced enough to feel automatic.
 3. **Returning after absence.** The learner returns after time away from Praxis.
 
 Revisiting is a pedagogical tool, not a penalty. Progress is preserved when returning to current material.
