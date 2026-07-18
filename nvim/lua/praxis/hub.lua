@@ -27,7 +27,17 @@ function M.open()
     "",
   }
 
+  if tutorial_status then
+    if tutorial_status == "Complete" then
+      table.insert(display, "  Tutorial Complete. You are independent. Practice is ongoing.")
+    else
+      table.insert(display, "  Tutorial: " .. tutorial_status .. " core. Finish Core to complete onboarding.")
+    end
+    table.insert(display, "")
+  end
+
   local completed, total
+  local tutorial_status
   local in_mastery = false
   local mastery_unseen, mastery_learning, mastery_practiced, mastery_experienced
   local review_challenge
@@ -36,6 +46,11 @@ function M.open()
     local comp, tot = line:match("Challenges Completed: (%d+)/(%d+)")
     if comp then
       completed, total = comp, tot
+    end
+
+    local tut = line:match("^Tutorial: (.+)$")
+    if tut then
+      tutorial_status = tut
     end
 
     if line:match("^Mastery:") then
@@ -71,7 +86,7 @@ function M.open()
   end
 
   if layer ~= "" then
-    table.insert(display, "  Current: " .. layer .. " — " .. stage)
+    table.insert(display, "  Current: " .. layer .. " / " .. stage)
   else
     table.insert(display, "  Current: Complete")
   end
@@ -80,13 +95,13 @@ function M.open()
 
   table.insert(display, "  Direction:")
   if next_id ~= "" then
-    table.insert(display, "    Next: " .. name .. " — " .. stage)
+    table.insert(display, "    Next: " .. name .. " / " .. stage)
   else
     table.insert(display, "    Complete")
   end
   if review_challenge and review_challenge ~= "" then
     local review_name, _, review_stage = describe_for_id(review_challenge)
-    table.insert(display, "    Review: " .. review_name .. " — " .. review_stage)
+    table.insert(display, "    Review: " .. review_name .. " / " .. review_stage)
   end
   table.insert(display, "")
 

@@ -229,7 +229,7 @@ func TestContentResultLineCountReasonable(t *testing.T) {
 		n := len(c.Result)
 		m := len(c.Content)
 		if n < m-1 || n > m+1 {
-			t.Errorf("buffer-like challenge %s: Result has %d lines, Content has %d (reasonable range: %d–%d)",
+			t.Errorf("buffer-like challenge %s: Result has %d lines, Content has %d (reasonable range: %d to %d)",
 				c.ID, n, m, m-1, m+1)
 		}
 	}

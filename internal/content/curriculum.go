@@ -76,7 +76,62 @@ var curriculum = map[string]Metadata{
 	"trial_repeat_choice": {"dw/ciw", "recognition: repeat vs re-execute", stageEditing, []string{"dw_dot_combo", "ciw_dot_combo"}},
 }
 
+// coreTutorials is the irreducible onboarding: the few exercises that must be
+// completed before a learner can improve independently. Once these are done,
+// Tutorial has fulfilled its contract and the learner is free to practice.
+// Every other Tutorial challenge is optional material they may explore.
+var coreTutorials = map[string]bool{
+	"motion_rush":              true,
+	"find_hunter":              true,
+	"slash_hunter":             true,
+	"word_hunter":              true,
+	"line_hunter":              true,
+	"delete_character_hunter":  true,
+	"delete_word_hunter":       true,
+	"replace_character_hunter": true,
+	"change_word_hunter":       true,
+	"yank_line_hunter":         true,
+}
+
+// tutorialTier records the Core/Optional classification for Tutorial-layer
+// challenges. Core is the mandatory onboarding; the rest are Optional. It is
+// derived once at package load from coreTutorials and the challenge layers.
+var tutorialTier = map[string]string{}
+
+func init() {
+	for _, c := range All() {
+		if c.Layer != "Tutorial" {
+			continue
+		}
+		if coreTutorials[c.ID] {
+			tutorialTier[c.ID] = "core"
+		} else {
+			tutorialTier[c.ID] = "optional"
+		}
+	}
+}
+
 func metadataFor(id string) (Metadata, bool) {
 	m, ok := curriculum[id]
 	return m, ok
+}
+
+// IsCoreTutorial reports whether id is part of the mandatory onboarding.
+func IsCoreTutorial(id string) bool {
+	return coreTutorials[id]
+}
+
+// TutorialTier returns "core" or "optional" for Tutorial challenges, or "" for
+// challenges in other layers.
+func TutorialTier(id string) string {
+	return tutorialTier[id]
+}
+
+// CoreTutorialIDs returns the mandatory onboarding challenge IDs.
+func CoreTutorialIDs() []string {
+	ids := make([]string, 0, len(coreTutorials))
+	for id := range coreTutorials {
+		ids = append(ids, id)
+	}
+	return ids
 }

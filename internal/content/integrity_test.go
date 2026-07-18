@@ -284,3 +284,49 @@ func TestTrialObjectivesDistinct(t *testing.T) {
 		}
 	}
 }
+
+func TestTutorialTiersAssigned(t *testing.T) {
+	var core, optional int
+	for _, c := range All() {
+		if c.Layer != "Tutorial" {
+			if TutorialTier(c.ID) != "" {
+				t.Errorf("non-Tutorial %q has a Tutorial tier %q", c.ID, TutorialTier(c.ID))
+			}
+			continue
+		}
+		switch TutorialTier(c.ID) {
+		case "core":
+			core++
+		case "optional":
+			optional++
+		default:
+			t.Errorf("Tutorial %q has no Tier assigned", c.ID)
+		}
+	}
+	// Core is the intentionally small mandatory onboarding: a handful of
+	// exercises, not the bulk of Tutorial. Optional should be larger.
+	if core < 5 || core > 15 {
+		t.Errorf("Core Tutorial count %d is outside the intended 5 to 15 range", core)
+	}
+	if optional < core {
+		t.Errorf("Optional Tutorial count %d should be at least the Core count %d", optional, core)
+	}
+}
+
+func TestCoreTutorialSetConsistent(t *testing.T) {
+	ids := CoreTutorialIDs()
+	if len(ids) == 0 {
+		t.Fatal("Core Tutorial set is empty")
+	}
+	for _, id := range ids {
+		if !IsCoreTutorial(id) {
+			t.Errorf("CoreTutorialIDs contains %q but IsCoreTutorial disagrees", id)
+		}
+		if _, ok := metadataFor(id); !ok {
+			t.Errorf("Core Tutorial %q has no metadata", id)
+		}
+		if TutorialTier(id) != "core" {
+			t.Errorf("Core Tutorial %q is not marked Tier=core", id)
+		}
+	}
+}

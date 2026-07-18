@@ -17,7 +17,7 @@ function M.open(id)
   end
 
   local editable = desc.verify == "buffer" or desc.verify == "composite"
-  local buf = ui.show("Praxis — " .. desc.name, desc.content, editable)
+  local buf = ui.show("Praxis: " .. desc.name, desc.content, editable)
 
   if not util.praxis({ "attempt", id }) then
     ui.recovery("Praxis couldn't record this attempt.", {
@@ -97,7 +97,7 @@ function M.open(id)
       if current[i] ~= state.result_lines[i] then return end
     end
     if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-      vim.api.nvim_echo({ { "Over the move limit — press [r] to retry." } }, false, {})
+      vim.api.nvim_echo({ { "Over the move limit. Press [r] to retry." } }, false, {})
       return
     end
     state.done = true

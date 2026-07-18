@@ -68,7 +68,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
 3. Append the ID to `stableChallengeIDs` and the name to `stableChallengeNames` in `internal/content/content_test.go` (rename guard)
 4. Append the ID to the `all_ids` list in `tools/replay/replay.lua` (guarded by `TestReplayCoverage`)
-5. Run `tools/verify.sh` — total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required
+5. Run `tools/verify.sh`. The total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required.
 
 ## CLI Surface
 
@@ -236,7 +236,7 @@ Comparison is byte-exact string equality:
 |---|---|
 | Buffer has wrong content | At least one line differs from result |
 | Line count mismatch | Extra or missing line |
-| Trailing whitespace differs | `"keep "` vs `"keep"` — byte-exact comparison |
+| Trailing whitespace differs | `"keep "` vs `"keep"`: byte-exact comparison |
 | Result is empty | Result field is nil or `[]string{}` (violates contract) |
 
 ### Composite Validator
@@ -248,7 +248,7 @@ Comparison is byte-exact string equality:
 Behaviorally identical to the buffer validator (TextChanged + TextChangedI listeners, byte-exact comparison via `check_buffer()`). Additionally, the Lua frontend enforces a `MaxMoves` threshold:
 
 - On each Normal-mode edit (TextChanged), moves counter is incremented
-- If moves exceed `MaxMoves`, challenge is failed with "Over the move limit — press [r] to retry."
+- If moves exceed `MaxMoves`, challenge is failed with "Over the move limit. Press [r] to retry."
 - Result screen shows `Moves: N / MaxMoves` instead of just `Moves: N`
 
 The `MaxMoves` value is transmitted via the `describe` JSON endpoint as `evaluation.max_moves`.
@@ -290,7 +290,7 @@ Stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/stats.json`
 
 ### Confidence ≠ Mastery
 
-These are orthogonal dimensions — high Confidence does not imply high Mastery, and vice versa.
+These are orthogonal dimensions. High Confidence does not imply high Mastery, and vice versa.
 
 | | High Confidence | Low Confidence |
 |---|---|---|
@@ -304,8 +304,8 @@ Derived from `Completions`:
 | Tier | Threshold |
 |---|---|
 | Unseen | 0 |
-| Learning | 1–2 |
-| Practiced | 3–7 |
+| Learning | 1 to 2 |
+| Practiced | 3 to 7 |
 | Experienced | 8+ |
 
 ### Design Decisions
@@ -314,20 +314,20 @@ Derived from `Completions`:
 - Best values track minima (fewest moves, fastest time)
 - First completion always sets the best value
 - Subsequent completions only update if better
-- No per-attempt history — only the best is preserved
+- No per-attempt history. Only the best is preserved
 - Attempts and Completions are tracked independently. Attempts increment on challenge start and replay; Completions increment only on success
-- Confidence is derived from SuccessRate at display time. Not stored in JSON. Thresholds: ≥80% High, ≥60% Medium, <60% Low. Em dash (—) when no attempts (no-data signal, not Low).
+- Confidence is derived from SuccessRate at display time. Not stored in JSON. Thresholds: 80 percent or higher is High, 60 percent or higher is Medium, and below 60 percent is Low. The display shows an em dash when there are no attempts, which is a no-data signal and not the same as Low.
 - Confidence and Mastery are orthogonal. Mastery answers "how much have I practiced?"; Confidence answers "how reliably am I executing?"
 
 ### Practice Guidance
 
-`NextChallenge()` returns the first curriculum-ordered challenge whose Completions ≤ 2 (Unseen or Learning). This means: **finish what you started** — a partially-practiced Learning challenge will be recommended before a new Unseen challenge.
+`NextChallenge()` returns the first curriculum-ordered challenge whose Completions ≤ 2 (Unseen or Learning). This means: **finish what you started**. A partially-practiced Learning challenge will be recommended before a new Unseen challenge.
 
 `RecommendedReview()` returns the oldest Practiced challenge by LastPlayed date, falling back to the oldest Experienced if no Practiced challenges exist. Practiced challenges are preferred because they are more likely to benefit from review than deeply-ingrained Experienced ones.
 
 ## Reflection (Internal)
 
-Per-challenge tracking is an internal implementation detail — no public command or surface. Ephemeral per-challenge counters (moves, elapsed time) live in the `state` table inside `challenge.lua` and are aggregated via the `praxis record` CLI on completion.
+Per-challenge tracking is an internal implementation detail. There is no public command or surface for it. Ephemeral per-challenge counters (moves, elapsed time) live in the `state` table inside `challenge.lua` and are aggregated via the `praxis record` CLI on completion.
 
 - **No persistence.** Discarded when the challenge buffer closes.
 - **No public command.** No `:PraxisSession`.
@@ -341,12 +341,12 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ```
 ── Praxis ──────────────────────────────────────
 
-  Current: Tutorial — Search
+  Current: Tutorial / Search
   Progress: 4/52
 
   Direction:
-    Next: Find Hunter — Search
-    Review: Motion Rush — Movement
+    Next: Find Hunter / Search
+    Review: Motion Rush / Movement
 
   Mastery:
     Unseen: 48   Learning: 2   Practiced: 1   Experienced: 1
@@ -374,7 +374,7 @@ Three sections:
 ### Design Principles
 
 - **Hub is for orientation.** You visit it when you need context (starting Praxis, returning after a break, wondering where you are).
-- **Result screen is for momentum.** After completing a challenge, Enter goes directly to the next challenge — never through Hub.
+- **Result screen is for momentum.** After completing a challenge, Enter goes directly to the next challenge. It never goes through the Hub.
 - **Practice flow:** Challenge → Result → Next Challenge. Navigation only when you explicitly choose it.
 - **Zero Go changes.** All data is sourced from `praxis next`, `praxis stats`.
 
@@ -403,12 +403,12 @@ These principles are enforced by the integrity and content test suites (see TEST
 
 ## Release Procedure
 
-1. **Verify** — `tools/verify.sh` — runs build, lint (`go run github.com/golangci/golangci-lint/cmd/golangci-lint run`), format, vet, tests, replay, and journey. All checks must pass.
-2. **Build** — `go build ./...` — all packages compile
-3. **Documentation** — If content changed: update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
-4. **Stage** — `git add -A && git status` — verify staged files
-5. **Commit** — Descriptive message: title (version + summary), body (categorized changes), discipline section (what did NOT change)
-6. **Tag** — `git tag <version>` — must match release plan
-7. **Push and Release** — `git push origin <branch> <version>`. Create release and verification issues on GitHub.
+1. **Verify**: run `tools/verify.sh`. It runs build, lint (`go run github.com/golangci/golangci-lint/cmd/golangci-lint run`), format, vet, tests, replay, and journey. All checks must pass.
+2. **Build**: run `go build ./...` so all packages compile.
+3. **Documentation**: if content changed, update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
+4. **Stage**: run `git add -A && git status` to verify staged files.
+5. **Commit**: write a descriptive message with a title (version plus summary), a body (categorized changes), and a discipline section (what did NOT change).
+6. **Tag**: run `git tag <version>` so it matches the release plan.
+7. **Push and Release**: run `git push origin <branch> <version>`, then create release and verification issues on GitHub.
 
 Every release follows the same process. Do not skip steps.
