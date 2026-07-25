@@ -145,6 +145,73 @@ func TestChallengeNameNotBareID(t *testing.T) {
 // H5: every instruction line ends with a period, enforcing one editorial
 // voice. Trial challenges use imperative goal statements ("Remove the third
 // word.") which also end with a period, so the rule is uniform across layers.
+// H6: the Core Tutorial set is frozen at exactly 10 challenges.
+// Investigation I (Curriculum Architecture) concluded that 10 is irreducible
+// for Vim onboarding and no challenges will be added to or removed from Core.
+func TestCoreTutorialCountFrozen(t *testing.T) {
+	const want = 10
+	got := len(CoreTutorialIDs())
+	if got != want {
+		t.Errorf("Core Tutorial has %d challenges, want %d; Core is frozen per Deliberate Practice Design Investigation I", got, want)
+	}
+	// Verify every Core Tutorial is a Tutorial-layer challenge.
+	for _, id := range CoreTutorialIDs() {
+		for _, c := range All() {
+			if c.ID != id {
+				continue
+			}
+			if c.Layer != "Tutorial" {
+				t.Errorf("Core challenge %q has Layer=%q, must be Tutorial", id, c.Layer)
+			}
+			break
+		}
+	}
+}
+
+// H7: Trial instructions must not prescribe specific keystrokes.
+// Trials validate transfer: the learner must choose the composition.
+// Prescribing keystrokes would reduce Trial to Training.
+func TestTrialInstructionDoesNotPrescribe(t *testing.T) {
+	// Keystroke patterns that indicate a prescribed technique.
+	// Instructions like "Remove the third word." are fine;
+	// "Use f{char} then diw to delete the word." is prescribing.
+	prescriptiveTerms := []string{
+		"use ", "Use ", "press ", "Press ", "type ", "Type ",
+		"then ", "hit ", "Hit ",
+	}
+	for _, c := range All() {
+		if c.Layer != "Trial" {
+			continue
+		}
+		if len(c.Content) == 0 {
+			continue
+		}
+		line := c.Content[0]
+		for _, term := range prescriptiveTerms {
+			if strings.Contains(line, term) {
+				t.Errorf("Trial %q instruction %q contains prescriptive term %q; Trials must not prescribe keystrokes", c.ID, line, term)
+			}
+		}
+	}
+}
+
+// H8: Training instructions must follow the consistent "Use X to Y" pattern
+// that frames the challenge as fluency practice, not concept teaching.
+func TestTrainingInstructionConsistent(t *testing.T) {
+	for _, c := range All() {
+		if c.Layer != "Training" {
+			continue
+		}
+		if len(c.Content) == 0 {
+			continue
+		}
+		line := c.Content[0]
+		if !strings.HasPrefix(line, "Use ") {
+			t.Errorf("Training %q instruction %q does not start with 'Use '; Training should prescribe the technique for fluency practice", c.ID, line)
+		}
+	}
+}
+
 func TestInstructionLineTerminates(t *testing.T) {
 	for _, c := range All() {
 		if len(c.Content) == 0 {

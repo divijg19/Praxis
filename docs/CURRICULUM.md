@@ -1,6 +1,6 @@
 # Curriculum
 
-**Purpose:** What Praxis teaches, including vocabulary, the learning loop, navigation, stages, layers, progression, and what happens after the trial.
+**Purpose:** What Praxis teaches and how deliberate practice works, including vocabulary, the learning loop, session model, navigation, stages, layers, progression, progress, guidance, and permanent principles.
 
 ---
 
@@ -32,8 +32,8 @@ educational contract with the learner:
 ```
 Tutorial ──┬── Core      teaches, mandatory, finite: "I will make you independent."
            └── Additional Lessons  teaches, never blocks: "Learn this when you're curious."
-Training                improves: "You know it; I will help you master it."
-Trials                  integrates: "Solve the problem your own way."
+Training                refines fluency: "You know it; I will help you master it."
+Trials                  validates transfer: "Solve the problem your own way."
 ```
 
 **Tutorial is the end of onboarding, not the beginning of a curriculum.** Its
@@ -47,8 +47,8 @@ not 50% done. Everything after Tutorial *is* the product.
   teaches, but never blocks Training, Trials, or exploration. It is the same
   Tutorial experience. The learner is simply browsing more Tutorial material,
   not entering a different product.
-- **Training** never teaches mechanics. It refines fluency.
-- **Trial** is open problem-solving with no prescribed keystrokes.
+- **Training** never teaches mechanics. It refines fluency through deliberate repetition of known compositions.
+- **Trial** validates transfer: judgment (choosing the composition) and adaptability (applying it in an unprescribed context). No keystrokes are prescribed.
 
 Each challenge is one buffer the learner solves, then continues. The UI does
 not separate these into distinct modes; the layers describe the *kind* of
@@ -103,9 +103,9 @@ menu hierarchy.
    - `[e]` Explore → the Catalog (a flat list of all challenges).
    - `[h]` About → what Praxis teaches and how progression works.
    - `[p]` View progress → the Hub.
-- **Hub** (returning users) shows Current, Progress, Direction, and Mastery,
-   then: `[Enter]` Continue to the next challenge, `[r]` Review the
-   recommended challenge, `[q]` Back.
+- **Hub** is the learner's home: the threshold of practice, not a dashboard.
+   It shows Current, Progress, Direction, and Mastery, then: `[Enter]` Continue
+   to the next challenge, `[r]` Review the recommended challenge, `[q]` Back.
 - **Challenge** buffer: solve it to see the result, then `[r]` Retry,
    `[Enter]` Continue, `[q]` Back.
 - **Catalog** is a flat, unordered list. It does not group by stage and does
@@ -198,6 +198,85 @@ and the learner can press `[r]` to review the recommended challenge or
 `[q]` to finish. Any challenge may be revisited at any time for practice
 or improvement.
 
-How Praxis should function as a long-term practice system, once the
-curriculum is behind the learner, is the subject of
-[PRACTICE_SYSTEM.md](./PRACTICE_SYSTEM.md).
+After the curriculum is behind the learner, practice continues to be
+self-directed. Every challenge remains available. Review selects the oldest
+Practiced challenge. Motivation returns from within: practice makes editing
+visibly easier, and that feeling is its own reward.
+
+---
+
+## 8. Progress
+
+Progress is the reduction of uncertainty across four dimensions:
+
+- **Breadth:** how many concepts have been touched.
+- **Depth:** how automatic each has become (mastery tiers).
+- **Consistency:** how reliably success arrives (confidence tiers).
+- **Transfer:** how freely the learner applies a concept in a Trial.
+
+The stored signals (completions, mastery tiers, confidence) capture this.
+The learner-facing display presents progress as "what is still uncertain,"
+never as a percentage toward done. Curriculum Complete is an achievement,
+not the educational goal (see §6).
+
+Mastery and confidence are orthogonal dimensions:
+
+| | High Confidence | Low Confidence |
+|---|---|---|
+| High Mastery | 20 attempts, 16 completions (80%) | 20 attempts, 10 completions (50%) |
+| Low Mastery | 1 attempt, 1 completion (100%) | 1 attempt, 0 completions (0%) |
+
+---
+
+## 9. Guidance
+
+Praxis reduces uncertainty; it never reduces autonomy. Guidance is a
+suggestion the learner can ignore. Control is a restriction the learner cannot.
+
+Three mechanisms:
+
+1. **NextChallenge** suggests the next unfinished challenge by curriculum order.
+   The learner can open any challenge by ID instead.
+2. **RecommendedReview** selects the oldest Practiced challenge by LastPlayed
+   date for optional review. The `[r]` key on the Hub activates it.
+3. **Catalog** shows every challenge. Nothing is gated. Every challenge is
+   accessible by name always.
+
+No recommendation engine exists. The curriculum order plus the review
+suggestion are sufficient to guide without controlling.
+
+---
+
+## 10. Practice Session
+
+A practice session is the span between opening Praxis and leaving it,
+composed of as many challenges as the learner chooses. There is no session
+object, no timer, no start or end screen. The product protects the continuity
+of the span (the flow from Challenge to Result to Next Challenge) without
+enclosing it.
+
+Too much practice is self-correcting: fatigue is felt, not computed. Praxis
+never meters practice. The learner decides when to start, continue, and stop.
+
+---
+
+## 11. Permanent Educational Principles
+
+These principles govern the learner's experience. They are immutable. Any
+proposal that violates them is rejected.
+
+1. **One need per mode.** Every mode answers exactly one learner need:
+   Tutorial ("I don't know"), Training ("I know, but I'm slow"),
+   Trials ("I think I know").
+2. **Tutorial creates independence.** Its only job is to teach the essentials
+   so the learner can practice independently. Core is finite and mandatory.
+3. **Training builds fluency.** Through deliberate repetition of known
+   compositions. Training never teaches mechanics.
+4. **Trials validate transfer.** Judgment and adaptability. No keystrokes
+   prescribed.
+5. **Guidance never becomes restriction.** Every suggestion is optional.
+6. **Simplicity compounds.** A simpler system is permanently preferable to a
+   more capable one that costs complexity.
+7. **Practice belongs to the learner.** The learner decides what, when, and
+   how much to practice.
+8. **Three pillars only.** Tutorial, Training, Trials. No fourth mode.

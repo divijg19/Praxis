@@ -51,7 +51,7 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 
 ## Replay
 
-Drives all 52 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
+Drives all 49 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
 
 ```bash
 # Requires the `praxis` binary on PATH (the harness builds it to /tmp/praxis).
@@ -75,4 +75,18 @@ bash tools/journey/journey.sh
 tools/verify.sh
 ```
 
-Runs: `go test`, `go vet`, `gofmt`, replay (all 52 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
+Runs: `go test`, `go vet`, `gofmt`, replay (all 49 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
+
+---
+
+## Release Procedure
+
+1. **Verify**: run `tools/verify.sh`. It runs build, lint, format, vet, tests, replay, and journey. All checks must pass.
+2. **Build**: run `go build ./...` so all packages compile.
+3. **Documentation**: if content changed, update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
+4. **Stage**: run `git add -A && git status` to verify staged files.
+5. **Commit**: write a descriptive message with a title (version plus summary), a body (categorized changes), and a discipline section (what did NOT change).
+6. **Tag**: run `git tag <version>` so it matches the release plan.
+7. **Push and Release**: run `git push origin <branch> <version>`, then create release and verification issues on GitHub.
+
+Every release follows the same process. Do not skip steps.

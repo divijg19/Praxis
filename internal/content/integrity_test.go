@@ -303,10 +303,9 @@ func TestTutorialTiersAssigned(t *testing.T) {
 			t.Errorf("Tutorial %q has no Tier assigned", c.ID)
 		}
 	}
-	// Core is the intentionally small mandatory onboarding: a handful of
-	// exercises, not the bulk of Tutorial. Optional should be larger.
-	if core < 5 || core > 15 {
-		t.Errorf("Core Tutorial count %d is outside the intended 5 to 15 range", core)
+	// Core is frozen at exactly 10 (Deliberate Practice Design Investigation I).
+	if core != 10 {
+		t.Errorf("Core Tutorial count = %d, want 10 (frozen per Deliberate Practice Design Investigation I)", core)
 	}
 	if optional < core {
 		t.Errorf("Optional Tutorial count %d should be at least the Core count %d", optional, core)

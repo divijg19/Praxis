@@ -400,15 +400,3 @@ These principles are enforced by the integrity and content test suites (see TEST
 - Skill trees or dependencies
 - Progression gates
 
-
-## Release Procedure
-
-1. **Verify**: run `tools/verify.sh`. It runs build, lint (`go run github.com/golangci/golangci-lint/cmd/golangci-lint run`), format, vet, tests, replay, and journey. All checks must pass.
-2. **Build**: run `go build ./...` so all packages compile.
-3. **Documentation**: if content changed, update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
-4. **Stage**: run `git add -A && git status` to verify staged files.
-5. **Commit**: write a descriptive message with a title (version plus summary), a body (categorized changes), and a discipline section (what did NOT change).
-6. **Tag**: run `git tag <version>` so it matches the release plan.
-7. **Push and Release**: run `git push origin <branch> <version>`, then create release and verification issues on GitHub.
-
-Every release follows the same process. Do not skip steps.
