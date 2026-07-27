@@ -5,16 +5,6 @@ import "github.com/divijg19/Praxis/internal/challenge"
 func All() []challenge.Challenge {
 	return []challenge.Challenge{
 		{
-			ID:     "motion_rush",
-			Name:   "Motion Rush",
-			Verify: "cursor",
-			Target: "★",
-			Content: []string{
-				"Use h, j, k and l to move to the star ★.",
-			},
-			Layer: "Tutorial",
-		},
-		{
 			ID:     "grid_rush",
 			Name:   "Grid Rush",
 			Verify: "cursor",
@@ -483,7 +473,7 @@ func All() []challenge.Challenge {
 		},
 		{
 			ID:     "yank_line_hunter",
-			Name:   "Line Yank Hunter",
+			Name:   "Yank Line Hunter",
 			Verify: "buffer",
 			Target: "",
 			Content: []string{

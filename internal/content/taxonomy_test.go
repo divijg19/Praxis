@@ -28,8 +28,10 @@ func TestProgressionCoverage(t *testing.T) {
 		stages[m.Stage] = true
 	}
 
-	expected := []string{stageMovement, stageSearch, stageStructuralNavigation,
-		stageEditing, stageTextObjects, stageRegisters}
+	expected := []string{
+		stageMovement, stageSearch, stageStructuralNavigation,
+		stageEditing, stageTextObjects, stageRegisters,
+	}
 	for _, s := range expected {
 		if !stages[s] {
 			t.Errorf("progression stage %q has no challenges", s)

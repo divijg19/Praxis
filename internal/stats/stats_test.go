@@ -192,10 +192,10 @@ func TestUpdateLastPlayed(t *testing.T) {
 func TestLoadCorruptFile(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("{broken"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("{broken"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	m, err := Load()

@@ -51,7 +51,7 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 
 ## Replay
 
-Drives all 49 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
+Drives all 48 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
 
 ```bash
 # Requires the `praxis` binary on PATH (the harness builds it to /tmp/praxis).
@@ -75,7 +75,7 @@ bash tools/journey/journey.sh
 tools/verify.sh
 ```
 
-Runs: `go test`, `go vet`, `gofmt`, replay (all 49 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
+Runs: `go test`, `go vet`, `gofmt`, replay (all 48 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
 
 ---
 

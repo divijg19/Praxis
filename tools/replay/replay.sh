@@ -1,6 +1,6 @@
 #!/bin/bash
 # Praxis Replay Verification
-# Builds binary and runs Neovim replay against all 52 challenges.
+# Builds binary and runs Neovim replay against all 48 challenges.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

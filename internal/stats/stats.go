@@ -36,7 +36,7 @@ func Load() (map[string]Stats, error) {
 	var m map[string]Stats
 	if err := json.Unmarshal(data, &m); err != nil {
 		backup := path() + ".corrupt"
-		_ = os.WriteFile(backup, data, 0644)
+		_ = os.WriteFile(backup, data, 0o644)
 		return make(map[string]Stats), fmt.Errorf("corrupt progress file; backup saved to %s", backup)
 	}
 	return m, nil
@@ -44,7 +44,7 @@ func Load() (map[string]Stats, error) {
 
 func Save(m map[string]Stats) error {
 	dir := filepath.Dir(path())
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(m, "", "  ")

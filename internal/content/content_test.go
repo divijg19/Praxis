@@ -5,7 +5,6 @@ import (
 )
 
 var stableChallengeIDs = []string{
-	"motion_rush",
 	"grid_rush",
 	"find_hunter",
 	"word_hunter",
@@ -115,7 +114,6 @@ func TestChallengeNamesStable(t *testing.T) {
 }
 
 var stableChallengeNames = []string{
-	"Motion Rush",
 	"Grid Rush",
 	"Find Hunter",
 	"Word Hunter",
@@ -146,7 +144,7 @@ var stableChallengeNames = []string{
 	"Delete Around Quote Hunter",
 	"Change Inner Paren Hunter",
 	"Change Inner Quote Hunter",
-	"Line Yank Hunter",
+	"Yank Line Hunter",
 	"Word Register Hunter",
 	"Register Replace Hunter",
 	"Find + Delete Word",
@@ -210,8 +208,8 @@ func TestCurriculumLayerDistribution(t *testing.T) {
 	for _, c := range All() {
 		counts[c.Layer]++
 	}
-	if counts["Tutorial"] != 34 {
-		t.Errorf("Tutorial = %d, want 34", counts["Tutorial"])
+	if counts["Tutorial"] != 33 {
+		t.Errorf("Tutorial = %d, want 33", counts["Tutorial"])
 	}
 	if counts["Training"] != 10 {
 		t.Errorf("Training = %d, want 10", counts["Training"])

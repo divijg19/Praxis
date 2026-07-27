@@ -162,7 +162,7 @@ func TestBarePraxis(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if !strings.Contains(out, "motion_rush") {
+	if !strings.Contains(out, "grid_rush") {
 		t.Errorf("bare output missing next challenge ID, got:\n%s", out)
 	}
 	if !strings.Contains(out, "praxis help") {
@@ -173,18 +173,18 @@ func TestBarePraxis(t *testing.T) {
 func TestRecordStats(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	_, code := runPraxis(t, "record", "motion_rush", "4", "380")
+	_, code := runPraxis(t, "record", "grid_rush", "4", "380")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
 	if _, err := os.Stat(filepath.Join(d, "praxis", "stats.json")); err != nil {
 		t.Fatalf("stats.json not created: %v", err)
 	}
-	_, code = runPraxis(t, "record", "motion_rush", "2", "180")
+	_, code = runPraxis(t, "record", "grid_rush", "2", "180")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	out, code := runPraxis(t, "stats", "motion_rush")
+	out, code := runPraxis(t, "stats", "grid_rush")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
@@ -217,10 +217,10 @@ func TestRecordUnknownChallenge(t *testing.T) {
 func TestRecordRejectsNonNumeric(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	if _, code := runPraxis(t, "record", "motion_rush", "4", "380"); code != 0 {
+	if _, code := runPraxis(t, "record", "grid_rush", "4", "380"); code != 0 {
 		t.Fatalf("seed record exit code %d", code)
 	}
-	out, code := runPraxis(t, "record", "motion_rush", "abc", "xyz")
+	out, code := runPraxis(t, "record", "grid_rush", "abc", "xyz")
 	if code != 1 {
 		t.Errorf("expected exit code 1 for non-numeric moves/time, got %d", code)
 	}
@@ -228,7 +228,7 @@ func TestRecordRejectsNonNumeric(t *testing.T) {
 		t.Errorf("non-numeric args should not be treated as unknown challenge: %s", out)
 	}
 	loaded, _ := stats.Load()
-	s := loaded["motion_rush"]
+	s := loaded["grid_rush"]
 	if s.BestMoves != 4 {
 		t.Errorf("stats corrupted: BestMoves = %d, want 4", s.BestMoves)
 	}
@@ -240,12 +240,12 @@ func TestRecordRejectsNonNumeric(t *testing.T) {
 func TestRecordRejectsNegative(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	_, code := runPraxis(t, "record", "motion_rush", "-1", "-1")
+	_, code := runPraxis(t, "record", "grid_rush", "-1", "-1")
 	if code != 1 {
 		t.Errorf("expected exit code 1 for negative moves/time, got %d", code)
 	}
 	loaded, _ := stats.Load()
-	s := loaded["motion_rush"]
+	s := loaded["grid_rush"]
 	if s.BestMoves < 0 {
 		t.Errorf("stats corrupted with negative BestMoves = %d", s.BestMoves)
 	}
@@ -260,7 +260,7 @@ func TestRecordRejectsNegative(t *testing.T) {
 func TestRecordWrongArgCount(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	_, code := runPraxis(t, "record", "motion_rush", "4")
+	_, code := runPraxis(t, "record", "grid_rush", "4")
 	if code != 1 {
 		t.Errorf("expected exit code 1 for missing time arg, got %d", code)
 	}
@@ -292,8 +292,8 @@ func TestResetMissingFile(t *testing.T) {
 func TestStatsCommand(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	runPraxis(t, "record", "motion_rush", "4", "380")
-	out, code := runPraxis(t, "stats", "motion_rush")
+	runPraxis(t, "record", "grid_rush", "4", "380")
+	out, code := runPraxis(t, "stats", "grid_rush")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
@@ -320,9 +320,9 @@ func TestStatsCommand(t *testing.T) {
 func TestStatsSummary(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	runPraxis(t, "record", "motion_rush", "3", "200")
-	runPraxis(t, "record", "grid_rush", "5", "300")
-	runPraxis(t, "record", "motion_rush", "2", "150")
+	runPraxis(t, "record", "grid_rush", "3", "200")
+	runPraxis(t, "record", "find_hunter", "5", "300")
+	runPraxis(t, "record", "grid_rush", "2", "150")
 	out, code := runPraxis(t, "stats")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
@@ -349,8 +349,8 @@ func TestStatsSummary(t *testing.T) {
 	if !strings.Contains(out, "Next:") {
 		t.Errorf("expected Next: header, got: %s", out)
 	}
-	if !strings.Contains(out, "motion_rush") {
-		t.Errorf("expected motion_rush as next challenge (still Learning at 2 completions), got: %s", out)
+	if !strings.Contains(out, "grid_rush") {
+		t.Errorf("expected grid_rush as next challenge (still Learning at 2 completions), got: %s", out)
 	}
 	if strings.Contains(out, "Recommended Review:") {
 		t.Errorf("unexpected Recommended Review section (no Practiced+ challenges), got: %s", out)
@@ -360,12 +360,12 @@ func TestStatsSummary(t *testing.T) {
 func TestStatsSummaryIgnoresStaleKeys(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	data := `{"motion_rush":{"attempts":1,"completions":1},"removed_challenge":{"attempts":3,"completions":3}}`
+	data := `{"grid_rush":{"attempts":1,"completions":1},"removed_challenge":{"attempts":3,"completions":3}}`
 	dir := filepath.Join(d, "praxis")
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "stats.json"), []byte(data), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "stats.json"), []byte(data), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	out, code := runPraxis(t, "stats")
@@ -390,11 +390,11 @@ func TestStatsUnknownChallenge(t *testing.T) {
 func TestAttemptCommand(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	_, code := runPraxis(t, "attempt", "motion_rush")
+	_, code := runPraxis(t, "attempt", "grid_rush")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	out, code := runPraxis(t, "stats", "motion_rush")
+	out, code := runPraxis(t, "stats", "grid_rush")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
@@ -409,9 +409,9 @@ func TestAttemptCommand(t *testing.T) {
 func TestAttemptWithRecord(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
-	runPraxis(t, "attempt", "motion_rush")
-	runPraxis(t, "record", "motion_rush", "2", "180")
-	out, code := runPraxis(t, "stats", "motion_rush")
+	runPraxis(t, "attempt", "grid_rush")
+	runPraxis(t, "record", "grid_rush", "2", "180")
+	out, code := runPraxis(t, "stats", "grid_rush")
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
@@ -439,7 +439,7 @@ func TestStatsCommandConfidenceLevels(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
 	m := map[string]stats.Stats{
-		"motion_rush": {Attempts: 0, Completions: 0},
+		"line_hunter": {Attempts: 0, Completions: 0},
 		"grid_rush":   {Attempts: 10, Completions: 5},
 		"find_hunter": {Attempts: 10, Completions: 6},
 		"word_hunter": {Attempts: 10, Completions: 8},
@@ -451,7 +451,7 @@ func TestStatsCommandConfidenceLevels(t *testing.T) {
 		id   string
 		want string
 	}{
-		{"motion_rush", "Confidence: —"},
+		{"line_hunter", "Confidence: —"},
 		{"grid_rush", "Confidence: Low"},
 		{"find_hunter", "Confidence: Medium"},
 		{"word_hunter", "Confidence: High"},
@@ -473,8 +473,8 @@ func TestNextCommand(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code %d", code)
 	}
-	if out != "motion_rush\n" {
-		t.Errorf("expected 'motion_rush', got %q", out)
+	if out != "grid_rush\n" {
+		t.Errorf("expected 'grid_rush', got %q", out)
 	}
 }
 
@@ -483,8 +483,7 @@ func TestNextCommandAfterCompletion(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", d)
 
 	m := map[string]stats.Stats{
-		"motion_rush": {Attempts: 3, Completions: 3},
-		"grid_rush":   {Attempts: 3, Completions: 3},
+		"grid_rush": {Attempts: 3, Completions: 3},
 	}
 	if err := stats.Save(m); err != nil {
 		t.Fatal(err)
@@ -503,7 +502,7 @@ func TestResetCommand(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)
 	m := map[string]stats.Stats{
-		"motion_rush": {Attempts: 5, Completions: 4},
+		"grid_rush": {Attempts: 5, Completions: 4},
 	}
 	if err := stats.Save(m); err != nil {
 		t.Fatal(err)
