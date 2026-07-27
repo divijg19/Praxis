@@ -1,4 +1,4 @@
--- End-to-end replay test for all 52 challenges
+-- End-to-end replay test for all 48 challenges
 -- Run via: tools/replay/replay.sh
 
 local self = debug.getinfo(1, "S").source:sub(2)
@@ -20,7 +20,7 @@ local function check_buffer(buf, result_lines)
 end
 
 local all_ids = {
-  "motion_rush","grid_rush","find_hunter","word_hunter",
+  "grid_rush","find_hunter","word_hunter",
   "line_hunter","paren_hunter","sentence_hunter",
   "slash_hunter","question_hunter","repeat_hunter",
   "inner_paren_hunter","around_paren_hunter",

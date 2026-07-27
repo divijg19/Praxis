@@ -18,7 +18,6 @@ const (
 
 var curriculum = map[string]Metadata{
 	// Movement
-	"motion_rush":        {"hjkl", "basic navigation", stageMovement, nil},
 	"grid_rush":          {"hjkl", "grid navigation", stageMovement, nil},
 	"utf8_cursor_hunter": {"utf8", "multibyte navigation", stageMovement, nil},
 	// Search
@@ -81,7 +80,7 @@ var curriculum = map[string]Metadata{
 // Tutorial has fulfilled its contract and the learner is free to practice.
 // Every other Tutorial challenge is optional material they may explore.
 var coreTutorials = map[string]bool{
-	"motion_rush":              true,
+	"grid_rush":                true,
 	"find_hunter":              true,
 	"slash_hunter":             true,
 	"word_hunter":              true,

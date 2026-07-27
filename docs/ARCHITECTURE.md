@@ -94,14 +94,14 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 | Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ci(, ci" | 8 |
 | Registers | memory | yy, "a, "ap | 4 |
 
-> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 34 Tutorial challenges: 10 Core + 24 Additional Lessons). The full per-stage distribution across all layers is the matrix below.
+> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 33 Tutorial challenges: 10 Core + 23 Additional Lessons). The full per-stage distribution across all layers is the matrix below.
 
 #### Layer taxonomy
 
 | Layer | Purpose (contract) | Scaffolding | Challenges |
 |---|---|---|---|
 | Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 10 |
-| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 24 |
+| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 23 |
 | Training | never teaches mechanics; refines fluency | combine primitives, MaxMoves constraint | 10 |
 | Trial | integrate; solve your own way | select composition, budget enforcement | 5 |
 
@@ -109,13 +109,13 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 
 ```
                      Tutorial  Training  Trial  Total
-Movement             3         0         0      3
+Movement             2         0         0      2
 Search               6         0         0      6
 Structural Nav       7         0         0      7
 Editing              7         3         2      12
 Text Objects         8         4         3      15
 Registers            3         3         0      6
-Total                34        10        5      49
+Total                33        10        5      48
 ```
 
 #### DerivedFrom lineage

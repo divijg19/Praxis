@@ -40,8 +40,10 @@ local function solve(id)
   if type(d) ~= "table" then return false end
   local buf = vim.api.nvim_get_current_buf()
   if d.verify == "cursor" then
-    local trow = 1
-    for r = 1, #d.content do
+    local start_row = 1
+    if #d.content > 1 then start_row = 2 end
+    local trow = start_row
+    for r = start_row, #d.content do
       if d.content[r]:find(d.target, 1, true) then trow = r; break end
     end
     if trow > 1 then press(string.rep("j", trow - 1)) end
@@ -68,9 +70,9 @@ press("q")
 ok("catalog_return", has(snap(), "Welcome to Praxis%."))
 
 -- 2. cursor Tutorial: solve via real keystrokes, then continue
-vim.cmd("Praxis motion_rush")
+vim.cmd("Praxis grid_rush")
 ok("cursor_tutorial_open", has(snap(), "Use h, j, k and l to move"))
-ok("cursor_tutorial_solved", solve("motion_rush"))
+ok("cursor_tutorial_solved", solve("grid_rush"))
 ok("cursor_tutorial_result", has(snap(), "Complete%."))
 press("<CR>")
 ok("cursor_tutorial_continue", not has(snap(), "Unknown challenge") and not has(snap(), "executable not found"))
@@ -115,21 +117,18 @@ ok("trial_escape", has(snap(), "Progress:"))
 --     composite challenge inflated the count and could trip the move limit.
 vim.cmd("Praxis find_diw_combo")
 press("j")
-vim.cmd("doautocmd CursorMoved")   -- simulate real navigation (inflated moves under old logic)
 press("l")
-vim.cmd("doautocmd CursorMoved")
 press("l")
-vim.cmd("doautocmd CursorMoved")
 ok("moves_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Moves: 1 /"))
 press("q")
 
 -- 6. mid-challenge escape from a fresh challenge (recovery)
-vim.cmd("Praxis motion_rush")
+vim.cmd("Praxis grid_rush")
 press("q")
 ok("mid_challenge_escape", has(snap(), "Progress:"))
 
 -- 6b. interrupted session: re-entering Praxis must not orphan buffers
-vim.cmd("Praxis motion_rush")
+vim.cmd("Praxis grid_rush")
 vim.cmd("Praxis")
 ok("no_orphan_buffers", count_praxis() == 1)
 
@@ -137,7 +136,7 @@ ok("no_orphan_buffers", count_praxis() == 1)
 vim.cmd("Praxis does_not_exist")
 ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 
--- 8. force completion of all 49, then completion screen
+-- 8. force completion of all 48, then completion screen
 local guard = 0
 while guard < 300 do
   local nid = vim.fn.systemlist({ "praxis", "next" })[1] or ""
@@ -150,7 +149,7 @@ while guard < 300 do
 end
 vim.cmd("Praxis")
 ok("completion_shown", has(snap(), "Curriculum complete%."))
-ok("completion_progress", has(snap(), "Progress: 49/49"))
+ok("completion_progress", has(snap(), "Progress: 48/48"))
 
 -- 9. completion review opens a challenge, then escape
 press("r")

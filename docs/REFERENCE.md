@@ -185,7 +185,7 @@ Where:
 
 | Challenge | Content (play area) | Target | Correct cursor position |
 |---|---|---|---|
-| motion_rush | `Move your cursor to the star ★` | ★ | On the ★ character |
+| grid_rush | `Move your cursor to the star ★` | ★ | On the ★ character |
 | find_hunter | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★` | ★ | On the ★ (last character) |
 | utf8_cursor_hunter | `α β γ ★` | ★ | On the ★ (bytecol=9, charcol=6) |
 
@@ -342,14 +342,14 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ── Praxis ──────────────────────────────────────
 
   Current: Tutorial / Search
-  Progress: 4/52
+  Progress: 4/48
 
   Direction:
     Next: Find Hunter / Search
-    Review: Motion Rush / Movement
+    Review: Grid Rush / Movement
 
   Mastery:
-    Unseen: 48   Learning: 2   Practiced: 1   Experienced: 1
+    Unseen: 44   Learning: 2   Practiced: 1   Experienced: 1
 
   [Enter] Continue, or [r] Review.
   [q] Back.
