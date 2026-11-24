@@ -108,8 +108,8 @@ menu hierarchy.
    to the next challenge, `[r]` Review the recommended challenge, `[q]` Back.
 - **Challenge** buffer: solve it to see the result, then `[r]` Retry,
    `[Enter]` Continue, `[q]` Back.
-- **Catalog** is a flat, unordered list. It does not group by stage and does
-  not bypass progression. It is a reference view.
+- **Catalog** is a flat, ungated list in curriculum order. It does not group by
+  stage and does not bypass progression. It is a reference view.
 
 ---
 

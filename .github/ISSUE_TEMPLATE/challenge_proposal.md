@@ -20,7 +20,7 @@ One sentence on the Vim skill being drilled.
 
 **Checklist**
 
-See [docs/REFERENCE.md → "Adding a New Challenge"](../../docs/REFERENCE.md) for the full step-by-step checklist (registration, metadata, stable-ID test, replay list, and `tools/verify.sh`).
+See [docs/REFERENCE.md → "Adding a New Challenge"](../../docs/REFERENCE.md) for the full step-by-step checklist (registration, metadata, stable-ID test, replay list, and `go run ./tools/verify`).
 
 - [ ] Implemented per the checklist above
-- [ ] `tools/verify.sh` passes
+- [ ] `go run ./tools/verify` passes

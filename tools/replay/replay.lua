@@ -1,10 +1,11 @@
 -- End-to-end replay test for all 48 challenges
--- Run via: tools/replay/replay.sh
+-- Run via: go run ./tools/verify (PRAXIS_BIN may override the binary)
 
 local self = debug.getinfo(1, "S").source:sub(2)
 local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 local util = require("praxis.util")
+local bin = vim.env.PRAXIS_BIN or "praxis"
 
 local function check_buffer(buf, result_lines)
   local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -48,7 +49,7 @@ local all_ids = {
 local results = {}
 
 for _, id in ipairs(all_ids) do
-  local d = util.describe(id, "/tmp/praxis")
+  local d = util.describe(id, bin)
   if type(d) ~= "table" then
     print("FAIL " .. id .. ": could not describe")
     results[id] = "FAIL"
@@ -143,13 +144,11 @@ local trial_pass = 0
 local trial_fail = 0
 local utf8_pass = 0
 local utf8_fail = 0
-local eval_ok = 0
-local eval_total = 0
 local training_eval_ok = 0
 local trial_eval_ok = 0
 
 for _, id in ipairs(all_ids) do
-  local d = util.describe(id, "/tmp/praxis")
+  local d = util.describe(id, bin)
   if type(d) ~= "table" then goto next_id end
 
   local result = results[id] or "FAIL"
@@ -167,13 +166,9 @@ for _, id in ipairs(all_ids) do
     if is_pass then trial_pass = trial_pass + 1 else trial_fail = trial_fail + 1 end
   end
 
-  if d.evaluation and is_pass then
-    eval_total = eval_total + 1
-    if d.evaluation.max_moves > 0 then
-      eval_ok = eval_ok + 1
-      if d.layer == "Training" then training_eval_ok = training_eval_ok + 1 end
-      if d.layer == "Trial" then trial_eval_ok = trial_eval_ok + 1 end
-    end
+  if d.evaluation and is_pass and d.evaluation.max_moves > 0 then
+    if d.layer == "Training" then training_eval_ok = training_eval_ok + 1 end
+    if d.layer == "Trial" then trial_eval_ok = trial_eval_ok + 1 end
   end
 
   ::next_id::
@@ -192,8 +187,8 @@ print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. 
 print("")
 if total_fail == 0 then
   print("ALL " .. total .. "/" .. total .. " REPLAY TESTS PASS")
+  vim.cmd("qa!")
 else
   print(total_pass .. "/" .. total .. " PASS, " .. total_fail .. " FAIL")
+  vim.cmd("cquit 1")
 end
-
-vim.cmd("qa!")

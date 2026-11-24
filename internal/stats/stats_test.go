@@ -76,6 +76,9 @@ func TestSuccessRateBounded(t *testing.T) {
 	if got := SuccessRate(Stats{Attempts: 1, Completions: 3}); got != 1 {
 		t.Errorf("SuccessRate = %v, want 1 (capped at 100%%)", got)
 	}
+	if got := SuccessRate(Stats{Attempts: -2, Completions: 1}); got != 0 {
+		t.Errorf("SuccessRate = %v, want 0 (floored at 0%%)", got)
+	}
 }
 
 func TestConfidenceBounded(t *testing.T) {
@@ -209,6 +212,25 @@ func TestLoadCorruptFile(t *testing.T) {
 	if _, statErr := os.Stat(backup); statErr != nil {
 		t.Errorf("expected corrupt backup to be written: %v", statErr)
 	}
+}
+
+func TestLoadNullFile(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte("null"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m == nil {
+		t.Fatal("Load returned a nil map for a null stats file")
+	}
+	Attempt(m, "grid_rush") // must not panic on a nil map
 }
 
 func TestUpdateReturnsUpdated(t *testing.T) {

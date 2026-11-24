@@ -18,6 +18,11 @@ jobs:
         with:
           go-version: stable
 
+      - name: Install tools
+        run: |
+          make install-tools
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
         with:
@@ -30,5 +35,5 @@ jobs:
           ln -sfn "${{ github.workspace }}/nvim" "${HOME}/.config/nvim"
 
       - name: Verify
-        run: bash tools/verify.sh
+        run: go run ./tools/verify
         if: ${{ inputs.certify }}

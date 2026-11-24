@@ -1,15 +1,19 @@
--- Learner journey harness for Praxis (v0.2.7)
+-- Learner journey harness for Praxis (v0.3.7)
 -- Validates the EXPERIENCE (navigation, recovery, solving, completion),
 -- not just content correctness (that is tools/replay/replay.lua's job).
--- Run via: tools/journey/journey.sh
+-- Run via: go run ./tools/verify (PRAXIS_BIN / PRAXIS_VERIFY_DATA may be set by it)
 
 local self = debug.getinfo(1, "S").source:sub(2)
 local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 local util = require("praxis.util")
 vim.cmd("runtime plugin/praxis.lua")
-vim.env.XDG_DATA_HOME = "/tmp/praxis_journey"
-vim.env.XDG_CONFIG_HOME = "/tmp/praxis_journey/cfg"
+local data_home = vim.env.PRAXIS_VERIFY_DATA or "/tmp/praxis_journey"
+vim.env.XDG_DATA_HOME = data_home
+vim.env.XDG_CONFIG_HOME = data_home .. "/cfg"
+if vim.env.PRAXIS_BIN then
+  vim.env.PATH = vim.fn.fnamemodify(vim.env.PRAXIS_BIN, ":h") .. ":" .. vim.env.PATH
+end
 
 local results = {}
 local function ok(name, cond)
@@ -60,7 +64,6 @@ local function solve(id)
 end
 
 -- 1. reset -> onboarding (fresh learner)
-vim.fn.system({ "rm", "-rf", "/tmp/praxis_journey" })
 vim.fn.system({ "praxis", "reset", "--yes" })
 vim.cmd("Praxis")
 ok("onboarding", has(snap(), "Welcome to Praxis%."))
@@ -92,6 +95,7 @@ end
 ok("buffer_tutorial_persisted", saved)
 press("q")
 ok("buffer_tutorial_escape", has(snap(), "Progress:"))
+ok("hub_tutorial_status", has(snap(), "Tutorial: %d+/10 core%. Finish Core"))
 
 -- 4. Training (composite): solve, then escape
 vim.cmd("Praxis find_diw_combo")
@@ -110,11 +114,10 @@ press("q")
 ok("trial_escape", has(snap(), "Progress:"))
 
 -- 5b. move-counter determinism: cursor navigation must not inflate the move
---     count for composite challenges. In production every cursor move fires
---     CursorMoved; we simulate that with doautocmd so the test exercises the
---     real event path. Navigation alone must leave moves at 0; only the
---     solving edit increments it. Under the old logic, moving the cursor on a
---     composite challenge inflated the count and could trip the move limit.
+--     count for composite challenges. Real keystrokes fire CursorMoved, so
+--     navigation alone must leave moves at 0; only the solving edit increments
+--     it. Under the old logic, moving the cursor on a composite challenge
+--     inflated the count and could trip the move limit.
 vim.cmd("Praxis find_diw_combo")
 press("j")
 press("l")
@@ -158,10 +161,20 @@ press("q")
 ok("completion_escape", has(snap(), "Curriculum complete%.") or has(snap(), "Progress:"))
 
 -- 10. missing binary -> recovery screen (graceful, no false completion)
-vim.fn.system({ "rm", "-rf", "/tmp/praxis_journey" })
 vim.fn.system({ "praxis", "reset", "--yes" })
 vim.env.PATH = "/usr/local/bin:/usr/bin:/bin"
 vim.cmd("Praxis")
 ok("missing_binary_recovery", has(snap(), "Praxis isn't installed%."))
 
-vim.cmd("qa!")
+local failed = false
+for _, passed in pairs(results) do
+  if not passed then
+    failed = true
+    break
+  end
+end
+if failed then
+  vim.cmd("cquit 1")
+else
+  vim.cmd("qa!")
+end
