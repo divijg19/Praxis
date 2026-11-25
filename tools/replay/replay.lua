@@ -146,10 +146,14 @@ local utf8_pass = 0
 local utf8_fail = 0
 local training_eval_ok = 0
 local trial_eval_ok = 0
+local describe_fail = 0
 
 for _, id in ipairs(all_ids) do
   local d = util.describe(id, bin)
-  if type(d) ~= "table" then goto next_id end
+  if type(d) ~= "table" then
+    describe_fail = describe_fail + 1
+    goto next_id
+  end
 
   local result = results[id] or "FAIL"
   local is_pass = result == "PASS"
@@ -175,7 +179,7 @@ for _, id in ipairs(all_ids) do
 end
 
 local total_pass = tutorial_cursor_pass + tutorial_buffer_pass + utf8_pass + training_pass + trial_pass
-local total_fail = tutorial_cursor_fail + tutorial_buffer_fail + utf8_fail + training_fail + trial_fail
+local total_fail = tutorial_cursor_fail + tutorial_buffer_fail + utf8_fail + training_fail + trial_fail + describe_fail
 local total = total_pass + total_fail
 
 print("")
@@ -185,6 +189,9 @@ print("Tutorial (utf-8):  " .. utf8_pass .. "/" .. (utf8_pass + utf8_fail) .. " 
 print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS  (evaluation " .. training_eval_ok .. "/10)")
 print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS  (evaluation " .. trial_eval_ok .. "/5)")
 print("")
+if describe_fail > 0 then
+  print("Describe failures: " .. describe_fail)
+end
 if total_fail == 0 then
   print("ALL " .. total .. "/" .. total .. " REPLAY TESTS PASS")
   vim.cmd("qa!")

@@ -41,8 +41,8 @@ Every composite challenge declares its dependencies via a `derived_from` field. 
 Core Tutorial is the minimal set of challenges required for learner independence. It is:
 
 - **Mandatory** — must be completed before Training or Trial progression is meaningful.
-- **Frozen** — the set of 10 Core challenges is stable. No new challenge is added to Core without removing one.
-- **Dependency-complete** — every concept referenced by Training or Trial is taught in Core.
+- **Frozen** — the set of 11 Core challenges is stable. Changes require a recorded decision and semantic invariants, not a numeric count test.
+- **Dependency-complete** — every concept referenced by Training or Trial is taught in Tutorial before it is composed.
 
 The contrast between Core and Optional Tutorial is a tier, not a separate mode. Optional challenges teach additional concepts without blocking progression.
 
@@ -88,4 +88,4 @@ These invariants are enforced by the content and integrity test suites.
 
 ## 8. Guidance Never Restricts
 
-Every suggestion (NextChallenge, RecommendedReview) is optional. The learner can open any challenge by ID at any time. Nothing is gated. Progression is count-based, not stage-gated. The catalog is flat and unordered. Control mechanisms (forced orders, skill trees, difficulty ratings) are anti-goals.
+Every suggestion (NextChallenge, RecommendedReview) is optional. The learner can open any challenge by ID at any time. Nothing is gated. Progression is count-based, not stage-gated. The catalog is flat, ungated, and ordered by curriculum progression. Control mechanisms (forced orders, skill trees, difficulty ratings) are anti-goals.

@@ -37,6 +37,7 @@ function M.open(id)
     verify          = desc.verify,
     result_lines    = desc.result,
     challenge_id    = id,
+    layer           = desc.layer,
     maxmoves        = desc.evaluation and desc.evaluation.max_moves,
     editable        = editable,
   }
@@ -56,18 +57,21 @@ function M.open(id)
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
       return
     end
-    local stats_out = vim.fn.systemlist({ "praxis", "stats", id })
+    local stats_out = util.systemlist({ "stats", id }) or {}
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
       "Complete.", "",
     }
-    if state.maxmoves then
-      table.insert(display, "Moves: " .. state.moves .. " / " .. state.maxmoves)
-    else
-      table.insert(display, "Moves: " .. state.moves)
+    -- Tutorial results stay calm: no speed or move pressure until Training.
+    if state.layer ~= "Tutorial" then
+      if state.maxmoves then
+        table.insert(display, "Moves: " .. state.moves .. " / " .. state.maxmoves)
+      else
+        table.insert(display, "Moves: " .. state.moves)
+      end
+      table.insert(display, "Time: " .. elapsed_ms .. " ms")
+      table.insert(display, "")
     end
-    table.insert(display, "Time: "  .. elapsed_ms .. " ms")
-    table.insert(display, "")
     local completions = 0
     for _, line in ipairs(stats_out) do
       local n = line:match("^Completions: (%d+)")
@@ -91,14 +95,14 @@ function M.open(id)
     if state.maxmoves then
       vim.api.nvim_echo({ { "Moves: " .. state.moves .. " / " .. state.maxmoves } }, false, {})
     end
+    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
+      vim.api.nvim_echo({ { "Over the move limit. Press [r] to retry." } }, false, {})
+      return
+    end
     local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     if #current ~= #state.result_lines then return end
     for i = 1, #current do
       if current[i] ~= state.result_lines[i] then return end
-    end
-    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-      vim.api.nvim_echo({ { "Over the move limit. Press [r] to retry." } }, false, {})
-      return
     end
     state.done = true
     vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
@@ -115,7 +119,9 @@ function M.open(id)
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
     vim.api.nvim_win_set_cursor(0, { 1, 0 })
-    util.praxis({ "attempt", state.challenge_id })
+    if not util.praxis({ "attempt", state.challenge_id }) then
+      vim.api.nvim_echo({ { "Couldn't record this retry. Press [r] to try again." } }, false, {})
+    end
   end
 
   vim.api.nvim_create_autocmd("CursorMoved", {
@@ -153,6 +159,7 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
+      state.moves = state.moves + 1
       if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
@@ -165,8 +172,8 @@ function M.open(id)
 
   vim.keymap.set("n", "<CR>", function()
     if state.done then
-      local next_id = vim.fn.systemlist({ "praxis", "next" })[1]
-      util.continue(next_id)
+      local next_lines = util.systemlist({ "next" })
+      util.continue(next_lines and next_lines[1])
     end
   end, { buffer = buf, nowait = true, silent = true })
 

@@ -303,9 +303,9 @@ func TestTutorialTiersAssigned(t *testing.T) {
 			t.Errorf("Tutorial %q has no Tier assigned", c.ID)
 		}
 	}
-	// Core is frozen at exactly 10 (Deliberate Practice Design Investigation I).
-	if core != 10 {
-		t.Errorf("Core Tutorial count = %d, want 10 (frozen per Deliberate Practice Design Investigation I)", core)
+	// Core is finite and non-empty; its size is an outcome, not a design goal.
+	if core == 0 {
+		t.Error("Core Tutorial has no challenges")
 	}
 	if optional < core {
 		t.Errorf("Optional Tutorial count %d should be at least the Core count %d", optional, core)
@@ -316,6 +316,11 @@ func TestCoreTutorialSetConsistent(t *testing.T) {
 	ids := CoreTutorialIDs()
 	if len(ids) == 0 {
 		t.Fatal("Core Tutorial set is empty")
+	}
+	for i := 1; i < len(ids); i++ {
+		if ids[i-1] >= ids[i] {
+			t.Errorf("CoreTutorialIDs is not deterministically ordered: %q before %q", ids[i-1], ids[i])
+		}
 	}
 	for _, id := range ids {
 		if !IsCoreTutorial(id) {

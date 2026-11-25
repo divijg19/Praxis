@@ -2,10 +2,20 @@ package stats
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
+)
+
+// ErrCorrupt identifies a progress file that could not be decoded.
+var ErrCorrupt = errors.New("corrupt progress file")
+
+const (
+	lockTimeout   = 2 * time.Second
+	staleLockAge  = 10 * time.Second
+	lockRetryWait = 25 * time.Millisecond
 )
 
 type Stats struct {
@@ -25,6 +35,57 @@ func path() string {
 	return filepath.Join(xdg, "praxis", "stats.json")
 }
 
+// acquireLock serializes read-modify-write cycles across CLI processes. A
+// stale lock (left by a crashed process) is reclaimed after staleLockAge.
+func acquireLock() (func(), error) {
+	lock := path() + ".lock"
+	if err := os.MkdirAll(filepath.Dir(lock), 0o755); err != nil {
+		return nil, err
+	}
+	deadline := time.Now().Add(lockTimeout)
+	for {
+		f, err := os.OpenFile(lock, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+		if err == nil {
+			_, _ = fmt.Fprintln(f, os.Getpid())
+			if closeErr := f.Close(); closeErr != nil {
+				_ = os.Remove(lock)
+				return nil, closeErr
+			}
+			return func() { _ = os.Remove(lock) }, nil
+		}
+		if !os.IsExist(err) {
+			return nil, err
+		}
+		if info, statErr := os.Stat(lock); statErr == nil && time.Since(info.ModTime()) > staleLockAge {
+			_ = os.Remove(lock)
+			continue
+		}
+		if time.Now().After(deadline) {
+			return nil, fmt.Errorf("progress file is locked by another process")
+		}
+		time.Sleep(lockRetryWait)
+	}
+}
+
+// Mutate applies fn to the persisted progress map under a lock. Load and Save
+// remain available for read-only callers; only writers need this cycle.
+func Mutate(fn func(map[string]Stats) error) error {
+	unlock, err := acquireLock()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
+	m, err := Load()
+	if err != nil {
+		return err
+	}
+	if err := fn(m); err != nil {
+		return err
+	}
+	return Save(m)
+}
+
 func Load() (map[string]Stats, error) {
 	data, err := os.ReadFile(path())
 	if err != nil {
@@ -37,7 +98,7 @@ func Load() (map[string]Stats, error) {
 	if err := json.Unmarshal(data, &m); err != nil {
 		backup := path() + ".corrupt"
 		_ = os.WriteFile(backup, data, 0o644)
-		return make(map[string]Stats), fmt.Errorf("corrupt progress file; backup saved to %s", backup)
+		return make(map[string]Stats), fmt.Errorf("%w; backup saved to %s", ErrCorrupt, backup)
 	}
 	if m == nil {
 		// "null" is valid JSON but not a valid progress map.
@@ -73,6 +134,12 @@ func Save(m map[string]Stats) error {
 }
 
 func Reset() error {
+	unlock, err := acquireLock()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
 	p := path()
 	if err := os.Remove(p); err != nil {
 		if os.IsNotExist(err) {
@@ -190,8 +257,12 @@ func MasteryTier(s Stats) string {
 }
 
 func MasteryDistribution(m map[string]Stats, totalChallenges int) map[string]int {
+	unseen := totalChallenges - len(m)
+	if unseen < 0 {
+		unseen = 0
+	}
 	dist := map[string]int{
-		"Unseen":      totalChallenges - len(m),
+		"Unseen":      unseen,
 		"Learning":    0,
 		"Practiced":   0,
 		"Experienced": 0,

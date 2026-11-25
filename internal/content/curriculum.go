@@ -1,5 +1,7 @@
 package content
 
+import "sort"
+
 type Metadata struct {
 	Concept     string
 	Context     string
@@ -89,6 +91,7 @@ var coreTutorials = map[string]bool{
 	"delete_word_hunter":       true,
 	"replace_character_hunter": true,
 	"change_word_hunter":       true,
+	"delete_inner_word_hunter": true,
 	"yank_line_hunter":         true,
 }
 
@@ -132,5 +135,6 @@ func CoreTutorialIDs() []string {
 	for id := range coreTutorials {
 		ids = append(ids, id)
 	}
+	sort.Strings(ids)
 	return ids
 }

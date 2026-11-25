@@ -137,10 +137,11 @@ Tutorial is split by *purpose*, not difficulty. Internally this is the
 as Core and Additional Lessons so the learner never feels they have entered a
 separate product.
 
-- **Core**: the mandatory onboarding (currently ten exercises: movement,
-  search, line movement, character delete, word delete, character replace,
-  word change, line yank, plus two foundational extras). Completing Core
-  finishes Tutorial.
+- **Core**: the mandatory onboarding (currently eleven exercises: movement,
+  search, line movement, character delete, word delete, inside-word delete,
+  character replace, word change, line yank, plus two foundational extras).
+  Completing Core finishes Tutorial. Inside-word delete is mandatory because
+  Training and Trial compose it.
 - **Additional Lessons**: every other Tutorial challenge (internally
   `optional`). It teaches, but never blocks progression. The learner explores
   it from the Catalog when curious. See §2 for why it exists.

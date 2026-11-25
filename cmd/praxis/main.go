@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -20,10 +21,10 @@ func unknown(id string) {
 	os.Exit(1)
 }
 
-func nonNegInt(s, what string) (int, bool) {
+func positiveInt(s, what string) (int, bool) {
 	n, err := strconv.Atoi(s)
-	if err != nil || n < 0 {
-		fmt.Fprintf(os.Stderr, "praxis: usage: praxis record <id> <moves> <time> (%s must be a non-negative integer)\n", what)
+	if err != nil || n <= 0 {
+		fmt.Fprintf(os.Stderr, "praxis: usage: praxis record <id> <moves> <time> (%s must be a positive integer)\n", what)
 		return 0, false
 	}
 	return n, true
@@ -34,15 +35,34 @@ func banner() {
 	fmt.Println("Mastery through practice.")
 }
 
+func corruptProgress() {
+	fmt.Fprintln(os.Stderr, "praxis: progress file is corrupt")
+	fmt.Println("Your Praxis progress is corrupted.")
+	fmt.Println("If a backup was saved, it is next to the progress file. Run `praxis reset` to start fresh.")
+}
+
 func loadOrFail() map[string]stats.Stats {
 	m, err := stats.Load()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "praxis: progress file is corrupt")
-		fmt.Println("Your Praxis progress is corrupted.")
-		fmt.Println("A backup was saved next to it. Run `praxis reset` to start fresh; your backup is preserved.")
+		if errors.Is(err, stats.ErrCorrupt) {
+			corruptProgress()
+		} else {
+			fmt.Fprintln(os.Stderr, "praxis: could not read progress:", err)
+		}
 		os.Exit(1)
 	}
 	return m
+}
+
+func mutateOrFail(fn func(map[string]stats.Stats) error) {
+	if err := stats.Mutate(fn); err != nil {
+		if errors.Is(err, stats.ErrCorrupt) {
+			corruptProgress()
+		} else {
+			fmt.Fprintln(os.Stderr, "praxis: could not update progress:", err)
+		}
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -203,32 +223,28 @@ func attempt(id string) {
 	if !content.Exists(id) {
 		unknown(id)
 	}
-	m := loadOrFail()
-	stats.Attempt(m, id)
-	if err := stats.Save(m); err != nil {
-		fmt.Fprintln(os.Stderr, "save failed:", err)
-		os.Exit(1)
-	}
+	mutateOrFail(func(m map[string]stats.Stats) error {
+		stats.Attempt(m, id)
+		return nil
+	})
 }
 
 func record(id, movesStr, timeStr string) {
 	if !content.Exists(id) {
 		unknown(id)
 	}
-	moves, ok := nonNegInt(movesStr, "moves")
+	moves, ok := positiveInt(movesStr, "moves")
 	if !ok {
 		os.Exit(1)
 	}
-	timeMs, ok := nonNegInt(timeStr, "time")
+	timeMs, ok := positiveInt(timeStr, "time")
 	if !ok {
 		os.Exit(1)
 	}
-	m := loadOrFail()
-	stats.Update(m, id, moves, timeMs)
-	if err := stats.Save(m); err != nil {
-		fmt.Fprintln(os.Stderr, "save failed:", err)
-		os.Exit(1)
-	}
+	mutateOrFail(func(m map[string]stats.Stats) error {
+		stats.Update(m, id, moves, timeMs)
+		return nil
+	})
 }
 
 func statsForID(id string) {

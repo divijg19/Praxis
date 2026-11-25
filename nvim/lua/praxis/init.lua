@@ -1,5 +1,7 @@
 local M = {}
 
+local util = require("praxis.util")
+
 function M.available()
   return vim.fn.executable("praxis") == 1
 end
@@ -25,7 +27,7 @@ end
 -- point; any in-progress challenge is intentionally abandoned at that point.
 local function close_orphans()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(b) and vim.api.nvim_buf_get_name(b):match("Praxis") then
+    if util.is_scratch(b) then
       pcall(vim.api.nvim_buf_delete, b, { force = true })
     end
   end
@@ -33,8 +35,7 @@ end
 
 function M.show(opts)
   local cur = vim.api.nvim_get_current_buf()
-  local cur_name = vim.api.nvim_buf_get_name(cur)
-  if cur_name == "" or not string.match(cur_name, "Praxis") then
+  if not util.is_scratch(cur) then
     vim.g.praxis_return_buf = cur
   end
 

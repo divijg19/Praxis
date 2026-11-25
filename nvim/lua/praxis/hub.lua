@@ -10,10 +10,10 @@ end
 
 function M.open()
   local ui = require('praxis.ui')
-  local next_id = vim.fn.systemlist({ "praxis", "next" })[1] or ""
-  local stats_lines = vim.fn.systemlist({ "praxis", "stats" })
+  local next_lines = util.systemlist({ "next" })
+  local stats_lines = util.systemlist({ "stats" })
 
-  if #stats_lines == 0 then
+  if not next_lines or not stats_lines or #stats_lines == 0 then
     ui.recovery("Praxis couldn't read your progress.", {
       "The praxis command may be missing or your progress file is unavailable.",
       "",
@@ -22,22 +22,23 @@ function M.open()
     return
   end
 
+  local next_id = next_lines[1] or ""
   local display = {
     "── Praxis ──────────────────────────────────────",
     "  Welcome back. Pick up where you left off, or explore.",
     "",
   }
 
-  local completed, total
+  local completed
   local tutorial_status
   local in_mastery = false
   local mastery_unseen, mastery_learning, mastery_practiced, mastery_experienced
   local review_challenge
 
   for _, line in ipairs(stats_lines) do
-    local comp, tot = line:match("Challenges Completed: (%d+)/(%d+)")
+    local comp = line:match("Challenges Completed: (%d+)/(%d+)")
     if comp then
-      completed, total = comp, tot
+      completed = comp
     end
 
     local tut = line:match("^Tutorial: (.+)$")
@@ -86,12 +87,17 @@ function M.open()
     name, layer, stage = describe_for_id(next_id)
   end
 
+  if tutorial_status == "Complete" then
+    table.insert(display, "  Onboarding complete. Training uses a move limit to keep practice deliberate.")
+    table.insert(display, "")
+  end
+
   if layer ~= "" then
     table.insert(display, "  Current: " .. layer .. " / " .. stage)
   else
     table.insert(display, "  Current: Complete")
   end
-  table.insert(display, "  Progress: " .. (completed or "0") .. "/" .. (total or "0"))
+  table.insert(display, "  So far: " .. (completed or "0") .. " challenges completed.")
   table.insert(display, "")
 
   table.insert(display, "  Direction:")
@@ -121,14 +127,17 @@ function M.open()
     table.insert(display, "  [q] Back.")
   end
 
-  local parts = {}
-  if mastery_unseen then table.insert(parts, "Unseen: " .. mastery_unseen) end
-  if mastery_learning then table.insert(parts, "Learning: " .. mastery_learning) end
-  if mastery_practiced then table.insert(parts, "Practiced: " .. mastery_practiced) end
-  if mastery_experienced then table.insert(parts, "Experienced: " .. mastery_experienced) end
-  if #parts > 0 then
-    table.insert(display, "")
-    table.insert(display, "  So far: " .. table.concat(parts, "   "))
+  -- Early learners see a positive statement instead of a backlog of counts.
+  if (tonumber(completed) or 0) >= 5 then
+    local parts = {}
+    if mastery_unseen then table.insert(parts, "Unseen: " .. mastery_unseen) end
+    if mastery_learning then table.insert(parts, "Learning: " .. mastery_learning) end
+    if mastery_practiced then table.insert(parts, "Practiced: " .. mastery_practiced) end
+    if mastery_experienced then table.insert(parts, "Experienced: " .. mastery_experienced) end
+    if #parts > 0 then
+      table.insert(display, "")
+      table.insert(display, "  Practice mix: " .. table.concat(parts, "   "))
+    end
   end
 
   local buf = ui.show("Praxis", display, false)

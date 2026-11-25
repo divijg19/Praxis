@@ -87,21 +87,21 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 
 | Stage | Purpose | Primitives | Tutorial Challenges |
 |---|---|---|---|
-| Movement | cursor control | h, j, k, l, UTF-8 navigation | 3 |
+| Movement | cursor control | h, j, k, l, UTF-8 navigation | 2 |
 | Search | target acquisition | f, w, j, /, ?, ; | 6 |
-| Structural Navigation | semantic movement | %, ), (, {, }, i(, a(, i[, a[, i", a" | 9 |
+| Structural Navigation | semantic movement | %, ), i(, a(, i", a", } | 7 |
 | Editing | mutation | x, r, ~, dw, ciw, dd, d$ | 7 |
 | Text Objects | scoped mutation | diw, daw, di(, da(, di", da", ci(, ci" | 8 |
-| Registers | memory | yy, "a, "ap | 4 |
+| Registers | memory | yy, "a, "ap | 3 |
 
-> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 33 Tutorial challenges: 10 Core + 23 Additional Lessons). The full per-stage distribution across all layers is the matrix below.
+> The "Tutorial Challenges" column is the Tutorial-layer breakdown only (the 33 Tutorial challenges: 11 Core + 22 Additional Lessons). The full per-stage distribution across all layers is the matrix below.
 
 #### Layer taxonomy
 
 | Layer | Purpose (contract) | Scaffolding | Challenges |
 |---|---|---|---|
-| Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 10 |
-| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 23 |
+| Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 11 |
+| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 22 |
 | Training | never teaches mechanics; refines fluency | combine primitives, MaxMoves constraint | 10 |
 | Trial | integrate; solve your own way | select composition, budget enforcement | 5 |
 
