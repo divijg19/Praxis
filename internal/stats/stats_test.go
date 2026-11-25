@@ -3,6 +3,7 @@ package stats
 import (
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,6 +19,40 @@ func TestLoadFileNotExist(t *testing.T) {
 	}
 	if len(m) != 0 {
 		t.Errorf("got %d entries, want 0", len(m))
+	}
+}
+
+func TestMutateSerializes(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+
+	const writers = 50
+	var wg sync.WaitGroup
+	errs := make(chan error, writers)
+	for i := 0; i < writers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errs <- Mutate(func(m map[string]Stats) error {
+				Attempt(m, "grid_rush")
+				return nil
+			})
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := m["grid_rush"].Attempts; got != writers {
+		t.Errorf("Attempts = %d, want %d", got, writers)
 	}
 }
 
@@ -296,6 +331,23 @@ func TestMasteryDistributionEmpty(t *testing.T) {
 	}
 	if d["Experienced"] != 0 {
 		t.Errorf("Experienced = %d, want 0", d["Experienced"])
+	}
+}
+
+func TestMasteryDistributionStaleKeys(t *testing.T) {
+	total := len(content.All())
+	m := map[string]Stats{
+		"grid_rush":         {Completions: 1},
+		"removed_challenge": {Completions: 1},
+	}
+	d := MasteryDistribution(m, total)
+	if d["Unseen"] < 0 {
+		t.Errorf("Unseen = %d, want >= 0 with stale keys", d["Unseen"])
+	}
+	for tier, count := range d {
+		if count < 0 {
+			t.Errorf("%s = %d, want >= 0", tier, count)
+		}
 	}
 }
 

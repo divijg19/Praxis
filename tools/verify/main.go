@@ -7,12 +7,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
+
+const harnessTimeout = 2 * time.Minute
 
 func findRoot() (string, error) {
 	dir, err := os.Getwd()
@@ -51,6 +55,23 @@ func (v *verifier) run(env []string, name string, args ...string) error {
 	return nil
 }
 
+func (v *verifier) runHarness(env []string, name string, args ...string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), harnessTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Dir = v.root
+	cmd.Env = env
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() != nil {
+			return fmt.Errorf("%s timed out after %s", name, harnessTimeout)
+		}
+		return fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
+	}
+	return nil
+}
+
 func (v *verifier) checkFormat() error {
 	cmd := exec.Command("gofmt", "-l", ".")
 	cmd.Dir = v.root
@@ -68,8 +89,9 @@ func (v *verifier) checkFormat() error {
 }
 
 // harnessEnv points the Lua harnesses at the freshly built binary and an
-// isolated data directory. Existing PATH/PRAXIS_* entries are replaced, not
-// duplicated, so the child process cannot fall back to an installed binary.
+// isolated data directory. Existing PATH/PRAXIS_* entries are replaced rather
+// than duplicated; PATH keeps its original entries after the build directory
+// so helper tools remain available.
 func harnessEnv(binDir, binPath, dataDir string) []string {
 	env := make([]string, 0, len(os.Environ())+3)
 	for _, entry := range os.Environ() {
@@ -128,10 +150,10 @@ func certify() error {
 		{"go test ./... -count=1", func() error { return v.run(nil, "go", "test", "./...", "-count=1") }},
 		{"build praxis binary", func() error { return v.run(nil, "go", "build", "-o", binPath, "./cmd/praxis") }},
 		{"tools/replay/replay.lua", func() error {
-			return v.run(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
+			return v.runHarness(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
 		}},
 		{"tools/journey/journey.lua", func() error {
-			return v.run(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "journey", "journey.lua"))
+			return v.runHarness(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "journey", "journey.lua"))
 		}},
 	}
 

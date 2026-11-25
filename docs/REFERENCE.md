@@ -342,13 +342,13 @@ The Hub is the primary surface for returning users. It answers "where am I and w
 ── Praxis ──────────────────────────────────────
 
   Current: Tutorial / Search
-  Progress: 4/48
+  So far: 4 challenges completed.
 
   Direction:
     Next: Find Hunter / Search
     Review: Grid Rush / Movement
 
-  Mastery:
+  Practice mix:
     Unseen: 44   Learning: 2   Practiced: 1   Experienced: 1
 
   [Enter] Continue, or [r] Review.
@@ -359,9 +359,10 @@ Three sections:
 
 | Section | Content | Source |
 |---|---|---|
-| **Current** | Current stage (stage of first un-Practiced challenge), progress count | `praxis next`, `praxis describe`, `praxis stats` |
+| **Current** | Current stage (stage of first un-Practiced challenge) | `praxis next`, `praxis describe` |
+| **Progress** | Positive completion statement; no denominator. `So far: N challenges completed.` | `praxis stats` |
 | **Direction** | Next challenge (by name) + stage, review recommendation (by name) + stage | `praxis next`, `praxis describe`, `praxis stats` |
-| **Mastery** | Mastery distribution (compact one-line) | `praxis stats` |
+| **Practice mix** | Mastery distribution, shown only after five completions | `praxis stats` |
 
 ### Actions
 

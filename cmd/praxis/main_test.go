@@ -257,6 +257,20 @@ func TestRecordRejectsNegative(t *testing.T) {
 	}
 }
 
+func TestRecordRejectsZero(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	_, code := runPraxis(t, "record", "grid_rush", "0", "0")
+	if code != 1 {
+		t.Errorf("expected exit code 1 for zero moves/time, got %d", code)
+	}
+	loaded, _ := stats.Load()
+	s := loaded["grid_rush"]
+	if s.Completions != 0 || s.BestMoves != 0 || s.BestTimeMs != 0 {
+		t.Errorf("zero record should not create a completion, got %+v", s)
+	}
+}
+
 func TestRecordWrongArgCount(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)

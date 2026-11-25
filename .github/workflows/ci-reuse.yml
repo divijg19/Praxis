@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -22,6 +23,11 @@ jobs:
         run: |
           make install-tools
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Report tool versions
+        run: |
+          go version
+          golangci-lint version
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1

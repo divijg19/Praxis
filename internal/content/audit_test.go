@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/divijg19/Praxis/internal/challenge"
 )
 
 // H1: every Tutorial teaches exactly the primitive its metadata claims.
@@ -83,15 +85,11 @@ func TestJourneyCoverage(t *testing.T) {
 	}
 	raw := string(data)
 
-	// Match the "Progress: 48/48" assertion the harness makes on completion.
-	re := regexp.MustCompile(`Progress: (\d+)/(\d+)`)
+	// Match the "So far: N challenges completed." assertion the harness makes.
+	re := regexp.MustCompile(`So far: (\d+) challenges completed%.`)
 	m := re.FindStringSubmatch(raw)
 	if m == nil {
-		t.Fatal("journey.lua completion count assertion (Progress: N/N) not found")
-	}
-	// Both halves must agree (it asserts a fully-completed curriculum).
-	if m[1] != m[2] {
-		t.Fatalf("journey.lua completion count is inconsistent: %s/%s", m[1], m[2])
+		t.Fatal("journey.lua completion count assertion (So far: N challenges completed.) not found")
 	}
 	harnessTotal, _ := strconv.Atoi(m[1])
 
@@ -141,22 +139,85 @@ func TestChallengeNameNotBareID(t *testing.T) {
 	}
 }
 
-// H6: the Core Tutorial set is frozen at exactly 10 challenges.
-func TestCoreTutorialCountFrozen(t *testing.T) {
-	const want = 10
-	got := len(CoreTutorialIDs())
-	if got != want {
-		t.Errorf("Core Tutorial has %d challenges, want %d; Core is frozen", got, want)
+// H6: Core is finite and mandatory, not a frozen numeric count. Counts are
+// outcomes; the invariants are that every Core id exists, is a Tutorial, and
+// teaches a distinct concept.
+func TestCoreTutorialInvariants(t *testing.T) {
+	ids := CoreTutorialIDs()
+	if len(ids) == 0 {
+		t.Fatal("Core Tutorial is empty")
 	}
-	for _, id := range CoreTutorialIDs() {
-		for _, c := range All() {
-			if c.ID != id {
-				continue
+	byID := make(map[string]challenge.Challenge, len(All()))
+	for _, c := range All() {
+		byID[c.ID] = c
+	}
+	concepts := make(map[string]string, len(ids))
+	for _, id := range ids {
+		c, ok := byID[id]
+		if !ok {
+			t.Errorf("Core id %q is not in the catalog", id)
+			continue
+		}
+		if c.Layer != "Tutorial" {
+			t.Errorf("Core challenge %q has Layer=%q, must be Tutorial", id, c.Layer)
+		}
+		m, ok := metadataFor(id)
+		if !ok {
+			t.Errorf("Core challenge %q has no curriculum metadata", id)
+			continue
+		}
+		if other, duplicate := concepts[m.Concept]; duplicate {
+			t.Errorf("Core challenges %q and %q share concept %q", id, other, m.Concept)
+		}
+		concepts[m.Concept] = id
+	}
+	if !IsCoreTutorial("delete_inner_word_hunter") {
+		t.Error("diw must be Core: Training and Trial compose it")
+	}
+}
+
+func conceptTaught(concept string, taught map[string]bool) bool {
+	if taught[concept] {
+		return true
+	}
+	for prefix := 1; prefix < len(concept); prefix++ {
+		operator, object := concept[:prefix], concept[prefix:]
+		if !taught[object] {
+			continue
+		}
+		for c := range taught {
+			if strings.HasPrefix(c, operator) {
+				return true
 			}
-			if c.Layer != "Tutorial" {
-				t.Errorf("Core challenge %q has Layer=%q, must be Tutorial", id, c.Layer)
+		}
+	}
+	return false
+}
+
+// H6b: no composite challenge may require a concept absent from Tutorial.
+func TestCompositePrerequisitesCovered(t *testing.T) {
+	taught := make(map[string]bool)
+	for _, c := range All() {
+		if c.Layer != "Tutorial" {
+			continue
+		}
+		if m, ok := metadataFor(c.ID); ok {
+			taught[m.Concept] = true
+		}
+	}
+	for _, c := range All() {
+		if c.Layer != "Training" && c.Layer != "Trial" {
+			continue
+		}
+		m, ok := metadataFor(c.ID)
+		if !ok {
+			t.Errorf("%q has no curriculum metadata", c.ID)
+			continue
+		}
+		for _, concept := range strings.Split(m.Concept, "/") {
+			if !conceptTaught(concept, taught) {
+				t.Errorf("%s (%s) requires concept %q not taught in Tutorial", c.ID, c.Layer, concept)
 			}
-			break
 		}
 	}
 }
