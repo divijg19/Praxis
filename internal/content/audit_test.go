@@ -83,7 +83,7 @@ func TestJourneyCoverage(t *testing.T) {
 	}
 	raw := string(data)
 
-	// Match the "Progress: 49/49" assertion the harness makes on completion.
+	// Match the "Progress: 48/48" assertion the harness makes on completion.
 	re := regexp.MustCompile(`Progress: (\d+)/(\d+)`)
 	m := re.FindStringSubmatch(raw)
 	if m == nil {

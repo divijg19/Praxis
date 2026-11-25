@@ -134,7 +134,7 @@ Enforced by `TestTrialIntegrity` (all targets exist) and `TestDerivedFromAcyclic
 
 ## Neovim Frontend (Lua)
 
-The Neovim frontend is loaded on demand. The `:Praxis` command triggers `require('praxis')` via the plugin manager's `cmd` lazy-loading.
+The Neovim frontend is loaded at startup: `plugin/praxis.lua` calls `require('praxis')`, which registers `:Praxis`. No plugin manager is required, but the repository's `nvim/` directory must be on `runtimepath`.
 
 ### Module layout
 
@@ -195,5 +195,5 @@ is visible at a time. The loop:
 5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
    `praxis next` (or returns to the Hub); `q` returns to the Hub.
 
-`ui.create_buffer` reuses or uniquifies the buffer name so surfaces that
-share the "Praxis" label never collide.
+`ui.create_buffer` replaces any existing buffer with the same name so surfaces
+that share the "Praxis" label never collide.

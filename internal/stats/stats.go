@@ -39,6 +39,10 @@ func Load() (map[string]Stats, error) {
 		_ = os.WriteFile(backup, data, 0o644)
 		return make(map[string]Stats), fmt.Errorf("corrupt progress file; backup saved to %s", backup)
 	}
+	if m == nil {
+		// "null" is valid JSON but not a valid progress map.
+		return make(map[string]Stats), nil
+	}
 	return m, nil
 }
 
@@ -56,12 +60,13 @@ func Save(m map[string]Stats) error {
 		return err
 	}
 	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		os.Remove(tmp.Name())
+		// Cleanup is best-effort; preserve the write error as the result.
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	if err := tmp.Close(); err != nil {
-		os.Remove(tmp.Name())
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	return os.Rename(tmp.Name(), path())
@@ -90,6 +95,9 @@ func SuccessRate(s Stats) float64 {
 		return 0
 	}
 	r := float64(s.Completions) / float64(s.Attempts)
+	if r < 0 {
+		return 0
+	}
 	if r > 1 {
 		return 1
 	}

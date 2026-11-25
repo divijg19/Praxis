@@ -11,7 +11,7 @@
 
 ## Verification
 
-- [ ] `tools/verify.sh` passes locally (build, lint, test, replay, journey)
+- [ ] `go run ./tools/verify` passes locally (build, lint, test, replay, journey)
 - [ ] `make verify` is green
 
 ## Notes

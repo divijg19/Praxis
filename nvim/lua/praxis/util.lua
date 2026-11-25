@@ -2,8 +2,8 @@ local M = {}
 
 -- Describe a challenge by id, returning the decoded table or nil on failure.
 -- `bin` overrides the praxis binary; defaults to "praxis" on $PATH. The replay
--- harness passes the freshly built "/tmp/praxis" so it exercises the built
--- binary rather than whatever is installed.
+-- harness passes $PRAXIS_BIN so it exercises the freshly built binary rather
+-- than whatever is installed.
 function M.describe(id, bin)
   bin = bin or "praxis"
   local raw = vim.fn.systemlist({ bin, "describe", id })

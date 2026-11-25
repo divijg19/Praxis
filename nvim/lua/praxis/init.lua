@@ -42,7 +42,7 @@ function M.show(opts)
 
   if not M.available() then
     require("praxis.ui").recovery("Praxis isn't installed.", {
-      "Install or build Praxis, then restart Neovim.",
+      "Install or build Praxis, then run :Praxis again.",
       "",
       "[Enter] or [q] Back.",
     })

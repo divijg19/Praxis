@@ -4,7 +4,17 @@ Praxis teaches Vim through short, self-contained challenges: Tutorials, Training
 
 ## Install
 
-Install the `praxis` binary, open Neovim, and run `:Praxis`.
+Install the binary (make sure `$(go env GOPATH)/bin` is on `PATH`):
+
+```bash
+go install github.com/divijg19/Praxis/cmd/praxis@latest
+```
+
+Add this repository's `nvim/` directory to Neovim's `runtimepath`, for example:
+
+```bash
+ln -sfn /path/to/Praxis/nvim "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+```
 
 ## Quick Start
 
@@ -16,15 +26,14 @@ Open Neovim and run `:Praxis`.
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md): how it is built
 - [REFERENCE.md](docs/REFERENCE.md): challenge model, CLI, stats
 - [TESTING.md](docs/TESTING.md): how it is verified
-- [RATIONALE.md](docs/RATIONALE.md): why major decisions were made
-- [PRACTICE_SYSTEM.md](docs/PRACTICE_SYSTEM.md): how Praxis should live as a long-term practice system
+- [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md): the principles that guide curriculum decisions
 
 ## Verify
 
 ```bash
-bash tools/verify.sh
+go run ./tools/verify
 ```
 
 ## Contribute
 
-Contributions follow the standard flow: branch, implement, run `tools/verify.sh`, and open a pull request.
+Contributions follow the standard flow: branch, implement, run `go run ./tools/verify`, and open a pull request.

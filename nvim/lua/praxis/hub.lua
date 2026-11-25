@@ -28,15 +28,6 @@ function M.open()
     "",
   }
 
-  if tutorial_status then
-    if tutorial_status == "Complete" then
-      table.insert(display, "  Tutorial Complete. You are independent. Practice is ongoing.")
-    else
-      table.insert(display, "  Tutorial: " .. tutorial_status .. " core. Finish Core to complete onboarding.")
-    end
-    table.insert(display, "")
-  end
-
   local completed, total
   local tutorial_status
   local in_mastery = false
@@ -79,6 +70,15 @@ function M.open()
       end
       break
     end
+  end
+
+  if tutorial_status then
+    if tutorial_status == "Complete" then
+      table.insert(display, "  Tutorial Complete. You are independent. Practice is ongoing.")
+    else
+      table.insert(display, "  Tutorial: " .. tutorial_status .. ". Finish Core to complete onboarding.")
+    end
+    table.insert(display, "")
   end
 
   local name, layer, stage = "", "", ""

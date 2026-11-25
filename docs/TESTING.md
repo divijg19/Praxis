@@ -13,8 +13,8 @@ Every test belongs to exactly one category.
 | Correctness     | Individual behavior of a unit or command  | `internal/**/*_test.go` |
 | Integrity       | Curriculum invariants (IDs, reachability, acyclicity) | `internal/content/*_test.go` |
 | Regression      | Prevent previously-fixed bugs from returning | `internal/**/*_test.go` |
-| Replay          | Curriculum correctness, end-to-end content | `tools/replay/replay.lua`, `tools/verify.sh` |
-| Learner Journey | End-to-end experience, real product       | `tools/journey/journey.lua`, `tools/journey/journey.sh` |
+| Replay          | Curriculum correctness, end-to-end content | `tools/replay/replay.lua`, `tools/verify/main.go` |
+| Learner Journey | End-to-end experience, real product       | `tools/journey/journey.lua`, `tools/verify/main.go` |
 
 Replay validates **content correctness**. The learner journey validates the **experience** (navigation, recovery, solving, completion). They are different layers; both must pass.
 
@@ -51,20 +51,20 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 
 ## Replay
 
-Drives all 48 challenges through the CLI and asserts each opens, solves, and completes. This is curriculum correctness, not the learner experience.
+Checks all 48 challenge definitions by rendering each in a scratch buffer and asserting its target/result contract and evaluation limits. This is curriculum correctness, not the learner experience.
 
 ```bash
-# Requires the `praxis` binary on PATH (the harness builds it to /tmp/praxis).
-# Prefer `tools/verify.sh`, which builds it for you.
+# Requires a `praxis` binary on PATH, or PRAXIS_BIN pointing at one.
+# Prefer `go run ./tools/verify`, which builds it for you.
 nvim --headless -l tools/replay/replay.lua
 ```
 
 ## Learner Journey
 
-Executes the real product, namely `:Praxis`, `:Praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `tools/verify.sh` as one command covering all five test categories.
+Executes the real product, namely `:Praxis`, `:Praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `go run ./tools/verify` as one command covering all five test categories.
 
 ```bash
-bash tools/journey/journey.sh
+nvim --headless -l tools/journey/journey.lua
 ```
 
 ---
@@ -72,16 +72,18 @@ bash tools/journey/journey.sh
 ## Verification
 
 ```bash
-tools/verify.sh
+go run ./tools/verify
 ```
 
-Runs: `go test`, `go vet`, `gofmt`, replay (all 48 challenges), and the learner journey. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
+Runs: `go build`, `go vet`, `gofmt`, `golangci-lint`, `go test`, replay (all 48 challenges), and the learner journey. Any failed check stops the gate with a non-zero exit. This is the single command to verify all five categories, namely Correctness, Integrity, Regression, Replay, and Learner Journey, before committing.
+
+External binaries (`golangci-lint`, `nvim`) are resolved from `PATH`; they are not pinned as module dependencies. Install the linter with `make install-tools` (CI does the same). The gate builds one `praxis` binary into a temporary directory and passes it to both harnesses.
 
 ---
 
 ## Release Procedure
 
-1. **Verify**: run `tools/verify.sh`. It runs build, lint, format, vet, tests, replay, and journey. All checks must pass.
+1. **Verify**: run `go run ./tools/verify`. It runs build, lint, format, vet, tests, replay, and journey. All checks must pass.
 2. **Build**: run `go build ./...` so all packages compile.
 3. **Documentation**: if content changed, update the relevant doc under `docs/` (the challenge catalog is available at runtime via `praxis catalog`).
 4. **Stage**: run `git add -A && git status` to verify staged files.

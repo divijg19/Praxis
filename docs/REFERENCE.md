@@ -68,7 +68,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
 3. Append the ID to `stableChallengeIDs` and the name to `stableChallengeNames` in `internal/content/content_test.go` (rename guard)
 4. Append the ID to the `all_ids` list in `tools/replay/replay.lua` (guarded by `TestReplayCoverage`)
-5. Run `tools/verify.sh`. The total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required.
+5. Run `go run ./tools/verify`. The total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required.
 
 ## CLI Surface
 
@@ -376,7 +376,8 @@ Three sections:
 - **Hub is for orientation.** You visit it when you need context (starting Praxis, returning after a break, wondering where you are).
 - **Result screen is for momentum.** After completing a challenge, Enter goes directly to the next challenge. It never goes through the Hub.
 - **Practice flow:** Challenge → Result → Next Challenge. Navigation only when you explicitly choose it.
-- **Zero Go changes.** All data is sourced from `praxis next`, `praxis stats`.
+- **Zero Go changes.** All data is sourced from `praxis next`, `praxis stats`,
+  and `praxis describe`.
 
 ## Integrity Guarantees
 
