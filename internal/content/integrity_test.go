@@ -1,7 +1,7 @@
 package content
 
 import (
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -139,23 +139,10 @@ func TestTrialIntegrity(t *testing.T) {
 }
 
 func equalStringSet(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	sorted := make([]string, len(a))
-	copy(sorted, a)
-	sort.Strings(sorted)
-
-	other := make([]string, len(b))
-	copy(other, b)
-	sort.Strings(other)
-
-	for i := range sorted {
-		if sorted[i] != other[i] {
-			return false
-		}
-	}
-	return true
+	sorted, other := slices.Clone(a), slices.Clone(b)
+	slices.Sort(sorted)
+	slices.Sort(other)
+	return slices.Equal(sorted, other)
 }
 
 func TestDerivedFromAcyclic(t *testing.T) {
@@ -289,12 +276,12 @@ func TestTutorialTiersAssigned(t *testing.T) {
 	var core, optional int
 	for _, c := range All() {
 		if c.Layer != "Tutorial" {
-			if TutorialTier(c.ID) != "" {
-				t.Errorf("non-Tutorial %q has a Tutorial tier %q", c.ID, TutorialTier(c.ID))
+			if tierFor(c.ID) != "" {
+				t.Errorf("non-Tutorial %q has a Tutorial tier %q", c.ID, tierFor(c.ID))
 			}
 			continue
 		}
-		switch TutorialTier(c.ID) {
+		switch tierFor(c.ID) {
 		case "core":
 			core++
 		case "optional":
@@ -323,13 +310,13 @@ func TestCoreTutorialSetConsistent(t *testing.T) {
 		}
 	}
 	for _, id := range ids {
-		if !IsCoreTutorial(id) {
-			t.Errorf("CoreTutorialIDs contains %q but IsCoreTutorial disagrees", id)
+		if !isCoreTutorial(id) {
+			t.Errorf("CoreTutorialIDs contains %q but isCoreTutorial disagrees", id)
 		}
 		if _, ok := metadataFor(id); !ok {
 			t.Errorf("Core Tutorial %q has no metadata", id)
 		}
-		if TutorialTier(id) != "core" {
+		if tierFor(id) != "core" {
 			t.Errorf("Core Tutorial %q is not marked Tier=core", id)
 		}
 	}

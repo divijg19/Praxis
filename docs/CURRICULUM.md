@@ -98,11 +98,9 @@ menu hierarchy.
 - **`:Praxis`** is the universal (re)entry point. On first launch it opens
   the Onboarding; on later launches it opens the Hub. `:Praxis <id>`
   opens a specific challenge directly.
-- **Onboarding** (first launch only) offers four actions:
-   - `[s]` Start → opens the next uncompleted challenge.
-   - `[e]` Explore → the Catalog (a flat list of all challenges).
-   - `[h]` About → what Praxis teaches and how progression works.
-   - `[p]` View progress → the Hub.
+- **Onboarding** (first launch only) offers one primary action: `[Enter] Start
+  Onboarding` → opens the next uncompleted challenge. Once progress exists,
+  `[e]` Explore (Catalog), `[h]` About, and `[p]` View progress are also shown.
 - **Hub** is the learner's home: the threshold of practice, not a dashboard.
    It shows Current, Progress, Direction, and Mastery, then: `[Enter]` Continue
    to the next challenge, `[r]` Review the recommended challenge, `[q]` Back.
@@ -146,8 +144,8 @@ separate product.
   `optional`). It teaches, but never blocks progression. The learner explores
   it from the Catalog when curious. See §2 for why it exists.
 
-A challenge's tier is part of its metadata (`Tier: core | optional`) and is
-assigned in `internal/content/curriculum.go`.
+A challenge's tier is derived from `coreTutorials` in
+`internal/content/curriculum.go`; it is not a stored metadata field.
 
 ---
 
@@ -177,7 +175,10 @@ challenge becomes current. Mastery tiers are also count-based (see
 - **Practiced**: 3 to 7 completions
 - **Experienced**: 8 or more completions
 
-The full curriculum is complete when every challenge has been completed three times. At that point the Hub shows `Current: Complete`.
+Tutorial is complete when every Core challenge has at least one completion;
+a challenge advances when completed three times. The full curriculum is
+complete when every challenge has three completions. At that point the Hub
+shows `Current: Complete`.
 
 ### When to revisit
 

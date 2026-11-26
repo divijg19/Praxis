@@ -263,6 +263,22 @@ func TestLoadCorruptFile(t *testing.T) {
 	}
 }
 
+func TestResetRemovesCorruptBackup(t *testing.T) {
+	writeStatsFile(t, "{broken")
+	if _, err := Load(); !errors.Is(err, ErrCorrupt) {
+		t.Fatalf("Load error = %v, want ErrCorrupt", err)
+	}
+	if err := Reset(); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"stats.json", "stats.json.corrupt"} {
+		p := filepath.Join(os.Getenv("XDG_DATA_HOME"), "praxis", name)
+		if _, err := os.Stat(p); !os.IsNotExist(err) {
+			t.Errorf("%s still exists after reset (stat error %v)", name, err)
+		}
+	}
+}
+
 func TestLoadNullFile(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)

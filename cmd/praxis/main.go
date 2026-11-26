@@ -83,10 +83,17 @@ func main() {
 		}
 		next()
 	case "catalog":
-		if len(os.Args) != 2 {
-			usage("praxis catalog")
+		switch len(os.Args) {
+		case 2:
+			catalog("")
+		case 3:
+			if os.Args[2] != "--ids" && os.Args[2] != "--core" {
+				usage("praxis catalog [--ids|--core]")
+			}
+			catalog(os.Args[2])
+		default:
+			usage("praxis catalog [--ids|--core]")
 		}
-		catalog()
 	case "describe":
 		if len(os.Args) != 3 {
 			usage("praxis describe <id>")
@@ -105,12 +112,12 @@ func main() {
 	case "reset":
 		switch len(os.Args) {
 		case 2:
-			reset("")
+			reset(false)
 		case 3:
 			if os.Args[2] != "--yes" {
 				usage("praxis reset [--yes]")
 			}
-			reset("--yes")
+			reset(true)
 		default:
 			usage("praxis reset [--yes]")
 		}
@@ -171,7 +178,7 @@ func help() {
 	fmt.Println("  praxis reset")
 	fmt.Println()
 	fmt.Println("Explore:")
-	fmt.Println("  praxis catalog")
+	fmt.Println("  praxis catalog [--ids|--core]")
 	fmt.Println()
 	fmt.Println("Inspect:")
 	fmt.Println("  praxis describe <id>")
@@ -188,9 +195,20 @@ func describe(id string) {
 	}
 }
 
-func catalog() {
-	for _, c := range content.All() {
-		fmt.Println(c.Name)
+func catalog(flag string) {
+	switch flag {
+	case "--ids":
+		for _, id := range content.IDs() {
+			fmt.Println(id)
+		}
+	case "--core":
+		for _, id := range content.CoreTutorialIDs() {
+			fmt.Println(id)
+		}
+	default:
+		for _, c := range content.All() {
+			fmt.Println(c.Name)
+		}
 	}
 }
 
@@ -201,9 +219,8 @@ func next() {
 	}
 }
 
-func reset(yesArg string) {
-	yes := yesArg == "--yes"
-	if !yes {
+func reset(confirmed bool) {
+	if !confirmed {
 		fmt.Print("This will erase all Praxis progress.\n\nType RESET to continue: ")
 		var input string
 		if _, err := fmt.Scanln(&input); err != nil {
@@ -270,15 +287,14 @@ func statsSummary() {
 	m := loadOrFail()
 	ids := content.IDs()
 	valid := make(map[string]stats.Stats, len(ids))
-	for _, id := range ids {
-		if s, ok := m[id]; ok {
-			valid[id] = s
-		}
-	}
 	var completed int
 	var totalAttempts int
 	for _, id := range ids {
-		s := valid[id]
+		s, ok := m[id]
+		if !ok {
+			continue
+		}
+		valid[id] = s
 		if s.Completions > 0 {
 			completed++
 		}

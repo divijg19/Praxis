@@ -2,7 +2,6 @@ package content
 
 import (
 	"os"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -37,38 +36,19 @@ func TestConceptInstructionAgreement(t *testing.T) {
 	}
 }
 
-// H2: the replay contract check must cover every challenge. Guard against a
-// forgotten ID in replay.lua's hand-maintained all_ids; replay verifies data
-// contracts, not keystroke solvability.
+// H2: replay must derive its ID set from the CLI catalog rather than a
+// hand-maintained list. Replay verifies data contracts, not keystroke solves.
 func TestReplayCoverage(t *testing.T) {
 	data, err := os.ReadFile("../../tools/replay/replay.lua")
 	if err != nil {
 		t.Fatalf("cannot read replay.lua: %v", err)
 	}
 	raw := string(data)
-	start := strings.Index(raw, "local all_ids = {")
-	if start < 0 {
-		t.Fatal("all_ids table not found in replay.lua")
+	if !strings.Contains(raw, `"catalog", "--ids"`) {
+		t.Fatal("replay.lua does not derive challenge IDs from praxis catalog --ids")
 	}
-	block := raw[start:]
-	if end := strings.Index(block, "\n}"); end >= 0 {
-		block = block[:end]
-	}
-
-	replayIDs := map[string]bool{}
-	for _, m := range regexp.MustCompile(`"([^"]+)"`).FindAllStringSubmatch(block, -1) {
-		replayIDs[m[1]] = true
-	}
-
-	for _, c := range All() {
-		if !replayIDs[c.ID] {
-			t.Errorf("challenge %q is missing from replay.lua all_ids", c.ID)
-		}
-	}
-	for id := range replayIDs {
-		if !Exists(id) {
-			t.Errorf("replay.lua all_ids contains unknown id %q", id)
-		}
+	if strings.Contains(raw, "local all_ids = {") {
+		t.Fatal("replay.lua still contains a hand-maintained all_ids table")
 	}
 }
 
@@ -90,6 +70,9 @@ func TestJourneyCoverage(t *testing.T) {
 	}
 	if !strings.Contains(raw, `So far: " .. completed_total .. " challenges completed%.`) {
 		t.Fatal("journey.lua completion assertion is not derived from praxis stats")
+	}
+	if !strings.Contains(raw, `"catalog", "--core"`) {
+		t.Fatal("journey.lua does not derive Core IDs from praxis catalog --core")
 	}
 }
 
@@ -165,7 +148,7 @@ func TestCoreTutorialInvariants(t *testing.T) {
 		}
 		concepts[m.Concept] = id
 	}
-	if !IsCoreTutorial("delete_inner_word_hunter") {
+	if !isCoreTutorial("delete_inner_word_hunter") {
 		t.Error("diw must be Core: Training and Trial compose it")
 	}
 }

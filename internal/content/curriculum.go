@@ -1,6 +1,10 @@
 package content
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/divijg19/Praxis/internal/challenge"
+)
 
 type Metadata struct {
 	Concept     string
@@ -17,6 +21,16 @@ const (
 	stageTextObjects          = "Text Objects"
 	stageRegisters            = "Registers"
 )
+
+// stages is the single authoritative set used by validation and taxonomy.
+var stages = []string{
+	stageMovement,
+	stageSearch,
+	stageStructuralNavigation,
+	stageEditing,
+	stageTextObjects,
+	stageRegisters,
+}
 
 var curriculum = map[string]Metadata{
 	// Movement
@@ -101,14 +115,14 @@ var coreTutorials = map[string]bool{
 var tutorialTier = map[string]string{}
 
 func init() {
-	for _, c := range All() {
-		if c.Layer != "Tutorial" {
+	for _, id := range allIDs {
+		if byID[id].Layer != challenge.LayerTutorial {
 			continue
 		}
-		if coreTutorials[c.ID] {
-			tutorialTier[c.ID] = "core"
+		if coreTutorials[id] {
+			tutorialTier[id] = "core"
 		} else {
-			tutorialTier[c.ID] = "optional"
+			tutorialTier[id] = "optional"
 		}
 	}
 }
@@ -118,14 +132,14 @@ func metadataFor(id string) (Metadata, bool) {
 	return m, ok
 }
 
-// IsCoreTutorial reports whether id is part of the mandatory onboarding.
-func IsCoreTutorial(id string) bool {
+// isCoreTutorial reports whether id is part of the mandatory onboarding.
+func isCoreTutorial(id string) bool {
 	return coreTutorials[id]
 }
 
-// TutorialTier returns "core" or "optional" for Tutorial challenges, or "" for
+// tierFor returns "core" or "optional" for Tutorial challenges, or "" for
 // challenges in other layers.
-func TutorialTier(id string) string {
+func tierFor(id string) string {
 	return tutorialTier[id]
 }
 

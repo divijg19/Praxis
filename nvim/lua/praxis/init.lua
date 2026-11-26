@@ -3,7 +3,7 @@ local M = {}
 local util = require("praxis.util")
 
 function M.available()
-  return vim.fn.executable("praxis") == 1
+  return vim.fn.executable(util.bin()) == 1
 end
 
 local function xdg_data()

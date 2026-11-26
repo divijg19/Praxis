@@ -112,11 +112,7 @@ function M.open(id)
       vim.api.nvim_echo({ { "Over the move limit. Press [r] to retry." } }, false, {})
       return
     end
-    local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    if #current ~= #state.result_lines then return end
-    for i = 1, #current do
-      if current[i] ~= state.result_lines[i] then return end
-    end
+    if not util.check_buffer(buf, state.result_lines) then return end
     state.done = true
     vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
     render_result()
@@ -186,6 +182,9 @@ function M.open(id)
   vim.keymap.set("n", "<CR>", function()
     if state.done then
       local next_lines = util.systemlist({ "next" })
+      if not next_lines then
+        vim.api.nvim_echo({ { "Couldn't read the next challenge. Returning to the Hub." } }, false, {})
+      end
       util.continue(next_lines and next_lines[1])
     end
   end, { buffer = buf, nowait = true, silent = true })

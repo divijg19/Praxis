@@ -44,7 +44,8 @@ func TestReplayFailsWithBrokenBinary(t *testing.T) {
 	if err == nil {
 		t.Fatalf("replay passed with a broken binary:\n%s", out)
 	}
-	if !strings.Contains(string(out), "Describe failures:") {
-		t.Fatalf("expected describe failures in output, got:\n%s", out)
+	text := string(out)
+	if !strings.Contains(text, "Describe failures:") && !strings.Contains(text, "catalog --ids returned no challenges") {
+		t.Fatalf("expected a catalog or describe failure in output, got:\n%s", out)
 	}
 }

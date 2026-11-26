@@ -1,4 +1,4 @@
--- Replay contract check for all 48 challenges: verifies describe output,
+-- Replay contract check for every catalog challenge: verifies describe output,
 -- target/result data, and evaluation metadata. It does not execute Vim
 -- keystroke solutions (see docs/TESTING.md).
 -- Run via: go run ./tools/verify (PRAXIS_BIN may override the binary)
@@ -9,49 +9,17 @@ vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 local util = require("praxis.util")
 local bin = vim.env.PRAXIS_BIN or "praxis"
 
-local function check_buffer(buf, result_lines)
-  local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  if #current ~= #result_lines then
-    return false
-  end
-  for i = 1, #current do
-    if current[i] ~= result_lines[i] then
-      return false
-    end
-  end
-  return true
+-- IDs come from the CLI so the harness cannot drift from the catalog.
+local all_ids = vim.fn.systemlist({ bin, "catalog", "--ids" })
+if #all_ids == 0 then
+  print("FAIL: praxis catalog --ids returned no challenges")
+  vim.cmd("cquit 1")
 end
-
-local all_ids = {
-  "grid_rush","find_hunter","word_hunter",
-  "line_hunter","paren_hunter","sentence_hunter",
-  "slash_hunter","question_hunter","repeat_hunter",
-  "inner_paren_hunter","around_paren_hunter",
-  "inner_quote_hunter","around_quote_hunter",
-  "paragraph_hunter",
-  "delete_character_hunter","replace_character_hunter",
-  "toggle_case_hunter","delete_word_hunter","change_word_hunter",
-  "utf8_cursor_hunter",
-  "delete_line_hunter","delete_to_end_hunter",
-  "delete_inner_word_hunter","delete_around_word_hunter",
-  "delete_inner_paren_hunter","delete_around_paren_hunter",
-  "delete_inner_quote_hunter","delete_around_quote_hunter",
-  "change_inner_paren_hunter",
-  "change_inner_quote_hunter",  "yank_line_hunter",
-  "word_register_hunter",
-  "register_replace_hunter",
-  "find_diw_combo","find_daw_combo",
-  "find_di_paren_combo","find_ca_quote_combo","find_ciw_combo",
-  "dw_dot_combo","ciw_dot_combo",
-  "yank_paste_combo","dd_paste_combo","dd_paste_before_combo",
-  "trial_find_delete","trial_find_change","trial_dot_repeat",
-  "trial_delete_choice","trial_repeat_choice",
-}
 
 local results = {}
 
 for _, id in ipairs(all_ids) do
-  local d = util.describe(id, bin)
+  local d = util.describe(id)
   if type(d) ~= "table" then
     print("FAIL " .. id .. ": could not describe")
     results[id] = "FAIL"
@@ -112,7 +80,7 @@ for _, id in ipairs(all_ids) do
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.result)
 
-    if check_buffer(buf, d.result) then
+    if util.check_buffer(buf, d.result) then
       print("PASS " .. id)
       results[id] = "PASS"
     else
@@ -153,7 +121,7 @@ local trial_eval_total = 0
 local describe_fail = 0
 
 for _, id in ipairs(all_ids) do
-  local d = util.describe(id, bin)
+  local d = util.describe(id)
   if type(d) ~= "table" then
     describe_fail = describe_fail + 1
     goto next_id

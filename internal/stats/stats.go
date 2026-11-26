@@ -217,12 +217,11 @@ func Reset() error {
 	}
 	defer unlock()
 
-	p := path()
-	if err := os.Remove(p); err != nil {
-		if os.IsNotExist(err) {
-			return nil
+	// Reset erases all persisted progress, including recovery backups.
+	for _, p := range []string{path(), path() + ".corrupt"} {
+		if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+			return err
 		}
-		return err
 	}
 	return nil
 }
