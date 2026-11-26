@@ -82,7 +82,13 @@ Like Training, Trials use the composite validator with a `MaxMoves` threshold an
 
 IDs are permanent. Replay verification is mandatory. The curriculum grows only when a documented primary concept cannot be taught through any existing challenge. Duplicate concepts are prohibited unless the new context or composition justifies the addition.
 
-These invariants are enforced by the content and integrity test suites.
+These invariants are enforced by runtime `ValidateAll()`, the content and
+integrity test suites, and the certification gate.
+
+Persistence follows the same discipline: progress is a versioned JSON file under
+XDG, readable and editable by the learner. A database-backed store was evaluated
+and rejected. It would add dependencies, migration risk, and failure modes
+without improving any educational outcome; simpler alternatives were preferred.
 
 ---
 

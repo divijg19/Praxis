@@ -47,11 +47,11 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 
 - no two challenges share an ID
 - `describe` on an unknown id returns a clean error (not a crash)
-- corrupted or missing `stats.json` degrades gracefully
+- corrupted, missing, or unsupported-version `stats.json` degrades gracefully
 
 ## Replay
 
-Checks all 48 challenge definitions by rendering each in a scratch buffer and asserting its target/result contract and evaluation limits. This is curriculum correctness, not the learner experience.
+Checks all 48 challenge definitions by rendering each in a scratch buffer and asserting its target/result contract and evaluation limits. It does not execute keystroke solutions; keystroke-level behavior is exercised by the learner journey for representative modes. This is curriculum correctness, not the learner experience.
 
 ```bash
 # Requires a `praxis` binary on PATH, or PRAXIS_BIN pointing at one.

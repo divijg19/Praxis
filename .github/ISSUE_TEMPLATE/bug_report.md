@@ -20,7 +20,8 @@ What you expected to happen.
 **Environment**
 - OS:
 - Neovim version (`nvim --version`):
-- Praxis version (`praxis help` footer / `git describe`):
+- Praxis version (`git describe --tags`):
+- `stats.json` version (if present):
 
 **Additional context**
 Add any other context, logs, or screenshots.

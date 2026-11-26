@@ -24,7 +24,7 @@ Open Neovim and run `:Praxis`.
 
 - [CURRICULUM.md](docs/CURRICULUM.md): what Praxis teaches
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md): how it is built
-- [REFERENCE.md](docs/REFERENCE.md): challenge model, CLI, stats
+- [REFERENCE.md](docs/REFERENCE.md): challenge model, CLI, stats, persistence contract
 - [TESTING.md](docs/TESTING.md): how it is verified
 - [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md): the principles that guide curriculum decisions
 

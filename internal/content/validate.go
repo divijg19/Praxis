@@ -2,6 +2,7 @@ package content
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/divijg19/Praxis/internal/challenge"
 )
@@ -16,10 +17,26 @@ func validStage(s string) bool {
 	return false
 }
 
+// ValidateAll checks the compiled-in catalog at runtime. Content is static, so
+// a failure is a build defect; the CLI reports it on stderr and exits rather
+// than proceeding with an invalid catalog.
+func ValidateAll() error {
+	for _, c := range All() {
+		m, ok := metadataFor(c.ID)
+		if !ok {
+			return fmt.Errorf("challenge %s: missing metadata", c.ID)
+		}
+		if problems := Validate(c, m); len(problems) > 0 {
+			return fmt.Errorf("challenge %s: %s", c.ID, strings.Join(problems, "; "))
+		}
+	}
+	return nil
+}
+
 // Validate reports well-formedness problems for a single challenge. It is the
-// single source of challenge-model validation; tests run it over every
-// challenge so a misconfiguration fails fast and in one place, instead of
-// being scattered across ad-hoc checks.
+// single source of challenge-model validation; the gate runs it over every
+// challenge in tests and the CLI runs ValidateAll at startup so a
+// misconfiguration fails fast and in one place.
 func Validate(c challenge.Challenge, m Metadata) []string {
 	var problems []string
 

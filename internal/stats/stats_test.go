@@ -1,14 +1,28 @@
 package stats
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/divijg19/Praxis/internal/content"
 )
+
+func writeStatsFile(t *testing.T, data string) {
+	t.Helper()
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(d, "praxis", "stats.json"), []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestLoadFileNotExist(t *testing.T) {
 	d := t.TempDir()
@@ -266,6 +280,99 @@ func TestLoadNullFile(t *testing.T) {
 		t.Fatal("Load returned a nil map for a null stats file")
 	}
 	Attempt(m, "grid_rush") // must not panic on a nil map
+}
+
+func TestLoadVersion1BareMap(t *testing.T) {
+	writeStatsFile(t, `{"grid_rush":{"attempts":2,"completions":1,"best_moves":3,"best_time_ms":240,"last_played":"2026-11-26"}}`)
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := m["grid_rush"].Attempts; got != 2 {
+		t.Errorf("Attempts = %d, want 2", got)
+	}
+}
+
+func TestLoadVersion2Envelope(t *testing.T) {
+	writeStatsFile(t, `{"version":2,"entries":{"grid_rush":{"attempts":4,"completions":2}}}`)
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := m["grid_rush"].Completions; got != 2 {
+		t.Errorf("Completions = %d, want 2", got)
+	}
+}
+
+func TestLoadUnsupportedVersion(t *testing.T) {
+	writeStatsFile(t, `{"version":99,"entries":{"grid_rush":{"attempts":1}}}`)
+	m, err := Load()
+	if !errors.Is(err, ErrUnsupportedVersion) {
+		t.Fatalf("error = %v, want ErrUnsupportedVersion", err)
+	}
+	if m == nil || len(m) != 0 {
+		t.Errorf("loaded map = %v, want empty non-nil map", m)
+	}
+	if !strings.Contains(err.Error(), "99") {
+		t.Errorf("error %q does not name the unsupported version", err)
+	}
+}
+
+func TestLoadRejectsNegativeCounters(t *testing.T) {
+	writeStatsFile(t, `{"version":2,"entries":{"grid_rush":{"attempts":-1,"completions":0}}}`)
+	m, err := Load()
+	if !errors.Is(err, ErrInvalidStats) {
+		t.Fatalf("error = %v, want ErrInvalidStats", err)
+	}
+	if m == nil || len(m) != 0 {
+		t.Errorf("loaded map = %v, want empty non-nil map", m)
+	}
+}
+
+func TestSaveWritesVersionAndSyncs(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	if err := Save(map[string]Stats{"grid_rush": {Attempts: 2}}); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(d, "praxis", "stats.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), `"version": 2`) {
+		t.Errorf("stats.json has no version field:\n%s", raw)
+	}
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := m["grid_rush"].Attempts; got != 2 {
+		t.Errorf("Attempts = %d, want 2", got)
+	}
+}
+
+func TestMutateUpgradesVersion1(t *testing.T) {
+	writeStatsFile(t, `{"grid_rush":{"attempts":1,"completions":1}}`)
+	if err := Mutate(func(m map[string]Stats) error {
+		Attempt(m, "grid_rush")
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(os.Getenv("XDG_DATA_HOME"), "praxis", "stats.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), `"version": 2`) {
+		t.Errorf("Mutate did not stamp the version:\n%s", raw)
+	}
+	m, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := m["grid_rush"].Attempts; got != 2 {
+		t.Errorf("Attempts = %d, want 2", got)
+	}
 }
 
 func TestUpdateReturnsUpdated(t *testing.T) {

@@ -1,4 +1,4 @@
--- Learner journey harness for Praxis (v0.3.7)
+-- Learner journey harness for Praxis (v0.3.10)
 -- Validates the EXPERIENCE (navigation, recovery, solving, completion),
 -- not just content correctness (that is tools/replay/replay.lua's job).
 -- Run via: go run ./tools/verify (PRAXIS_BIN / PRAXIS_VERIFY_DATA may be set by it)
@@ -39,7 +39,8 @@ local function press(k)
   vim.cmd("normal " .. k)
 end
 
--- Solve the CURRENT challenge buffer using real product logic.
+-- Drive the current challenge buffer through the product's validation
+-- autocmds for representative cursor, buffer, composite and Trial modes.
 local function solve(id)
   local d = util.describe(id)
   if type(d) ~= "table" then return false end
@@ -98,7 +99,12 @@ end
 ok("buffer_tutorial_persisted", saved)
 press("q")
 ok("buffer_tutorial_escape", has(snap(), "So far:"))
-ok("hub_tutorial_status", has(snap(), "Tutorial: %d+/11 core%. Finish Core"))
+local core_total = "0"
+for _, line in ipairs(util.systemlist({ "stats" }) or {}) do
+  local n = line:match("^Tutorial: %d+/(%d+) core")
+  if n then core_total = n end
+end
+ok("hub_tutorial_status", has(snap(), "Tutorial: %d+/" .. core_total .. " core%. Finish Core"))
 
 -- 4. Training (composite): solve, then escape
 vim.cmd("Praxis find_diw_combo")
@@ -202,7 +208,12 @@ while guard < 300 do
 end
 vim.cmd("Praxis")
 ok("completion_shown", has(snap(), "Curriculum complete%."))
-ok("completion_progress", has(snap(), "So far: 48 challenges completed%."))
+local completed_total = "0"
+for _, line in ipairs(util.systemlist({ "stats" }) or {}) do
+  local n = line:match("^Challenges Completed: (%d+)/(%d+)")
+  if n then completed_total = n end
+end
+ok("completion_progress", has(snap(), "So far: " .. completed_total .. " challenges completed%."))
 
 -- 9. completion review opens a challenge, then escape
 press("r")
@@ -214,6 +225,12 @@ ok("completion_escape", has(snap(), "Curriculum complete%.") or has(snap(), "So 
 vim.fn.writefile({ "{broken" }, data_home .. "/praxis/stats.json")
 vim.cmd("Praxis")
 ok("corrupt_progress_recovery", has(snap(), "couldn't read your progress%."))
+vim.fn.system({ bin, "reset", "--yes" })
+
+-- 9c. unsupported version -> recovery, never a false "complete" Hub.
+vim.fn.writefile({ '{"version":99,"entries":{}}' }, data_home .. "/praxis/stats.json")
+vim.cmd("Praxis")
+ok("unknown_version_recovery", has(snap(), "couldn't read your progress%."))
 vim.fn.system({ bin, "reset", "--yes" })
 
 -- 10. missing binary -> recovery screen (graceful, no false completion)

@@ -1,4 +1,6 @@
--- End-to-end replay test for all 48 challenges
+-- Replay contract check for all 48 challenges: verifies describe output,
+-- target/result data, and evaluation metadata. It does not execute Vim
+-- keystroke solutions (see docs/TESTING.md).
 -- Run via: go run ./tools/verify (PRAXIS_BIN may override the binary)
 
 local self = debug.getinfo(1, "S").source:sub(2)
@@ -145,7 +147,9 @@ local trial_fail = 0
 local utf8_pass = 0
 local utf8_fail = 0
 local training_eval_ok = 0
+local training_eval_total = 0
 local trial_eval_ok = 0
+local trial_eval_total = 0
 local describe_fail = 0
 
 for _, id in ipairs(all_ids) do
@@ -170,9 +174,14 @@ for _, id in ipairs(all_ids) do
     if is_pass then trial_pass = trial_pass + 1 else trial_fail = trial_fail + 1 end
   end
 
-  if d.evaluation and is_pass and d.evaluation.max_moves > 0 then
-    if d.layer == "Training" then training_eval_ok = training_eval_ok + 1 end
-    if d.layer == "Trial" then trial_eval_ok = trial_eval_ok + 1 end
+  if d.evaluation and d.evaluation.max_moves > 0 then
+    if d.layer == "Training" then
+      training_eval_total = training_eval_total + 1
+      if is_pass then training_eval_ok = training_eval_ok + 1 end
+    elseif d.layer == "Trial" then
+      trial_eval_total = trial_eval_total + 1
+      if is_pass then trial_eval_ok = trial_eval_ok + 1 end
+    end
   end
 
   ::next_id::
@@ -186,8 +195,8 @@ print("")
 print("Tutorial (cursor): " .. tutorial_cursor_pass .. "/" .. (tutorial_cursor_pass + tutorial_cursor_fail) .. " PASS")
 print("Tutorial (buffer): " .. tutorial_buffer_pass .. "/" .. (tutorial_buffer_pass + tutorial_buffer_fail) .. " PASS")
 print("Tutorial (utf-8):  " .. utf8_pass .. "/" .. (utf8_pass + utf8_fail) .. " PASS")
-print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS  (evaluation " .. training_eval_ok .. "/10)")
-print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS  (evaluation " .. trial_eval_ok .. "/5)")
+print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS  (evaluation " .. training_eval_ok .. "/" .. training_eval_total .. ")")
+print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS  (evaluation " .. trial_eval_ok .. "/" .. trial_eval_total .. ")")
 print("")
 if describe_fail > 0 then
   print("Describe failures: " .. describe_fail)
