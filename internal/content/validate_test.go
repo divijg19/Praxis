@@ -16,7 +16,7 @@ func TestValidateAll(t *testing.T) {
 			t.Errorf("challenge %s: missing metadata", c.ID)
 			continue
 		}
-		if problems := Validate(c, m); len(problems) > 0 {
+		if problems := validate(c, m); len(problems) > 0 {
 			t.Errorf("challenge %s invalid:\n  %v", c.ID, problems)
 		}
 	}
@@ -69,7 +69,7 @@ func TestRejectsInvalidChallenges(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			problems := Validate(tt.c, tt.m)
+			problems := validate(tt.c, tt.m)
 			if !strings.Contains(strings.Join(problems, "\n"), tt.want) {
 				t.Fatalf("problems = %v, want one containing %q", problems, tt.want)
 			}
@@ -87,7 +87,7 @@ func TestValidateAcceptsBaseline(t *testing.T) {
 		Layer:   "Tutorial",
 	}
 	m := Metadata{Concept: "x", Context: "test", Stage: stageMovement}
-	if problems := Validate(c, m); len(problems) != 0 {
+	if problems := validate(c, m); len(problems) != 0 {
 		t.Errorf("valid baseline reported problems: %v", problems)
 	}
 }

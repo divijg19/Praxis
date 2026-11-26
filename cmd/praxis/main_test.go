@@ -59,6 +59,40 @@ func TestCatalogOutputStable(t *testing.T) {
 	}
 }
 
+func TestCatalogIDs(t *testing.T) {
+	out, code := runPraxis(t, "catalog", "--ids")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	want := content.IDs()
+	if len(lines) != len(want) {
+		t.Fatalf("got %d IDs, want %d", len(lines), len(want))
+	}
+	for i := range lines {
+		if lines[i] != want[i] {
+			t.Errorf("ID[%d] = %q, want %q", i, lines[i], want[i])
+		}
+	}
+}
+
+func TestCatalogCoreIDs(t *testing.T) {
+	out, code := runPraxis(t, "catalog", "--core")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	want := content.CoreTutorialIDs()
+	if len(lines) != len(want) {
+		t.Fatalf("got %d Core IDs, want %d", len(lines), len(want))
+	}
+	for i := range lines {
+		if lines[i] != want[i] {
+			t.Errorf("Core ID[%d] = %q, want %q", i, lines[i], want[i])
+		}
+	}
+}
+
 func TestDescribeCommand(t *testing.T) {
 	out, code := runPraxis(t, "describe", "delete_word_hunter")
 	if code != 0 {

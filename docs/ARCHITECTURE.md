@@ -28,10 +28,10 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI entry point: `describe`, `catalog`, `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
-| `internal/challenge` | `Challenge` struct: the core data model, plus `Evaluation` for composite challenges |
-| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStages()`, `IDs()`, `Exists()`: challenge registry and curriculum metadata |
-| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update`: the **sole owner** of progress and score computation (mastery tiers, review selection). No other package computes stats. |
+| `cmd/praxis` | CLI entry point: `describe`, `catalog` (also `--ids`/`--core`), `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
+| `internal/challenge` | `Challenge` struct plus `Layer` and `Verify` constants: the core data model |
+| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStage()`, `IDs()`, `Exists()`, `ValidateAll()`: challenge registry and curriculum metadata |
+| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update`: the **sole owner** of progress and score computation (mastery tiers, review selection). Lua mirrors display thresholds only. |
 
 ### Ownership notes
 

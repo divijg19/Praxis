@@ -1,4 +1,4 @@
--- Learner journey harness for Praxis (v0.3.10)
+-- Learner journey harness for Praxis
 -- Validates the EXPERIENCE (navigation, recovery, solving, completion),
 -- not just content correctness (that is tools/replay/replay.lua's job).
 -- Run via: go run ./tools/verify (PRAXIS_BIN / PRAXIS_VERIFY_DATA may be set by it)
@@ -61,7 +61,7 @@ local function solve(id)
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.result)
     vim.cmd("doautocmd TextChanged")
-    return true
+    return has(snap(), "Complete%.")
   end
 end
 
@@ -183,11 +183,8 @@ vim.cmd("Praxis does_not_exist")
 ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 
 -- 7b. completing Core produces the Training transition message.
-local core_ids = {
-  "grid_rush", "find_hunter", "slash_hunter", "word_hunter", "line_hunter",
-  "delete_character_hunter", "delete_word_hunter", "replace_character_hunter",
-  "change_word_hunter", "delete_inner_word_hunter", "yank_line_hunter",
-}
+-- Core IDs come from the CLI so the harness cannot drift from the catalog.
+local core_ids = vim.fn.systemlist({ bin, "catalog", "--core" })
 for _, id in ipairs(core_ids) do
   vim.fn.system({ bin, "attempt", id })
   for _ = 1, 3 do vim.fn.system({ bin, "record", id, "1", "1" }) end
@@ -195,7 +192,7 @@ end
 vim.cmd("Praxis")
 ok("training_transition", has(snap(), "Onboarding complete%. Training uses a move limit"))
 
--- 8. force completion of all 48, then completion screen
+-- 8. force completion of the full catalog, then completion screen
 local guard = 0
 while guard < 300 do
   local nid = vim.fn.systemlist({ bin, "next" })[1] or ""
@@ -235,6 +232,7 @@ vim.fn.system({ bin, "reset", "--yes" })
 
 -- 10. missing binary -> recovery screen (graceful, no false completion)
 vim.fn.system({ bin, "reset", "--yes" })
+vim.env.PRAXIS_BIN = nil
 vim.env.PATH = "/usr/local/bin:/usr/bin:/bin"
 vim.cmd("Praxis")
 ok("missing_binary_recovery", has(snap(), "Praxis isn't installed%."))

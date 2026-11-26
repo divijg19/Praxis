@@ -26,13 +26,22 @@ function M.close_current()
 end
 
 -- Describe a challenge by id, returning the decoded table or nil on failure.
--- `bin` overrides the configured binary for the replay harness.
-function M.describe(id, bin)
-  local raw = vim.fn.systemlist({ bin or M.bin(), "describe", id })
+function M.describe(id)
+  local raw = vim.fn.systemlist({ M.bin(), "describe", id })
   if vim.v.shell_error ~= 0 then return nil end
   local ok, desc = pcall(vim.fn.json_decode, table.concat(raw, ""))
   if not ok or type(desc) ~= "table" then return nil end
   return desc
+end
+
+-- Byte-exact buffer comparison shared by the product validator and replay.
+function M.check_buffer(buf, result_lines)
+  local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  if #current ~= #result_lines then return false end
+  for i = 1, #current do
+    if current[i] ~= result_lines[i] then return false end
+  end
+  return true
 end
 
 -- Convert a byte column index to a character column index within a line.

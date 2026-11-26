@@ -11,17 +11,16 @@ type Description struct {
 }
 
 func DescriptionFor(id string) (Description, bool) {
-	for _, c := range All() {
-		if c.ID == id {
-			d := Description{Challenge: c}
-			if m, ok := metadataFor(id); ok {
-				d.Stage = m.Stage
-				d.Concept = m.Concept
-				d.Context = m.Context
-				d.DerivedFrom = m.DerivedFrom
-			}
-			return d, true
-		}
+	c, ok := byID[id]
+	if !ok {
+		return Description{}, false
 	}
-	return Description{}, false
+	d := Description{Challenge: c}
+	if m, ok := metadataFor(id); ok {
+		d.Stage = m.Stage
+		d.Concept = m.Concept
+		d.Context = m.Context
+		d.DerivedFrom = m.DerivedFrom
+	}
+	return d, true
 }

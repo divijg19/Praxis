@@ -7,7 +7,7 @@ func All() []challenge.Challenge {
 		{
 			ID:     "grid_rush",
 			Name:   "Grid Rush",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use h, j, k and l to move to the star ★.",
@@ -15,36 +15,36 @@ func All() []challenge.Challenge {
 				". . . ★ .",
 				". . . . .",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "find_hunter",
 			Name:   "Find Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use f to jump to the next character.",
 				"",
 				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "word_hunter",
 			Name:   "Word Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use w to jump to the next word.",
 				"",
 				"alpha beta gamma delta epsilon ★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "line_hunter",
 			Name:   "Line Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use j and k to move to the line with the star.",
@@ -56,24 +56,24 @@ func All() []challenge.Challenge {
 				"line five",
 				"★ line six",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "paren_hunter",
 			Name:   "Paren Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use % to jump to the matching parenthesis.",
 				"",
 				"(                         )★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "sentence_hunter",
 			Name:   "Sentence Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use ) to jump forward to the next sentence.",
@@ -82,24 +82,24 @@ func All() []challenge.Challenge {
 				"Second. Third.",
 				"★ Fourth. Fifth.",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "slash_hunter",
 			Name:   "Slash Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use / to search forward for the target.",
 				"",
 				"alpha  bravo  charlie  delta  echo  foxtrot  golf  ★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "question_hunter",
 			Name:   "Question Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use ? to search backward for the target.",
@@ -123,72 +123,72 @@ func All() []challenge.Challenge {
 				"★ line seventeen",
 				"line eighteen",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "repeat_hunter",
 			Name:   "Repeat Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use ; to repeat your last find and reach the next star.",
 				"",
 				"★  ★  ★  ★  ★  ★  ★  ★  ★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "inner_paren_hunter",
 			Name:   "Inner Paren Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use i( to target inside the parentheses.",
 				"",
 				"(hello★)",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "around_paren_hunter",
 			Name:   "Around Paren Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: ")",
 			Content: []string{
 				"Use a( to target around the parentheses.",
 				"",
 				"(hello)★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "inner_quote_hunter",
 			Name:   "Inner Quote Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use i\" to target inside the quotes.",
 				"",
 				"x\"magnificent★\"",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "around_quote_hunter",
 			Name:   "Around Quote Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use a\" to target around the quotes.",
 				"",
 				"x\"magnificent\"★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "paragraph_hunter",
 			Name:   "Paragraph Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use } to jump forward to the next paragraph.",
@@ -199,12 +199,12 @@ func All() []challenge.Challenge {
 				"",
 				"★ third paragraph",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_character_hunter",
 			Name:   "Delete Character Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use x to delete the extra letter.",
@@ -216,12 +216,12 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "replace_character_hunter",
 			Name:   "Replace Character Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use r to replace the wrong letter.",
@@ -233,12 +233,12 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "toggle_case_hunter",
 			Name:   "Toggle Case Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use ~ to toggle the case of each letter.",
@@ -250,12 +250,12 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_word_hunter",
 			Name:   "Delete Word Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use dw to delete the middle word.",
@@ -267,12 +267,12 @@ func All() []challenge.Challenge {
 				"",
 				"alpha charlie",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "change_word_hunter",
 			Name:   "Change Word Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use ciw to change the word.",
@@ -284,24 +284,24 @@ func All() []challenge.Challenge {
 				"",
 				"bar",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "utf8_cursor_hunter",
 			Name:   "UTF-8 Cursor Hunter",
-			Verify: "cursor",
+			Verify: challenge.VerifyCursor,
 			Target: "★",
 			Content: []string{
 				"Use h to move past multi-byte characters to the star ★.",
 				"",
 				"α β γ ★",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_line_hunter",
 			Name:   "Delete Line Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use dd to delete the middle line.",
@@ -316,12 +316,12 @@ func All() []challenge.Challenge {
 				"keep",
 				"keep",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_to_end_hunter",
 			Name:   "Delete To End Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use d$ to delete from cursor to end of line.",
@@ -333,12 +333,12 @@ func All() []challenge.Challenge {
 				"",
 				"keep this text",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_inner_word_hunter",
 			Name:   "Delete Inner Word Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use diw to delete inside the middle word.",
@@ -350,12 +350,12 @@ func All() []challenge.Challenge {
 				"",
 				"keep  keep",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_around_word_hunter",
 			Name:   "Delete Around Word Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use daw to delete around the middle word.",
@@ -367,12 +367,12 @@ func All() []challenge.Challenge {
 				"",
 				"keep keep",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_inner_paren_hunter",
 			Name:   "Delete Inner Paren Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use di( to delete inside parentheses.",
@@ -384,12 +384,12 @@ func All() []challenge.Challenge {
 				"",
 				"func()",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_around_paren_hunter",
 			Name:   "Delete Around Paren Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use da( to delete around parentheses.",
@@ -401,12 +401,12 @@ func All() []challenge.Challenge {
 				"",
 				"func",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_inner_quote_hunter",
 			Name:   "Delete Inner Quote Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use di\" to delete inside quotes.",
@@ -418,12 +418,12 @@ func All() []challenge.Challenge {
 				"",
 				"\"\"",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "delete_around_quote_hunter",
 			Name:   "Delete Around Quote Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use da\" to delete around quotes.",
@@ -435,12 +435,12 @@ func All() []challenge.Challenge {
 				"",
 				"",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "change_inner_paren_hunter",
 			Name:   "Change Inner Paren Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use ci( to change inside parentheses.",
@@ -452,12 +452,12 @@ func All() []challenge.Challenge {
 				"",
 				"func(hello)",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "change_inner_quote_hunter",
 			Name:   "Change Inner Quote Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use ci\" to change inside quotes.",
@@ -469,12 +469,12 @@ func All() []challenge.Challenge {
 				"",
 				"\"hello\"",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "yank_line_hunter",
 			Name:   "Yank Line Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use yy to yank, then p to paste.",
@@ -487,12 +487,12 @@ func All() []challenge.Challenge {
 				"copy me",
 				"copy me",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "word_register_hunter",
 			Name:   "Word Register Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use \"ayw to store a word, then \"ap to paste it.",
@@ -504,12 +504,12 @@ func All() []challenge.Challenge {
 				"",
 				"alpha beta alpha",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "register_replace_hunter",
 			Name:   "Register Replace Hunter",
-			Verify: "buffer",
+			Verify: challenge.VerifyBuffer,
 			Target: "",
 			Content: []string{
 				"Use \"ayy to store 'correct', then \"ap to replace 'wrong'.",
@@ -523,12 +523,12 @@ func All() []challenge.Challenge {
 				"correct",
 				"correct",
 			},
-			Layer: "Tutorial",
+			Layer: challenge.LayerTutorial,
 		},
 		{
 			ID:     "find_diw_combo",
 			Name:   "Find + Delete Word",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use f{char} then diw to delete the word.",
 				"",
@@ -539,13 +539,13 @@ func All() []challenge.Challenge {
 				"",
 				"keep  keep",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "find_daw_combo",
 			Name:   "Find + Delete Around",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use f{char} then daw to delete around the word.",
 				"",
@@ -556,13 +556,13 @@ func All() []challenge.Challenge {
 				"",
 				"keep keep",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "find_di_paren_combo",
 			Name:   "Find + Delete Inside",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use f{char} then di( to delete inside the parentheses.",
 				"",
@@ -573,13 +573,13 @@ func All() []challenge.Challenge {
 				"",
 				"func()",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "find_ca_quote_combo",
 			Name:   "Find + Change Around",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use f{char} then ca\" to change around the quotes.",
 				"",
@@ -590,13 +590,13 @@ func All() []challenge.Challenge {
 				"",
 				"hello",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 10},
 		},
 		{
 			ID:     "find_ciw_combo",
 			Name:   "Find + Change Word",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use f{char} then ciw to change the word.",
 				"",
@@ -607,13 +607,13 @@ func All() []challenge.Challenge {
 				"",
 				"keep hello keep",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 10},
 		},
 		{
 			ID:     "dw_dot_combo",
 			Name:   "Delete + Repeat",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use dw then . to delete the remaining words.",
 				"",
@@ -624,13 +624,13 @@ func All() []challenge.Challenge {
 				"",
 				"one four",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "ciw_dot_combo",
 			Name:   "Change + Repeat",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use ciw then . to change the remaining words.",
 				"",
@@ -641,13 +641,13 @@ func All() []challenge.Challenge {
 				"",
 				"hello hello three",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 12},
 		},
 		{
 			ID:     "yank_paste_combo",
 			Name:   "Yank + Paste",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use yy then p to duplicate the line below.",
 				"",
@@ -661,13 +661,13 @@ func All() []challenge.Challenge {
 				"beta",
 				"alpha",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "dd_paste_combo",
 			Name:   "Cut + Paste",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use dd then p to move the line to the end.",
 				"",
@@ -682,13 +682,13 @@ func All() []challenge.Challenge {
 				"three",
 				"TWO",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "dd_paste_before_combo",
 			Name:   "Cut + Paste Before",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Use dd then P to swap the two lines.",
 				"",
@@ -701,14 +701,14 @@ func All() []challenge.Challenge {
 				"second",
 				"first",
 			},
-			Layer:      "Training",
+			Layer:      challenge.LayerTraining,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		// Trial
 		{
 			ID:     "trial_find_delete",
 			Name:   "Find + Delete Trial",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Remove the third word.",
 				"",
@@ -719,13 +719,13 @@ func All() []challenge.Challenge {
 				"",
 				"apple banana date",
 			},
-			Layer:      "Trial",
+			Layer:      challenge.LayerTrial,
 			Evaluation: &challenge.Evaluation{MaxMoves: 6},
 		},
 		{
 			ID:     "trial_find_change",
 			Name:   "Find + Change Trial",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Replace the value with DONE.",
 				"",
@@ -736,13 +736,13 @@ func All() []challenge.Challenge {
 				"",
 				`status = "DONE"`,
 			},
-			Layer:      "Trial",
+			Layer:      challenge.LayerTrial,
 			Evaluation: &challenge.Evaluation{MaxMoves: 8},
 		},
 		{
 			ID:     "trial_dot_repeat",
 			Name:   "Dot Repeat Trial",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Remove every occurrence of the.",
 				"",
@@ -753,13 +753,13 @@ func All() []challenge.Challenge {
 				"",
 				"fox and dog and bird",
 			},
-			Layer:      "Trial",
+			Layer:      challenge.LayerTrial,
 			Evaluation: &challenge.Evaluation{MaxMoves: 12},
 		},
 		{
 			ID:     "trial_delete_choice",
 			Name:   "Delete Choice Trial",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Remove the bracketed content.",
 				"",
@@ -770,13 +770,13 @@ func All() []challenge.Challenge {
 				"",
 				"keep  keep",
 			},
-			Layer:      "Trial",
+			Layer:      challenge.LayerTrial,
 			Evaluation: &challenge.Evaluation{MaxMoves: 6},
 		},
 		{
 			ID:     "trial_repeat_choice",
 			Name:   "Repeat Choice Trial",
-			Verify: "composite",
+			Verify: challenge.VerifyComposite,
 			Content: []string{
 				"Normalize all values to done.",
 				"",
@@ -791,26 +791,37 @@ func All() []challenge.Challenge {
 				"item = done",
 				"item = done",
 			},
-			Layer:      "Trial",
+			Layer:      challenge.LayerTrial,
 			Evaluation: &challenge.Evaluation{MaxMoves: 12},
 		},
 	}
 }
 
+// allIDs and byID are derived once from the compiled-in catalog so lookups do
+// not rebuild the 48 challenge literals on every call.
+var (
+	allIDs = func() []string {
+		all := All()
+		ids := make([]string, 0, len(all))
+		for _, c := range all {
+			ids = append(ids, c.ID)
+		}
+		return ids
+	}()
+	byID = func() map[string]challenge.Challenge {
+		m := make(map[string]challenge.Challenge, len(allIDs))
+		for _, c := range All() {
+			m[c.ID] = c
+		}
+		return m
+	}()
+)
+
 func IDs() []string {
-	all := All()
-	ids := make([]string, 0, len(all))
-	for _, c := range all {
-		ids = append(ids, c.ID)
-	}
-	return ids
+	return append([]string(nil), allIDs...)
 }
 
 func Exists(id string) bool {
-	for _, c := range All() {
-		if c.ID == id {
-			return true
-		}
-	}
-	return false
+	_, ok := byID[id]
+	return ok
 }

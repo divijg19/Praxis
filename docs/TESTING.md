@@ -89,6 +89,6 @@ External binaries (`golangci-lint`, `nvim`) are resolved from `PATH`; they are n
 4. **Stage**: run `git add -A && git status` to verify staged files.
 5. **Commit**: write a descriptive message with a title (version plus summary), a body (categorized changes), and a discipline section (what did NOT change).
 6. **Tag**: run `git tag <version>` so it matches the release plan.
-7. **Push and Release**: run `git push origin <branch> <version>`, then create release and verification issues on GitHub.
+7. **Push and Release**: run `git push origin <branch> <version>`; only **after** the push, create the pull request and the release/verification issues on GitHub. Create issues in the open state and do not close them.
 
 Every release follows the same process. Do not skip steps.

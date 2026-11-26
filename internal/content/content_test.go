@@ -98,70 +98,14 @@ func TestChallengeIDsStable(t *testing.T) {
 	}
 }
 
-func TestChallengeNamesStable(t *testing.T) {
-	got := make([]string, len(All()))
-	for i, c := range All() {
-		got[i] = c.Name
-	}
-	if len(got) != len(stableChallengeNames) {
-		t.Fatalf("got %d challenges, want %d", len(got), len(stableChallengeNames))
-	}
-	for i, name := range got {
-		if name != stableChallengeNames[i] {
-			t.Errorf("challenge[%d] name = %q, want %q", i, name, stableChallengeNames[i])
+func TestChallengeNamesUnique(t *testing.T) {
+	seen := make(map[string]bool)
+	for _, c := range All() {
+		if seen[c.Name] {
+			t.Errorf("duplicate challenge name %q", c.Name)
 		}
+		seen[c.Name] = true
 	}
-}
-
-var stableChallengeNames = []string{
-	"Grid Rush",
-	"Find Hunter",
-	"Word Hunter",
-	"Line Hunter",
-	"Paren Hunter",
-	"Sentence Hunter",
-	"Slash Hunter",
-	"Question Hunter",
-	"Repeat Hunter",
-	"Inner Paren Hunter",
-	"Around Paren Hunter",
-	"Inner Quote Hunter",
-	"Around Quote Hunter",
-	"Paragraph Hunter",
-	"Delete Character Hunter",
-	"Replace Character Hunter",
-	"Toggle Case Hunter",
-	"Delete Word Hunter",
-	"Change Word Hunter",
-	"UTF-8 Cursor Hunter",
-	"Delete Line Hunter",
-	"Delete To End Hunter",
-	"Delete Inner Word Hunter",
-	"Delete Around Word Hunter",
-	"Delete Inner Paren Hunter",
-	"Delete Around Paren Hunter",
-	"Delete Inner Quote Hunter",
-	"Delete Around Quote Hunter",
-	"Change Inner Paren Hunter",
-	"Change Inner Quote Hunter",
-	"Yank Line Hunter",
-	"Word Register Hunter",
-	"Register Replace Hunter",
-	"Find + Delete Word",
-	"Find + Delete Around",
-	"Find + Delete Inside",
-	"Find + Change Around",
-	"Find + Change Word",
-	"Delete + Repeat",
-	"Change + Repeat",
-	"Yank + Paste",
-	"Cut + Paste",
-	"Cut + Paste Before",
-	"Find + Delete Trial",
-	"Find + Change Trial",
-	"Dot Repeat Trial",
-	"Delete Choice Trial",
-	"Repeat Choice Trial",
 }
 
 func TestBufferChallengeLayout(t *testing.T) {

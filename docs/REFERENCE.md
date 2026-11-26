@@ -66,9 +66,8 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
 1. Add the challenge to the end of `All()` in `internal/content/content.go`
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
-3. Append the ID to `stableChallengeIDs` and the name to `stableChallengeNames` in `internal/content/content_test.go` (rename guard)
-4. Append the ID to the `all_ids` list in `tools/replay/replay.lua` (guarded by `TestReplayCoverage`)
-5. Run `go run ./tools/verify`. The replay ID list and the journey count assertions are maintained explicitly; `TestReplayCoverage` and `TestJourneyCoverage` detect drift when the catalog changes.
+3. Append the ID to `stableChallengeIDs` in `internal/content/content_test.go` (order guard); names are evolvable and only uniqueness is enforced
+4. Run `go run ./tools/verify`. The replay and journey harnesses derive IDs and counts from `praxis catalog --ids` / `--core` and `praxis stats`; the guards detect drift if that derivation is removed.
 
 ## CLI Surface
 
@@ -80,6 +79,8 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 | `praxis` (bare) | Next challenge ID + `praxis help` hint | 0 | TestBarePraxis |
 | `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + evaluation) | 0 / 1 | TestDescribeCommand, TestDescribeComposite, TestDescribeUnknown |
 | `praxis catalog` | One name per line, curriculum order | 0 | TestCatalogOutputStable |
+| `praxis catalog --ids` | One challenge ID per line, curriculum order | 0 | TestCatalogIDs |
+| `praxis catalog --core` | One Core Tutorial ID per line, sorted | 0 | TestCatalogCoreIDs |
 | `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
 | `praxis stats [id]` | Per-challenge or summary | 0 / 1 | TestStatsCommand, TestStatsSummary, TestRecordStats, TestStatsCommandConfidenceLevels |
 | `praxis reset [--yes]` | Erase all progress; interactive (type `RESET`), or `--yes` for automation | 0 / 1 | TestResetCommand |
@@ -145,13 +146,13 @@ Enforced by: `TestCatalogOutputStable`.
 
 ### `praxis next`
 
-Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ LearningMax=2). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
+Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ `learningMax` (2)). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
 
 Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextCommandComplete`
 
 ## Validators
 
-Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once and enforced for every challenge by `Validate()` (`internal/content/validate.go`). The CLI calls `ValidateAll()` at startup and the gate runs `TestValidateAll` in tests.
+Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once and enforced for every challenge by `validate()` (`internal/content/validate.go`). The CLI calls `ValidateAll()` at startup and the gate runs `TestValidateAll` in tests.
 
 ### Cursor Validator
 
@@ -161,7 +162,7 @@ Validators determine how a challenge's success condition is evaluated. Praxis ha
 
 Buffer is set to `Content` with `modifiable=false`. A `CursorMoved` autocommand checks if the character under the cursor matches `Target`. Uses `byte_to_char()` normalization to handle multi-byte content correctly. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 18 challenges (movement, search, navigation, UTF-8 proof).
+**Used by:** 15 challenges (movement, search, navigation, UTF-8 proof).
 
 **Formal specification:**
 
@@ -205,7 +206,7 @@ Where:
 
 Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and a `TextChangedI` autocommand fires on Insert mode edits; both increment the moves count. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 19 challenges (editing, text objects, registers).
+**Used by:** 18 challenges (editing, text objects, registers).
 
 **Formal specification:**
 
@@ -228,7 +229,7 @@ Comparison is byte-exact string equality:
 |---|---|---|
 | delete_character_hunter | `hello` | `x` on extra `l` |
 | toggle_case_hunter | `hello` | `~` on each letter |
-| register_duplicate_hunter | `foo` + `bar` + `foo` | `"ayy` + `"ap` to duplicate |
+| register_replace_hunter | `correct` + `wrong` | `"ayy` to store, `"ap` to replace |
 
 **FAIL examples:**
 
