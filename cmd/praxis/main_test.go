@@ -392,6 +392,28 @@ func TestStatsSummaryIgnoresStaleKeys(t *testing.T) {
 	}
 }
 
+func TestStatsUnsupportedVersion(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	dir := filepath.Join(d, "praxis")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "stats.json"), []byte(`{"version":99,"entries":{}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, code := runPraxis(t, "stats")
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1", code)
+	}
+	if !strings.Contains(out, "unsupported progress version") {
+		t.Errorf("expected an unsupported-version error, got: %s", out)
+	}
+	if strings.Contains(out, "corrupt") {
+		t.Errorf("unsupported version must not be reported as corruption: %s", out)
+	}
+}
+
 func TestStatsUnknownChallenge(t *testing.T) {
 	d := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", d)

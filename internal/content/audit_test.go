@@ -3,7 +3,6 @@ package content
 import (
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -38,9 +37,9 @@ func TestConceptInstructionAgreement(t *testing.T) {
 	}
 }
 
-// H2: the replay harness must exercise every challenge. Guard against a
-// forgotten ID in replay.lua's hand-maintained all_ids (integrity
-// principle: every challenge must be solvable via the replay harness).
+// H2: the replay contract check must cover every challenge. Guard against a
+// forgotten ID in replay.lua's hand-maintained all_ids; replay verifies data
+// contracts, not keystroke solvability.
 func TestReplayCoverage(t *testing.T) {
 	data, err := os.ReadFile("../../tools/replay/replay.lua")
 	if err != nil {
@@ -74,10 +73,9 @@ func TestReplayCoverage(t *testing.T) {
 }
 
 // H2b: the learner journey harness completes the full curriculum and asserts
-// "Progress: N/N" where N is the challenge count. That total is hand-maintained
-// in journey.lua and must stay in lockstep with content.All(). Guard against
-// the harness silently passing with a stale count when the curriculum grows or
-// shrinks (mirrors TestReplayCoverage for the journey harness).
+// "So far: N challenges completed." where N is derived from `praxis stats`.
+// Guard that dynamic derivation so a future edit cannot silently restore a
+// stale literal count when the curriculum grows or shrinks.
 func TestJourneyCoverage(t *testing.T) {
 	data, err := os.ReadFile("../../tools/journey/journey.lua")
 	if err != nil {
@@ -85,17 +83,13 @@ func TestJourneyCoverage(t *testing.T) {
 	}
 	raw := string(data)
 
-	// Match the "So far: N challenges completed." assertion the harness makes.
-	re := regexp.MustCompile(`So far: (\d+) challenges completed%.`)
-	m := re.FindStringSubmatch(raw)
-	if m == nil {
-		t.Fatal("journey.lua completion count assertion (So far: N challenges completed.) not found")
+	// The harness derives its completion count from `praxis stats`, so there is
+	// no literal count to compare. Guard that dynamic path instead.
+	if !strings.Contains(raw, `Challenges Completed: (%d+)/(%d+)`) {
+		t.Fatal("journey.lua does not derive its completion count from praxis stats")
 	}
-	harnessTotal, _ := strconv.Atoi(m[1])
-
-	want := len(All())
-	if harnessTotal != want {
-		t.Errorf("journey.lua completion count %d does not match curriculum size %d; update the assertion in journey.lua", harnessTotal, want)
+	if !strings.Contains(raw, `So far: " .. completed_total .. " challenges completed%.`) {
+		t.Fatal("journey.lua completion assertion is not derived from praxis stats")
 	}
 }
 

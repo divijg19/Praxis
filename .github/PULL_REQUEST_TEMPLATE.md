@@ -7,6 +7,7 @@
 - [ ] Engine / runtime
 - [ ] Challenge content or metadata
 - [ ] Tooling / verification
+- [ ] Persistence / data format
 - [ ] Docs
 
 ## Verification

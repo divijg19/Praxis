@@ -66,6 +66,10 @@ func mutateOrFail(fn func(map[string]stats.Stats) error) {
 }
 
 func main() {
+	if err := content.ValidateAll(); err != nil {
+		fmt.Fprintln(os.Stderr, "praxis: invalid challenge catalog:", err)
+		os.Exit(1)
+	}
 	if len(os.Args) < 2 {
 		entrypoint()
 		return

@@ -36,11 +36,16 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 ### Ownership notes
 
 - **`internal/stats`** is the only package that computes progress, mastery
-  tiers, and review recommendations. `cmd/praxis` (`stats` command) is the
-  **sole CLI renderer** of that data.
+  tiers, and review recommendations, and the only owner of the versioned JSON
+  file and its validation. `cmd/praxis` (`stats` command) is the **sole CLI
+  renderer** of that data.
+- **`internal/content`** owns challenge-model validity: `Validate()` defines
+  it, `ValidateAll()` runs it at CLI startup, and `TestValidateAll` enforces it
+  in the gate.
 - **Stats-text contract:** `cmd/praxis` emits `Challenges Completed: N/M`
   (where `M` is always the full catalog size). `hub.lua` consumes that line
-  directly. Any change to the `stats` command's output text is a breaking
+  directly. Any change to the `stats` command's output text — including
+  corruption, invalid-value, and unsupported-version errors — is a breaking
   change for the Neovim frontend and must be coordinated with `hub.lua`.
 
 ### Data flow
@@ -153,7 +158,7 @@ The Neovim frontend is loaded at startup: `plugin/praxis.lua` calls `require('pr
 - Set up autocmds for validation:
   - `CursorMoved`: cursor challenges (target reached check)
   - `TextChanged`: buffer challenges (buffer matches result, Normal mode edits increment moves)
-  - `TextChangedI`: buffer challenges (Insert mode keystrokes, no move increment)
+  - `TextChangedI`: buffer challenges (Insert mode edits also increment moves)
 - Checks `state.verify` to decide which autocmd behavior to enable:
   - `"cursor"` → modifiable=false, CursorMoved listener, target check
   - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
@@ -195,5 +200,6 @@ is visible at a time. The loop:
 5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
    `praxis next` (or returns to the Hub); `q` returns to the Hub.
 
-`ui.create_buffer` replaces any existing buffer with the same name so surfaces
-that share the "Praxis" label never collide.
+`ui.create_buffer` removes only Praxis scratch buffers with the same name and
+otherwise suffixes the new buffer name ("Praxis 2"). Unrelated user files,
+including clean files named "Praxis", are never deleted.

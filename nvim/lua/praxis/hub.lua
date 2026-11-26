@@ -15,7 +15,8 @@ function M.open()
 
   if not next_lines or not stats_lines or #stats_lines == 0 then
     ui.recovery("Praxis couldn't read your progress.", {
-      "The praxis command may be missing or your progress file is unavailable.",
+      "The command may be missing, or your progress file may be corrupt or from",
+      "an unsupported version. Run `praxis reset` to start fresh.",
       "",
       "[Enter] or [q] Back.",
     })

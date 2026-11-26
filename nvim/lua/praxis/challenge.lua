@@ -57,7 +57,20 @@ function M.open(id)
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
       return
     end
-    local stats_out = util.systemlist({ "stats", id }) or {}
+    local stats_out = util.systemlist({ "stats", id })
+    if not stats_out then
+      vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
+        "Complete, but your progress couldn't be read.",
+        "",
+        "Praxis recorded the completion but could not read it back.",
+        "Run :Praxis again to check your progress.",
+        "",
+        "[Enter] or [q] Back.",
+      })
+      vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+      return
+    end
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     local display = {
       "Complete.", "",

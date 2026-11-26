@@ -9,10 +9,20 @@ import (
 	"time"
 )
 
-// ErrCorrupt identifies a progress file that could not be decoded.
-var ErrCorrupt = errors.New("corrupt progress file")
+var (
+	// ErrCorrupt identifies a progress file that could not be decoded.
+	ErrCorrupt = errors.New("corrupt progress file")
+	// ErrUnsupportedVersion identifies a file written by an incompatible release.
+	ErrUnsupportedVersion = errors.New("unsupported progress version")
+	// ErrInvalidStats identifies semantically impossible progress values.
+	ErrInvalidStats = errors.New("invalid progress values")
+)
 
 const (
+	// currentVersion is written by Save. Version 1 is a bare map of challenge
+	// IDs to Stats and remains readable for backward compatibility.
+	currentVersion = 2
+
 	lockTimeout   = 2 * time.Second
 	staleLockAge  = 10 * time.Second
 	lockRetryWait = 25 * time.Millisecond
@@ -86,6 +96,66 @@ func Mutate(fn func(map[string]Stats) error) error {
 	return Save(m)
 }
 
+// progressFile is the version 2 on-disk envelope. Version 1 files are a bare
+// map[string]Stats and remain readable by decodeProgress.
+type progressFile struct {
+	Version int              `json:"version"`
+	Entries map[string]Stats `json:"entries"`
+}
+
+func decodeProgress(data []byte) (map[string]Stats, error) {
+	var top map[string]json.RawMessage
+	if err := json.Unmarshal(data, &top); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
+	}
+	if top == nil {
+		// "null" is valid JSON but not a valid progress map.
+		return make(map[string]Stats), nil
+	}
+
+	var m map[string]Stats
+	if rawVersion, ok := top["version"]; ok {
+		var version int
+		if err := json.Unmarshal(rawVersion, &version); err != nil {
+			return nil, fmt.Errorf("%w: invalid version: %v", ErrCorrupt, err)
+		}
+		if version != currentVersion {
+			return nil, fmt.Errorf("%w: %d (supported: %d)", ErrUnsupportedVersion, version, currentVersion)
+		}
+		rawEntries, ok := top["entries"]
+		if !ok {
+			return nil, fmt.Errorf("%w: missing entries", ErrCorrupt)
+		}
+		if err := json.Unmarshal(rawEntries, &m); err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
+		}
+	} else {
+		// Version 1: a bare map of challenge ID to Stats.
+		if err := json.Unmarshal(data, &m); err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
+		}
+	}
+	if m == nil {
+		m = make(map[string]Stats)
+	}
+	if err := validateProgress(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// validateProgress rejects impossible counters. Unknown challenge IDs remain
+// non-fatal: stale keys are ignored by the CLI summary and must survive a
+// load/save round trip. Record-only completions are also legitimate.
+func validateProgress(m map[string]Stats) error {
+	for id, s := range m {
+		if s.Attempts < 0 || s.Completions < 0 || s.BestMoves < 0 || s.BestTimeMs < 0 {
+			return fmt.Errorf("%w: challenge %q has negative values", ErrInvalidStats, id)
+		}
+	}
+	return nil
+}
+
 func Load() (map[string]Stats, error) {
 	data, err := os.ReadFile(path())
 	if err != nil {
@@ -94,15 +164,16 @@ func Load() (map[string]Stats, error) {
 		}
 		return make(map[string]Stats), err
 	}
-	var m map[string]Stats
-	if err := json.Unmarshal(data, &m); err != nil {
-		backup := path() + ".corrupt"
-		_ = os.WriteFile(backup, data, 0o644)
-		return make(map[string]Stats), fmt.Errorf("%w; backup saved to %s", ErrCorrupt, backup)
-	}
-	if m == nil {
-		// "null" is valid JSON but not a valid progress map.
-		return make(map[string]Stats), nil
+	m, err := decodeProgress(data)
+	if err != nil {
+		if errors.Is(err, ErrCorrupt) {
+			backup := path() + ".corrupt"
+			if backupErr := os.WriteFile(backup, data, 0o644); backupErr != nil {
+				return make(map[string]Stats), fmt.Errorf("%w; backup could not be saved: %v", err, backupErr)
+			}
+			return make(map[string]Stats), fmt.Errorf("%w; backup saved to %s", err, backup)
+		}
+		return make(map[string]Stats), err
 	}
 	return m, nil
 }
@@ -112,7 +183,7 @@ func Save(m map[string]Stats) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(m, "", "  ")
+	data, err := json.MarshalIndent(progressFile{Version: currentVersion, Entries: m}, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -122,6 +193,12 @@ func Save(m map[string]Stats) error {
 	}
 	if _, err := tmp.Write(data); err != nil {
 		// Cleanup is best-effort; preserve the write error as the result.
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name())
+		return err
+	}
+	if err := tmp.Sync(); err != nil {
+		// Flush before rename so a crash cannot leave an empty progress file.
 		_ = tmp.Close()
 		_ = os.Remove(tmp.Name())
 		return err

@@ -68,7 +68,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
 3. Append the ID to `stableChallengeIDs` and the name to `stableChallengeNames` in `internal/content/content_test.go` (rename guard)
 4. Append the ID to the `all_ids` list in `tools/replay/replay.lua` (guarded by `TestReplayCoverage`)
-5. Run `go run ./tools/verify`. The total challenge counts in the unit tests and the journey harness are derived from `content.All()`, so no manual count edits are required.
+5. Run `go run ./tools/verify`. The replay ID list and the journey count assertions are maintained explicitly; `TestReplayCoverage` and `TestJourneyCoverage` detect drift when the catalog changes.
 
 ## CLI Surface
 
@@ -151,7 +151,7 @@ Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextComma
 
 ## Validators
 
-Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once and enforced for every challenge by `Validate()` (`internal/content/validate.go`), which runs over all challenges via `TestValidateAll`.
+Validators determine how a challenge's success condition is evaluated. Praxis has three: **cursor**, **buffer**, and **composite**. The set of valid values is defined once and enforced for every challenge by `Validate()` (`internal/content/validate.go`). The CLI calls `ValidateAll()` at startup and the gate runs `TestValidateAll` in tests.
 
 ### Cursor Validator
 
@@ -203,7 +203,7 @@ Where:
 
 **Rule:** Edit the buffer content to exactly match `Result`.
 
-Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and increments moves count. `TextChangedI` fires on Insert mode keystrokes but does NOT increment moves. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
+Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and a `TextChangedI` autocommand fires on Insert mode edits; both increment the moves count. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
 
 **Used by:** 19 challenges (editing, text objects, registers).
 
@@ -247,8 +247,8 @@ Comparison is byte-exact string equality:
 
 Behaviorally identical to the buffer validator (TextChanged + TextChangedI listeners, byte-exact comparison via `check_buffer()`). Additionally, the Lua frontend enforces a `MaxMoves` threshold:
 
-- On each Normal-mode edit (TextChanged), moves counter is incremented
-- If moves exceed `MaxMoves`, challenge is failed with "Over the move limit. Press [r] to retry."
+- On each edit (TextChanged or TextChangedI), the moves counter is incremented
+- If moves exceed `MaxMoves`, the challenge cannot complete and echoes "Over the move limit. Press [r] to retry."
 - Result screen shows `Moves: N / MaxMoves` instead of just `Moves: N`
 
 The `MaxMoves` value is transmitted via the `describe` JSON endpoint as `evaluation.max_moves`.
@@ -261,7 +261,7 @@ The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer chall
 
 ### Contract Enforcement
 
-Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. Composite challenges always declare a positive `MaxMoves`. These invariants are enforced by the content test suite (see TESTING.md).
+Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. Composite challenges always declare a positive `MaxMoves`. These invariants are enforced by runtime `ValidateAll()` and the content test suite (see TESTING.md).
 
 ## Stats
 
@@ -277,7 +277,33 @@ type Stats struct {
 }
 ```
 
-Stored in `~/.local/share/praxis/stats.json` (`$XDG_DATA_HOME/praxis/stats.json`). Simple JSON, human-readable and editable. No database, no migrations.
+Progress is stored in `$XDG_DATA_HOME/praxis/stats.json` (or `~/.local/share/praxis/stats.json`). The current format is a versioned envelope:
+
+```json
+{
+  "version": 2,
+  "entries": {
+    "grid_rush": {
+      "attempts": 1,
+      "completions": 1,
+      "best_moves": 2,
+      "best_time_ms": 180,
+      "last_played": "2026-11-26"
+    }
+  }
+}
+```
+
+Version 1 files — a bare map of challenge IDs to `Stats` — remain readable and gain a version on the next write. Unknown versions are rejected with a distinct error; they are never silently misread and never reported as corruption. Writes are flushed with `fsync` before an atomic rename, so a crash after `praxis record` does not lose the completion.
+
+| File state | Behavior |
+|---|---|
+| Missing | Fresh, empty progress |
+| Version 1 or 2, valid counters | Loaded normally |
+| Bad JSON or impossible counters | CLI exits 1, writes `stats.json.corrupt`, Lua shows recovery |
+| Unknown version | CLI exits 1 with an unsupported-version error, Lua shows recovery, no backup overwrite |
+
+State remains a human-readable JSON file under XDG. A database-backed store was evaluated and rejected: it would add dependencies, migration risk, and new failure modes without serving an educational contract. This is a deliberate architecture decision, not an accident.
 
 | Signal | Meaning |
 |---|---|
@@ -388,7 +414,7 @@ Three sections:
 2. **IDs are permanent.** Challenge identifiers must never be renamed or removed.
 3. **Verify values are stable.** The set of valid Verify values (`cursor`, `buffer`, `composite`) is fixed and every challenge uses one.
 4. **Curriculum growth is intentional.** New challenges require a documented primary concept and must not duplicate existing content.
-5. **Replay verification is mandatory.** Every challenge must be solvable via the replay harness.
+5. **Replay verification is mandatory.** Every challenge must appear in replay coverage and satisfy the describe, target/result, and evaluation contracts. Replay checks data contracts; it does not execute keystroke solutions.
 6. **Duplicate challenge content is prohibited.** Challenges may share concepts when they teach the concept in a different context or composition.
 
 ### Test Suite
