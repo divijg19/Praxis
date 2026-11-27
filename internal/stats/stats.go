@@ -1,3 +1,5 @@
+// Package stats owns progress persistence and all derived progress facts.
+// v0.4.0 uses one canonical, strict schema: no legacy readers, no migrations.
 package stats
 
 import (
@@ -7,33 +9,55 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/divijg19/Praxis/internal/score"
 )
 
 var (
-	// ErrCorrupt identifies a progress file that could not be decoded.
-	ErrCorrupt = errors.New("corrupt progress file")
-	// ErrUnsupportedVersion identifies a file written by an incompatible release.
-	ErrUnsupportedVersion = errors.New("unsupported progress version")
-	// ErrInvalidStats identifies semantically impossible progress values.
+	ErrCorrupt      = errors.New("corrupt progress file")
 	ErrInvalidStats = errors.New("invalid progress values")
+	ErrUnverified   = errors.New("completion was not verified")
 )
 
 const (
-	// currentVersion is written by Save. Version 1 is a bare map of challenge
-	// IDs to Stats and remains readable for backward compatibility.
-	currentVersion = 2
+	currentFormat = 1
+	maxEvents     = 2000
 
 	lockTimeout   = 2 * time.Second
 	staleLockAge  = 10 * time.Second
 	lockRetryWait = 25 * time.Millisecond
 )
 
+// Stats is the per-challenge aggregate. Completions are verified completions
+// only; Starts record effort and are never used as a completion proxy.
 type Stats struct {
-	Attempts    int    `json:"attempts"`
+	Starts      int    `json:"starts"`
 	Completions int    `json:"completions"`
-	BestMoves   int    `json:"best_moves"`
-	BestTimeMs  int    `json:"best_time_ms"`
+	BestKeys    int    `json:"best_keys"`
+	BestEdits   int    `json:"best_edits"`
+	BestMarks   int    `json:"best_marks"`
 	LastPlayed  string `json:"last_played"`
+}
+
+// Event is an immutable record of a verified completion. Raw key logs are
+// deliberately not persisted.
+type Event struct {
+	ID       string `json:"id"`
+	Keys     int    `json:"keys"`
+	Par      int    `json:"par"`
+	HintCost int    `json:"hint_cost,omitempty"`
+	Marks    int    `json:"marks"`
+	Edits    int    `json:"edits"`
+	Seed     string `json:"seed,omitempty"`
+	Verified bool   `json:"verified"`
+}
+
+// Progress is the single on-disk document.
+type Progress struct {
+	Format        int              `json:"format"`
+	Entries       map[string]Stats `json:"entries"`
+	Events        []Event          `json:"events,omitempty"`
+	EventsTrimmed int              `json:"events_trimmed,omitempty"`
 }
 
 func path() string {
@@ -42,11 +66,9 @@ func path() string {
 		home, _ := os.UserHomeDir()
 		xdg = filepath.Join(home, ".local", "share")
 	}
-	return filepath.Join(xdg, "praxis", "stats.json")
+	return filepath.Join(xdg, "praxis", "progress.json")
 }
 
-// acquireLock serializes read-modify-write cycles across CLI processes. A
-// stale lock (left by a crashed process) is reclaimed after staleLockAge.
 func acquireLock() (func(), error) {
 	lock := path() + ".lock"
 	if err := os.MkdirAll(filepath.Dir(lock), 0o755); err != nil {
@@ -77,128 +99,88 @@ func acquireLock() (func(), error) {
 	}
 }
 
-// Mutate applies fn to the persisted progress map under a lock. Load and Save
-// remain available for read-only callers; only writers need this cycle.
-func Mutate(fn func(map[string]Stats) error) error {
-	unlock, err := acquireLock()
-	if err != nil {
-		return err
-	}
-	defer unlock()
-
-	m, err := Load()
-	if err != nil {
-		return err
-	}
-	if err := fn(m); err != nil {
-		return err
-	}
-	return Save(m)
+func empty() Progress {
+	return Progress{Format: currentFormat, Entries: make(map[string]Stats)}
 }
 
-// progressFile is the version 2 on-disk envelope. Version 1 files are a bare
-// map[string]Stats and remain readable by decodeProgress.
-type progressFile struct {
-	Version int              `json:"version"`
-	Entries map[string]Stats `json:"entries"`
+func decodeProgress(data []byte) (Progress, error) {
+	var p Progress
+	if err := json.Unmarshal(data, &p); err != nil {
+		return empty(), fmt.Errorf("%w: %v", ErrCorrupt, err)
+	}
+	if p.Format != currentFormat {
+		return empty(), fmt.Errorf("%w: format %d (supported: %d)", ErrCorrupt, p.Format, currentFormat)
+	}
+	if p.Entries == nil {
+		p.Entries = make(map[string]Stats)
+	}
+	if err := validate(p); err != nil {
+		return empty(), err
+	}
+	return p, nil
 }
 
-func decodeProgress(data []byte) (map[string]Stats, error) {
-	var top map[string]json.RawMessage
-	if err := json.Unmarshal(data, &top); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
-	}
-	if top == nil {
-		// "null" is valid JSON but not a valid progress map.
-		return make(map[string]Stats), nil
-	}
-
-	var m map[string]Stats
-	if rawVersion, ok := top["version"]; ok {
-		var version int
-		if err := json.Unmarshal(rawVersion, &version); err != nil {
-			return nil, fmt.Errorf("%w: invalid version: %v", ErrCorrupt, err)
-		}
-		if version != currentVersion {
-			return nil, fmt.Errorf("%w: %d (supported: %d)", ErrUnsupportedVersion, version, currentVersion)
-		}
-		rawEntries, ok := top["entries"]
-		if !ok {
-			return nil, fmt.Errorf("%w: missing entries", ErrCorrupt)
-		}
-		if err := json.Unmarshal(rawEntries, &m); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
-		}
-	} else {
-		// Version 1: a bare map of challenge ID to Stats.
-		if err := json.Unmarshal(data, &m); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
-		}
-	}
-	if m == nil {
-		m = make(map[string]Stats)
-	}
-	if err := validateProgress(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// validateProgress rejects impossible counters. Unknown challenge IDs remain
-// non-fatal: stale keys are ignored by the CLI summary and must survive a
-// load/save round trip. Record-only completions are also legitimate.
-func validateProgress(m map[string]Stats) error {
-	for id, s := range m {
-		if s.Attempts < 0 || s.Completions < 0 || s.BestMoves < 0 || s.BestTimeMs < 0 {
+func validate(p Progress) error {
+	for id, s := range p.Entries {
+		if s.Starts < 0 || s.Completions < 0 || s.BestKeys < 0 || s.BestEdits < 0 || s.BestMarks < 0 {
 			return fmt.Errorf("%w: challenge %q has negative values", ErrInvalidStats, id)
+		}
+	}
+	for _, e := range p.Events {
+		if !e.Verified || e.Keys <= 0 || e.Marks < 1 || e.Marks > 3 {
+			return fmt.Errorf("%w: invalid completion event", ErrInvalidStats)
 		}
 	}
 	return nil
 }
 
-func Load() (map[string]Stats, error) {
+// Load returns the canonical progress document. A missing file is fresh state.
+func Load() (Progress, error) {
 	data, err := os.ReadFile(path())
 	if err != nil {
 		if os.IsNotExist(err) {
-			return make(map[string]Stats), nil
+			return empty(), nil
 		}
-		return make(map[string]Stats), err
+		return empty(), err
 	}
-	m, err := decodeProgress(data)
-	if err != nil {
-		if errors.Is(err, ErrCorrupt) {
-			backup := path() + ".corrupt"
-			if backupErr := os.WriteFile(backup, data, 0o644); backupErr != nil {
-				return make(map[string]Stats), fmt.Errorf("%w; backup could not be saved: %v", err, backupErr)
-			}
-			return make(map[string]Stats), fmt.Errorf("%w; backup saved to %s", err, backup)
+	p, err := decodeProgress(data)
+	if err == nil {
+		return p, nil
+	}
+	if errors.Is(err, ErrCorrupt) || errors.Is(err, ErrInvalidStats) {
+		backup := path() + ".corrupt"
+		if backupErr := os.WriteFile(backup, data, 0o600); backupErr != nil {
+			return empty(), fmt.Errorf("%w; backup could not be saved: %v", err, backupErr)
 		}
-		return make(map[string]Stats), err
+		return empty(), fmt.Errorf("%w; backup saved to %s", err, backup)
 	}
-	return m, nil
+	return empty(), err
 }
 
-func Save(m map[string]Stats) error {
+// Save writes progress atomically and durably.
+func Save(p Progress) error {
+	if err := validate(p); err != nil {
+		return err
+	}
+	p.Format = currentFormat
 	dir := filepath.Dir(path())
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(progressFile{Version: currentVersion, Entries: m}, "", "  ")
+	data, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(dir, "stats.json.*")
+	tmp, err := os.CreateTemp(dir, "progress.json.*")
 	if err != nil {
 		return err
 	}
 	if _, err := tmp.Write(data); err != nil {
-		// Cleanup is best-effort; preserve the write error as the result.
 		_ = tmp.Close()
 		_ = os.Remove(tmp.Name())
 		return err
 	}
 	if err := tmp.Sync(); err != nil {
-		// Flush before rename so a crash cannot leave an empty progress file.
 		_ = tmp.Close()
 		_ = os.Remove(tmp.Name())
 		return err
@@ -210,14 +192,29 @@ func Save(m map[string]Stats) error {
 	return os.Rename(tmp.Name(), path())
 }
 
+// Mutate applies fn to progress under the inter-process lock.
+func Mutate(fn func(*Progress) error) error {
+	unlock, err := acquireLock()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	p, err := Load()
+	if err != nil {
+		return err
+	}
+	if err := fn(&p); err != nil {
+		return err
+	}
+	return Save(p)
+}
+
 func Reset() error {
 	unlock, err := acquireLock()
 	if err != nil {
 		return err
 	}
 	defer unlock()
-
-	// Reset erases all persisted progress, including recovery backups.
 	for _, p := range []string{path(), path() + ".corrupt"} {
 		if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
 			return err
@@ -226,58 +223,42 @@ func Reset() error {
 	return nil
 }
 
-func Attempt(m map[string]Stats, id string) Stats {
-	s := m[id]
-	s.Attempts++
-	m[id] = s
-	return s
+// Start records that a challenge was opened. It never creates a completion.
+func Start(p *Progress, id string) {
+	s := p.Entries[id]
+	s.Starts++
+	p.Entries[id] = s
 }
 
-func SuccessRate(s Stats) float64 {
-	if s.Attempts == 0 {
-		return 0
+// Complete records a verified completion. Marks are recomputed here; clients
+// cannot supply them.
+func Complete(p *Progress, e Event) (Stats, int, error) {
+	if !e.Verified {
+		return Stats{}, 0, ErrUnverified
 	}
-	r := float64(s.Completions) / float64(s.Attempts)
-	if r < 0 {
-		return 0
+	e.Marks = score.Marks(e.Keys, e.Par, e.HintCost)
+	if e.Marks < 1 || e.Marks > 3 {
+		return Stats{}, 0, fmt.Errorf("%w: invalid mark", ErrInvalidStats)
 	}
-	if r > 1 {
-		return 1
-	}
-	return r
-}
-
-func Confidence(s Stats) string {
-	if s.Attempts == 0 {
-		return "—"
-	}
-	switch r := SuccessRate(s); {
-	case r >= 0.80:
-		return "High"
-	case r >= 0.60:
-		return "Medium"
-	default:
-		return "Low"
-	}
-}
-
-func Update(m map[string]Stats, id string, moves, timeMs int) Stats {
-	s := m[id]
+	s := p.Entries[e.ID]
 	s.Completions++
 	s.LastPlayed = time.Now().Format("2006-01-02")
-	if s.Completions == 1 {
-		s.BestMoves = moves
-		s.BestTimeMs = timeMs
-	} else {
-		if moves < s.BestMoves {
-			s.BestMoves = moves
-		}
-		if timeMs < s.BestTimeMs {
-			s.BestTimeMs = timeMs
-		}
+	if s.Completions == 1 || e.Keys < s.BestKeys {
+		s.BestKeys = e.Keys
 	}
-	m[id] = s
-	return s
+	if s.Completions == 1 || e.Edits < s.BestEdits {
+		s.BestEdits = e.Edits
+	}
+	if e.Marks > s.BestMarks {
+		s.BestMarks = e.Marks
+	}
+	p.Entries[e.ID] = s
+	p.Events = append(p.Events, e)
+	if len(p.Events) > maxEvents {
+		p.EventsTrimmed += len(p.Events) - maxEvents
+		p.Events = append([]Event(nil), p.Events[len(p.Events)-maxEvents:]...)
+	}
+	return s, e.Marks, nil
 }
 
 const (
@@ -285,20 +266,20 @@ const (
 	experiencedMin = 8
 )
 
-func NextChallenge(m map[string]Stats, curriculum []string) string {
+func NextChallenge(p Progress, curriculum []string) string {
 	for _, id := range curriculum {
-		if m[id].Completions <= learningMax {
+		if p.Entries[id].Completions <= learningMax {
 			return id
 		}
 	}
 	return ""
 }
 
-func RecommendedReview(m map[string]Stats, curriculum []string) string {
+func RecommendedReview(p Progress, curriculum []string) string {
 	var practiced, experienced string
 	var practicedDate, experiencedDate string
 	for _, id := range curriculum {
-		s := m[id]
+		s := p.Entries[id]
 		if s.LastPlayed == "" {
 			continue
 		}
@@ -332,18 +313,15 @@ func MasteryTier(s Stats) string {
 	}
 }
 
-func MasteryDistribution(m map[string]Stats, totalChallenges int) map[string]int {
-	unseen := totalChallenges - len(m)
+func MasteryDistribution(p Progress, totalChallenges int) map[string]int {
+	unseen := totalChallenges - len(p.Entries)
 	if unseen < 0 {
 		unseen = 0
 	}
 	dist := map[string]int{
-		"Unseen":      unseen,
-		"Learning":    0,
-		"Practiced":   0,
-		"Experienced": 0,
+		"Unseen": unseen, "Learning": 0, "Practiced": 0, "Experienced": 0,
 	}
-	for _, s := range m {
+	for _, s := range p.Entries {
 		dist[MasteryTier(s)]++
 	}
 	return dist

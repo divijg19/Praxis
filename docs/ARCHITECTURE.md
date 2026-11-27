@@ -28,10 +28,12 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI entry point: `describe`, `catalog` (also `--ids`/`--core`), `next`, `stats`, `reset`, `attempt`, `record`, `help` (public) |
+| `cmd/praxis` | CLI: `describe`, `catalog` (`--ids`/`--core`/`--json`), `next`, `stats` (`--json`), `start`, `complete`, `verify`, `reset`, `help`; `trace`/`dev mark-complete` are dev-only |
 | `internal/challenge` | `Challenge` struct plus `Layer` and `Verify` constants: the core data model |
+| `internal/score` | Only mark computation, from verified keys, par, and hint cost |
+| `internal/verify` | Config-free clean-Neovim replay of key logs |
 | `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStage()`, `IDs()`, `Exists()`, `ValidateAll()`: challenge registry and curriculum metadata |
-| `internal/stats` | `Stats` struct, `Load`, `Save`, `Update`: the **sole owner** of progress and score computation (mastery tiers, review selection). Lua mirrors display thresholds only. |
+| `internal/stats` | `Stats`/`Event`, `Load`, `Save`, `Complete`: sole owner of progress aggregates and review selection |
 
 ### Ownership notes
 
@@ -39,7 +41,7 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
   tiers, and review recommendations, and the only owner of the versioned JSON
   file and its validation. `cmd/praxis` (`stats` command) is the **sole CLI
   renderer** of that data.
-- **`internal/content`** owns challenge-model validity: `Validate()` defines
+- **`internal/content`** owns challenge-model validity: `validate()` defines
   it, `ValidateAll()` runs it at CLI startup, and `TestValidateAll` enforces it
   in the gate.
 - **Stats-text contract:** `cmd/praxis` emits `Challenges Completed: N/M`
@@ -76,12 +78,8 @@ type Challenge struct {
     Content    []string    // buffer content lines
     Result     []string    // for buffer/composite: target buffer state
     Layer      string      // "Tutorial", "Training", or "Trial"
-    Evaluation *Evaluation // non-nil only for "composite" challenges
 }
 
-type Evaluation struct {
-    MaxMoves int // anti-bruteforce threshold
-}
 ```
 
 ### Curriculum Metadata
@@ -107,8 +105,8 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 |---|---|---|---|
 | Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 11 |
 | Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 22 |
-| Training | never teaches mechanics; refines fluency | combine primitives, MaxMoves constraint | 10 |
-| Trial | integrate; solve your own way | select composition, budget enforcement | 5 |
+| Training | never teaches mechanics; refines fluency | combine primitives | 10 |
+| Trial | integrate; solve your own way | select composition | 5 |
 
 #### Distribution matrix
 
@@ -157,12 +155,12 @@ The Neovim frontend is loaded at startup: `plugin/praxis.lua` calls `require('pr
 - Create buffer with challenge content
 - Set up autocmds for validation:
   - `CursorMoved`: cursor challenges (target reached check)
-  - `TextChanged`: buffer challenges (buffer matches result, Normal mode edits increment moves)
-  - `TextChangedI`: buffer challenges (Insert mode edits also increment moves)
+  - `TextChanged`: buffer challenges (buffer matches result)
+  - `TextChangedI`: buffer challenges (Insert mode edits)
 - Checks `state.verify` to decide which autocmd behavior to enable:
   - `"cursor"` → modifiable=false, CursorMoved listener, target check
   - `"buffer"` → modifiable=true, TextChanged + TextChangedI listeners, buffer comparison via `check_buffer()`
-   - `"composite"` → same as buffer, plus MaxMoves enforcement; echoes "Over the move limit. Press [r] to retry." on exceed
+   - `"composite"` → same as buffer; success is decided by clean replay
 - Uses `byte_to_char()` normalization for multi-byte content:
 
 ```lua
@@ -173,11 +171,11 @@ end
 
 Converts Neovim's 0-indexed byte column to a 0-indexed character column. Critical for multi-byte content (UTF-8 Greek, emoji, etc.).
 
-### Reflection (inline in challenge.lua)
+### Reflection (keylog.lua + challenge.lua)
 
-- Ephemeral per-challenge state (`state` table): moves, elapsed time, target, verify mode
-- On completion, `render_result()` persists via `praxis record` CLI and aggregates counters
-- No separate session module. Tracking lives in the challenge lifecycle
+- Ephemeral per-challenge state (`state` table): captured keys, target, verify mode
+- On completion, `render_result()` sends the key log to `praxis complete`; Go verifies it in a clean Neovim and persists only verified results
+- `internal/verify` owns replay, `internal/score` owns marks, `internal/stats` owns aggregates
 
 See [REFERENCE.md](./REFERENCE.md) for the surface-by-surface walkthrough
 (onboarding, hub, result screen) and the full external interface contract
@@ -192,11 +190,11 @@ is visible at a time. The loop:
 2. `challenge.open` fetches the description from the `praxis` CLI, renders
    `content`, and arms an autocmd: `CursorMoved` for cursor challenges,
    or `TextChanged` / `TextChangedI` for buffer / composite challenges.
-3. The learner edits. Each relevant event increments `moves` and, on a
-   successful verify, calls `render_result()`.
-4. `render_result()` records the attempt (`praxis record`), refreshes stats
-   (`praxis stats`), and replaces the buffer with the result view
-   (`[r] Retry.`, `[Enter] Continue.`, `[q] Back.`).
+3. The learner edits. Each relevant event increments `edits`; `vim.on_key`
+   captures physical keys. On a goal match, capture stops.
+4. `render_result()` sends keys to `praxis complete`, which replays them in a
+   config-free Neovim and returns a verdict. Only verified runs are persisted.
+   The buffer is replaced with a result card showing provenance for every value.
 5. `r` re-runs the challenge; `<Enter>` opens the next challenge via
    `praxis next` (or returns to the Hub); `q` returns to the Hub.
 

@@ -85,9 +85,9 @@ var curriculum = map[string]Metadata{
 	"dd_paste_before_combo": {"dd", "composite cut and paste before", stageRegisters, nil},
 	// Trial
 	"trial_find_delete":   {"diw", "recognition: f+diw on third argument", stageTextObjects, []string{"find_diw_combo"}},
-	"trial_find_change":   {"ca\"", "recognition: f+ca quote replacement", stageTextObjects, []string{"find_ca_quote_combo"}},
+	"trial_find_change":   {"ci\"", "recognition: f+ci quote replacement", stageTextObjects, []string{"find_ca_quote_combo"}},
 	"trial_dot_repeat":    {"dw", "recognition: dot repeat of edit", stageEditing, []string{"dw_dot_combo"}},
-	"trial_delete_choice": {"diw/daw", "recognition: inner vs around word", stageTextObjects, []string{"find_diw_combo", "find_daw_combo"}},
+	"trial_delete_choice": {"daw", "recognition: around word", stageTextObjects, []string{"find_diw_combo", "find_daw_combo"}},
 	"trial_repeat_choice": {"dw/ciw", "recognition: repeat vs re-execute", stageEditing, []string{"dw_dot_combo", "ciw_dot_combo"}},
 }
 
@@ -141,6 +141,11 @@ func isCoreTutorial(id string) bool {
 // challenges in other layers.
 func tierFor(id string) string {
 	return tutorialTier[id]
+}
+
+// Tier returns "core", "optional", or "" for a challenge.
+func Tier(id string) string {
+	return tierFor(id)
 }
 
 // CoreTutorialIDs returns the mandatory onboarding challenge IDs.

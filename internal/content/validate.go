@@ -71,11 +71,6 @@ func validate(c challenge.Challenge, m Metadata) []string {
 	if c.Layer == challenge.LayerTrial && len(m.DerivedFrom) == 0 {
 		problems = append(problems, fmt.Sprintf("%s: trial missing derived_from", c.ID))
 	}
-	if c.Layer == challenge.LayerTraining || c.Layer == challenge.LayerTrial {
-		if c.Evaluation == nil || c.Evaluation.MaxMoves <= 0 {
-			problems = append(problems, fmt.Sprintf("%s: %s missing positive max_moves", c.ID, c.Layer))
-		}
-	}
 
 	return problems
 }

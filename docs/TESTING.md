@@ -22,7 +22,7 @@ Replay validates **content correctness**. The learner journey validates the **ex
 
 ## Correctness
 
-Unit-level behavior: `next`, `stats`, `attempt`, `record`, `describe`, `reset`, mastery calculations, confidence, recommended-review selection.
+Unit-level behavior: `start`, `complete`, `verify`, `next`, `stats`, `describe`, `reset`, mastery and review selection, and mark computation.
 
 Run:
 
@@ -47,16 +47,16 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 
 - no two challenges share an ID
 - `describe` on an unknown id returns a clean error (not a crash)
-- corrupted, missing, or unsupported-version `stats.json` degrades gracefully
+- corrupted, missing, or unsupported-version `progress.json` degrades gracefully
 
 ## Replay
 
-Checks all 48 challenge definitions by rendering each in a scratch buffer and asserting its target/result contract and evaluation limits. It does not execute keystroke solutions; keystroke-level behavior is exercised by the learner journey for representative modes. This is curriculum correctness, not the learner experience.
+Checks all 48 challenge definitions by rendering each in a scratch buffer and asserting its target/result contract. It executes a canonical Vim keystroke trace for every challenge and asserts the resulting goal state and verified key count. This is curriculum correctness, not the learner experience.
 
 ```bash
-# Requires a `praxis` binary on PATH, or PRAXIS_BIN pointing at one.
-# Prefer `go run ./tools/verify`, which builds it for you.
-nvim --headless -l tools/replay/replay.lua
+# Requires PRAXIS_BIN, PRAXIS_DEV=1, and a clean Neovim.
+# Prefer `go run ./tools/verify`, which sets all of this up.
+PRAXIS_DEV=1 nvim --headless -u NONE -l tools/replay/replay.lua
 ```
 
 ## Learner Journey
@@ -64,7 +64,7 @@ nvim --headless -l tools/replay/replay.lua
 Executes the real product, namely `:Praxis`, `:Praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `go run ./tools/verify` as one command covering all five test categories.
 
 ```bash
-nvim --headless -l tools/journey/journey.lua
+PRAXIS_DEV=1 nvim --headless -u NONE -l tools/journey/journey.lua
 ```
 
 ---

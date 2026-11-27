@@ -46,19 +46,7 @@ func TestDescriptionForCompleteness(t *testing.T) {
 			if d.Context != m.Context {
 				t.Errorf("Context = %q, want %q", d.Context, m.Context)
 			}
-			if c.Verify == "composite" {
-				if d.Evaluation == nil {
-					t.Fatal("expected non-nil Evaluation for composite challenge")
-				}
-				if d.Evaluation.MaxMoves <= 0 {
-					t.Errorf("MaxMoves = %d, want > 0", d.Evaluation.MaxMoves)
-				}
-				if d.Evaluation.MaxMoves != c.Evaluation.MaxMoves {
-					t.Errorf("MaxMoves = %d, want %d", d.Evaluation.MaxMoves, c.Evaluation.MaxMoves)
-				}
-			} else if d.Evaluation != nil {
-				t.Errorf("unexpected non-nil Evaluation for non-composite challenge")
-			}
+			// Evaluation was retired in v0.4.0; no budget is transported.
 		})
 	}
 	for id := range curriculum {

@@ -19,7 +19,7 @@ end
 local function first_time()
   local xdg = xdg_data()
   if not xdg then return true end
-  return vim.fn.filereadable(xdg .. "/praxis/stats.json") == 0
+  return vim.fn.filereadable(xdg .. "/praxis/progress.json") == 0
 end
 
 -- Close every open Praxis buffer before re-entering, so a fresh screen always

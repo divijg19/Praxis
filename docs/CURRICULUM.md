@@ -213,20 +213,15 @@ Progress is the reduction of uncertainty across four dimensions:
 
 - **Breadth:** how many concepts have been touched.
 - **Depth:** how automatic each has become (mastery tiers).
-- **Consistency:** how reliably success arrives (confidence tiers).
+- **Efficiency:** how few verified keys a solution takes (par and marks).
 - **Transfer:** how freely the learner applies a concept in a Trial.
 
-The stored signals (completions, mastery tiers, confidence) capture this.
+The stored signals (verified completions, mastery tiers, best keys/marks) capture this.
 The learner-facing display presents progress as "what is still uncertain,"
 never as a percentage toward done. Curriculum Complete is an achievement,
 not the educational goal (see §6).
 
-Mastery and confidence are orthogonal dimensions:
-
-| | High Confidence | Low Confidence |
-|---|---|---|
-| High Mastery | 20 attempts, 16 completions (80%) | 20 attempts, 10 completions (50%) |
-| Low Mastery | 1 attempt, 1 completion (100%) | 1 attempt, 0 completions (0%) |
+Mastery and efficiency are orthogonal dimensions: a highly practiced challenge can still have a costly solution, and a one-shot solution does not imply mastery.
 
 ---
 

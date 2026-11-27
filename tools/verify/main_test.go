@@ -37,7 +37,7 @@ func TestReplayFailsWithBrokenBinary(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), harnessTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "nvim", "--headless", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
+	cmd := exec.CommandContext(ctx, "nvim", "--headless", "-u", "NONE", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
 	cmd.Dir = root
 	cmd.Env = env
 	out, err := cmd.CombinedOutput()

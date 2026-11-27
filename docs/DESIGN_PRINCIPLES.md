@@ -32,7 +32,7 @@ Tutorial → Training → Trial
 - A Trial may depend on concepts taught in Tutorial or practiced in Training.
 - Tutorial challenges never depend on Training or Trial content.
 
-Every composite challenge declares its dependencies via a `derived_from` field. This invariant is checked by the test suite to ensure the curriculum remains coherent.
+Every Trial declares its Training prerequisites via `derived_from`. This invariant is checked by the test suite to ensure the curriculum remains coherent.
 
 ---
 
@@ -62,7 +62,6 @@ Training challenges do not teach new mechanics. They require the learner to comp
 
 Training uses the composite validator, which enforces:
 - Buffer-editing correctness (byte-exact result matching).
-- A `MaxMoves` threshold that prevents brute-force solutions.
 
 A Training challenge that teaches a new primitive instead of composing known ones violates the layer contract.
 
@@ -74,7 +73,7 @@ Trials validate transfer, not recall. The learner must:
 - **Judge** which composition fits the scenario (no keystrokes are prescribed).
 - **Adapt** by applying the composition in an unprescribed context.
 
-Like Training, Trials use the composite validator with a `MaxMoves` threshold and a `derived_from` field documenting the prerequisite concepts.
+Trials use the composite validator and a `derived_from` field documenting the prerequisite concepts.
 
 ---
 

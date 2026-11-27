@@ -21,7 +21,7 @@ What you expected to happen.
 - OS:
 - Neovim version (`nvim --version`):
 - Praxis version (`git describe --tags`):
-- `stats.json` version (if present):
+- `progress.json` format (if present):
 
 **Additional context**
 Add any other context, logs, or screenshots.

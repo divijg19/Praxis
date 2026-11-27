@@ -119,9 +119,6 @@ func TestTrialIntegrity(t *testing.T) {
 
 		switch c.Layer {
 		case "Trial":
-			if c.Evaluation == nil {
-				t.Errorf("Trial %q: missing Evaluation", c.ID)
-			}
 			if len(m.DerivedFrom) == 0 {
 				t.Errorf("Trial %q: empty DerivedFrom", c.ID)
 			}
@@ -212,24 +209,24 @@ func TestCurriculumReachable(t *testing.T) {
 		ids[i] = c.ID
 	}
 
-	m := make(map[string]stats.Stats)
-	next := stats.NextChallenge(m, ids)
+	p := stats.Progress{Format: 1, Entries: make(map[string]stats.Stats)}
+	next := stats.NextChallenge(p, ids)
 	if next != ids[0] {
 		t.Fatalf("NextChallenge with empty stats: got %q, want %q", next, ids[0])
 	}
 
 	visited := make(map[string]bool)
 	for i, id := range ids {
-		m[id] = stats.Stats{Completions: 3}
+		p.Entries[id] = stats.Stats{Completions: 3}
 		visited[id] = true
 
 		if i < len(ids)-1 {
-			next = stats.NextChallenge(m, ids)
+			next = stats.NextChallenge(p, ids)
 			if next != ids[i+1] {
 				t.Fatalf("after completing %q (index %d): NextChallenge = %q, want %q", id, i, next, ids[i+1])
 			}
 		} else {
-			next = stats.NextChallenge(m, ids)
+			next = stats.NextChallenge(p, ids)
 			if next != "" {
 				t.Fatalf("after final challenge %q: NextChallenge = %q, want \"\"", id, next)
 			}
