@@ -80,7 +80,7 @@ function M.open()
       "",
       "Tutorial is onboarding: it teaches just enough that you can",
       "improve on your own. Finish the core, and Tutorial is done,",
-      "not paused, done.",
+      "not paused.",
       "",
       "  • Tutorial  : teaches. Core is required; the rest are Additional",
       "               Lessons you can browse anytime, not a new mode.",

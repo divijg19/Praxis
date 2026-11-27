@@ -44,6 +44,17 @@ function M.check_buffer(buf, result_lines)
   return true
 end
 
+-- Fetch an internal solution trace. Requires PRAXIS_DEV=1 in the environment.
+function M.trace(id)
+  local raw = vim.fn.systemlist({ M.bin(), "trace", id })
+  if vim.v.shell_error ~= 0 then return nil end
+  local ok, tr = pcall(vim.fn.json_decode, table.concat(raw, ""))
+  if not ok or type(tr) ~= "table" then return nil end
+  if type(tr.keys) ~= "string" or tr.keys == "" then return nil end
+  if type(tr.start_row) ~= "number" or type(tr.start_col) ~= "number" then return nil end
+  return tr
+end
+
 -- Convert a byte column index to a character column index within a line.
 function M.byte_to_char(line, bytecol)
   return vim.fn.strchars(string.sub(line, 1, bytecol))
@@ -53,6 +64,14 @@ end
 -- callers can show recovery instead of interpreting an error as data.
 function M.systemlist(args)
   local out = vim.fn.systemlist(vim.list_extend({ M.bin() }, args))
+  if vim.v.shell_error ~= 0 then return nil end
+  return out
+end
+
+-- Send a JSON payload to a praxis subcommand and return stdout, or nil on
+-- non-zero exit. Used by the verification-based completion path.
+function M.send(args, payload)
+  local out = vim.fn.system(vim.list_extend({ M.bin() }, args), vim.fn.json_encode(payload))
   if vim.v.shell_error ~= 0 then return nil end
   return out
 end

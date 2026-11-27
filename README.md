@@ -16,6 +16,8 @@ Add this repository's `nvim/` directory to Neovim's `runtimepath`, for example:
 ln -sfn /path/to/Praxis/nvim "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 ```
 
+> **Upgrading from v0.3.x:** progress files are not migrated. `praxis reset --yes` starts fresh; a backup of the old file is kept as `progress.json.corrupt`.
+
 ## Quick Start
 
 Open Neovim and run `:Praxis`.
@@ -26,6 +28,8 @@ Open Neovim and run `:Praxis`.
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md): how it is built
 - [REFERENCE.md](docs/REFERENCE.md): challenge model, CLI, stats, persistence contract
 - [TESTING.md](docs/TESTING.md): how it is verified
+- [TRACES_AND_PAR.md](docs/TRACES_AND_PAR.md): canonical solutions and verified par
+- [SCORING.md](docs/SCORING.md): marks from verified runs
 - [DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md): the principles that guide curriculum decisions
 
 ## Verify

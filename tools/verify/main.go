@@ -97,7 +97,8 @@ func harnessEnv(binDir, binPath, dataDir string) []string {
 	for _, entry := range os.Environ() {
 		if strings.HasPrefix(entry, "PATH=") ||
 			strings.HasPrefix(entry, "PRAXIS_BIN=") ||
-			strings.HasPrefix(entry, "PRAXIS_VERIFY_DATA=") {
+			strings.HasPrefix(entry, "PRAXIS_VERIFY_DATA=") ||
+			strings.HasPrefix(entry, "PRAXIS_DEV=") {
 			continue
 		}
 		env = append(env, entry)
@@ -106,6 +107,7 @@ func harnessEnv(binDir, binPath, dataDir string) []string {
 		"PATH="+binDir+string(os.PathListSeparator)+os.Getenv("PATH"),
 		"PRAXIS_BIN="+binPath,
 		"PRAXIS_VERIFY_DATA="+dataDir,
+		"PRAXIS_DEV=1",
 	)
 }
 
@@ -150,10 +152,10 @@ func certify() error {
 		{"go test ./... -count=1", func() error { return v.run(nil, "go", "test", "./...", "-count=1") }},
 		{"build praxis binary", func() error { return v.run(nil, "go", "build", "-o", binPath, "./cmd/praxis") }},
 		{"tools/replay/replay.lua", func() error {
-			return v.runHarness(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
+			return v.runHarness(env, "nvim", "--headless", "-u", "NONE", "-l", filepath.Join(root, "tools", "replay", "replay.lua"))
 		}},
 		{"tools/journey/journey.lua", func() error {
-			return v.runHarness(env, "nvim", "--headless", "-l", filepath.Join(root, "tools", "journey", "journey.lua"))
+			return v.runHarness(env, "nvim", "--headless", "-u", "NONE", "-l", filepath.Join(root, "tools", "journey", "journey.lua"))
 		}},
 	}
 

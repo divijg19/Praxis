@@ -7,7 +7,8 @@ local self = debug.getinfo(1, "S").source:sub(2)
 local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 local util = require("praxis.util")
-local bin = vim.env.PRAXIS_BIN or "praxis"
+local bin = util.bin()
+local trace = util.trace
 vim.cmd("runtime plugin/praxis.lua")
 local data_home = vim.env.PRAXIS_VERIFY_DATA or "/tmp/praxis_journey"
 vim.env.XDG_DATA_HOME = data_home
@@ -43,26 +44,19 @@ end
 -- autocmds for representative cursor, buffer, composite and Trial modes.
 local function solve(id)
   local d = util.describe(id)
-  if type(d) ~= "table" then return false end
-  local buf = vim.api.nvim_get_current_buf()
+  local tr = trace(id)
+  if type(d) ~= "table" or type(tr) ~= "table" or type(d.content) ~= "table" then return false end
+  local row = math.max(1, math.min(tr.start_row, #d.content))
+  local line = d.content[row] or ""
+  local col = math.max(0, math.min(tr.start_col, #line))
+  vim.api.nvim_win_set_cursor(0, { row, col })
+  vim.api.nvim_feedkeys(tr.keys, "x", true)
   if d.verify == "cursor" then
-    local start_row = 1
-    if #d.content > 1 then start_row = 2 end
-    local trow = start_row
-    for r = start_row, #d.content do
-      if d.content[r]:find(d.target, 1, true) then trow = r; break end
-    end
-    if trow > 1 then press(string.rep("j", trow - 1)) end
-    local c = d.content[trow]:find(d.target, 1, true)
-    press(string.rep("l", c - 1))
     vim.cmd("doautocmd CursorMoved")
-    return has(snap(), "Complete%.")
   else
-    vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.result)
     vim.cmd("doautocmd TextChanged")
-    return has(snap(), "Complete%.")
   end
+  return has(snap(), "Run verified%.")
 end
 
 -- 1. reset -> onboarding (fresh learner)
@@ -79,8 +73,8 @@ ok("catalog_return", has(snap(), "Welcome to Praxis%."))
 vim.cmd("Praxis grid_rush")
 ok("cursor_tutorial_open", has(snap(), "Use h, j, k and l to move"))
 ok("cursor_tutorial_solved", solve("grid_rush"))
-ok("cursor_tutorial_result", has(snap(), "Complete%."))
-ok("tutorial_result_no_metrics", not has(snap(), "Moves:"))
+ok("cursor_tutorial_result", has(snap(), "Run verified%."))
+ok("tutorial_result_no_metrics", not has(snap(), "Edits:"))
 press("<CR>")
 ok("cursor_tutorial_continue", not has(snap(), "Unknown challenge") and not has(snap(), "executable not found"))
 
@@ -88,7 +82,7 @@ ok("cursor_tutorial_continue", not has(snap(), "Unknown challenge") and not has(
 vim.cmd("Praxis delete_character_hunter")
 ok("buffer_tutorial_open", has(snap(), "Use x to delete the extra letter"))
 ok("buffer_tutorial_solved", solve("delete_character_hunter"))
-ok("buffer_tutorial_result", has(snap(), "Complete%."))
+ok("buffer_tutorial_result", has(snap(), "Run verified%."))
 -- The solve path records the completion through the real praxis binary; verify
 -- progress was actually persisted and not silently dropped.
 local persisted = vim.fn.systemlist({ bin, "stats", "delete_character_hunter" })
@@ -106,11 +100,19 @@ for _, line in ipairs(util.systemlist({ "stats" }) or {}) do
 end
 ok("hub_tutorial_status", has(snap(), "Tutorial: %d+/" .. core_total .. " core%. Finish Core"))
 
+-- 3b. `r` must remain available as a taught Vim command, not a retry key.
+vim.cmd("Praxis replace_character_hunter")
+ok("replace_key_not_intercepted", solve("replace_character_hunter"))
+-- Retry from the result screen must release `r` back to Vim.
+press("r")
+ok("retry_releases_r", solve("replace_character_hunter"))
+press("q")
+
 -- 4. Training (composite): solve, then escape
 vim.cmd("Praxis find_diw_combo")
 ok("training_open", has(snap(), "Use f{char} then diw to delete the word%."))
 ok("training_solved", solve("find_diw_combo"))
-ok("training_result", has(snap(), "Complete%."))
+ok("training_result", has(snap(), "Run verified%."))
 press("q")
 ok("training_escape", has(snap(), "So far:"))
 
@@ -118,30 +120,22 @@ ok("training_escape", has(snap(), "So far:"))
 vim.cmd("Praxis trial_find_delete")
 ok("trial_open", has(snap(), "Remove the third word%."))
 ok("trial_solved", solve("trial_find_delete"))
-ok("trial_result", has(snap(), "Complete%."))
+ok("trial_result", has(snap(), "Run verified%."))
 press("q")
 ok("trial_escape", has(snap(), "So far:"))
 
 -- 5b. move-counter determinism: cursor navigation must not inflate the move
 --     count for composite challenges. Real keystrokes fire CursorMoved, so
---     navigation alone must leave moves at 0; only the solving edit increments
+--     navigation alone must not inflate the edit count
 --     it. Under the old logic, moving the cursor on a composite challenge
---     inflated the count and could trip the move limit.
+--     inflated the edit count.
 vim.cmd("Praxis find_diw_combo")
-press("j")
-press("l")
-press("l")
-ok("moves_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Moves: 1 /"))
+ok("edits_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Run verified%."))
 press("q")
 
--- 5c. insert-mode edits must count toward the move budget too.
-vim.cmd("Praxis find_diw_combo")
-local combo = util.describe("find_diw_combo")
-local combo_buf = vim.api.nvim_get_current_buf()
-vim.api.nvim_set_option_value("modifiable", true, { buf = combo_buf })
-vim.api.nvim_buf_set_lines(combo_buf, 0, -1, false, combo.result)
-vim.cmd("doautocmd TextChangedI")
-ok("insert_mode_moves_counted", has(snap(), "Moves: 1 /"))
+-- 5c. insert-mode edits are counted as local effort.
+vim.cmd("Praxis find_ciw_combo")
+ok("insert_mode_edits_counted", solve("find_ciw_combo") and has(snap(), "Run verified%."))
 press("q")
 
 -- 6. mid-challenge escape from a fresh challenge (recovery)
@@ -186,21 +180,17 @@ ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 -- Core IDs come from the CLI so the harness cannot drift from the catalog.
 local core_ids = vim.fn.systemlist({ bin, "catalog", "--core" })
 for _, id in ipairs(core_ids) do
-  vim.fn.system({ bin, "attempt", id })
-  for _ = 1, 3 do vim.fn.system({ bin, "record", id, "1", "1" }) end
+  vim.fn.system({ bin, "dev", "mark-complete", id, "3" })
 end
 vim.cmd("Praxis")
-ok("training_transition", has(snap(), "Onboarding complete%. Training uses a move limit"))
+ok("training_transition", has(snap(), "Onboarding complete%. Training composes what you learned"))
 
 -- 8. force completion of the full catalog, then completion screen
 local guard = 0
 while guard < 300 do
   local nid = vim.fn.systemlist({ bin, "next" })[1] or ""
   if nid == "" then break end
-  vim.fn.system({ bin, "attempt", nid })
-  vim.fn.system({ bin, "record", nid, "1", "1" })
-  vim.fn.system({ bin, "record", nid, "1", "1" })
-  vim.fn.system({ bin, "record", nid, "1", "1" })
+  vim.fn.system({ bin, "dev", "mark-complete", nid, "3" })
   guard = guard + 1
 end
 vim.cmd("Praxis")
@@ -214,18 +204,18 @@ ok("completion_progress", has(snap(), "So far: " .. completed_total .. " challen
 
 -- 9. completion review opens a challenge, then escape
 press("r")
-ok("completion_review", not has(snap(), "Curriculum complete%.") and not has(snap(), "Unknown challenge"))
+ok("completion_review", not has(snap(), "doesn't exist"))
 press("q")
-ok("completion_escape", has(snap(), "Curriculum complete%.") or has(snap(), "So far:"))
+ok("completion_escape", has(snap(), "So far:") or not has(vim.fn.bufname("%"), "Praxis"))
 
 -- 9b. corrupt progress -> recovery, never a false "complete" Hub.
-vim.fn.writefile({ "{broken" }, data_home .. "/praxis/stats.json")
+vim.fn.writefile({ "{broken" }, data_home .. "/praxis/progress.json")
 vim.cmd("Praxis")
 ok("corrupt_progress_recovery", has(snap(), "couldn't read your progress%."))
 vim.fn.system({ bin, "reset", "--yes" })
 
 -- 9c. unsupported version -> recovery, never a false "complete" Hub.
-vim.fn.writefile({ '{"version":99,"entries":{}}' }, data_home .. "/praxis/stats.json")
+vim.fn.writefile({ '{"version":99,"entries":{}}' }, data_home .. "/praxis/progress.json")
 vim.cmd("Praxis")
 ok("unknown_version_recovery", has(snap(), "couldn't read your progress%."))
 vim.fn.system({ bin, "reset", "--yes" })

@@ -1,13 +1,13 @@
--- Replay contract check for every catalog challenge: verifies describe output,
--- target/result data, and evaluation metadata. It does not execute Vim
--- keystroke solutions (see docs/TESTING.md).
+-- Replay verification for every catalog challenge: executes a canonical Vim
+-- keystroke trace and checks the resulting goal state and verified key count.
+-- Par is derived from the trace and cross-checked against describe output.
 -- Run via: go run ./tools/verify (PRAXIS_BIN may override the binary)
 
 local self = debug.getinfo(1, "S").source:sub(2)
 local ROOT = vim.fn.fnamemodify(self, ":h:h:h")
 vim.opt.runtimepath:prepend(ROOT .. "/nvim")
 local util = require("praxis.util")
-local bin = vim.env.PRAXIS_BIN or "praxis"
+local bin = util.bin()
 
 -- IDs come from the CLI so the harness cannot drift from the catalog.
 local all_ids = vim.fn.systemlist({ bin, "catalog", "--ids" })
@@ -17,11 +17,29 @@ if #all_ids == 0 then
 end
 
 local results = {}
+local descs = {}
 
 for _, id in ipairs(all_ids) do
   local d = util.describe(id)
-  if type(d) ~= "table" then
+  descs[id] = d
+  if type(d) ~= "table" or type(d.content) ~= "table" or #d.content == 0 then
     print("FAIL " .. id .. ": could not describe")
+    results[id] = "FAIL"
+    goto continue
+  end
+
+  local tr = util.trace(id)
+  if not tr then
+    print("FAIL " .. id .. ": no valid canonical solution trace")
+    results[id] = "FAIL"
+    goto continue
+  end
+
+  local row = math.max(1, math.min(tr.start_row, #d.content))
+  local line = d.content[row] or ""
+  local col = math.max(0, math.min(tr.start_col, #line))
+  if tr.start_row < 1 or tr.start_row > #d.content then
+    print("FAIL " .. id .. ": trace start row out of range")
     results[id] = "FAIL"
     goto continue
   end
@@ -29,76 +47,37 @@ for _, id in ipairs(all_ids) do
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
   vim.api.nvim_set_current_buf(buf)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.content)
+  vim.api.nvim_set_option_value("modifiable", d.verify ~= "cursor", { buf = buf })
+  vim.api.nvim_win_set_cursor(0, { row, col })
+  vim.api.nvim_feedkeys(tr.keys, "x", true)
+
+  local key_count = vim.fn.strchars(tr.keys)
+  local solved = false
 
   if d.verify == "cursor" then
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.content)
-    vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-
-    local found = false
-    for r = 1, #d.content do
-      local line = d.content[r]
-      if line then
-        for c = 0, #line do
-           local charcol = util.byte_to_char(line, c)
-          local ch = vim.fn.strcharpart(line, charcol, 1)
-          if ch == d.target then
-            vim.api.nvim_win_set_cursor(0, { r, c })
-            found = true
-            break
-          end
-        end
-      end
-      if found then break end
+    local r, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+    local current = vim.api.nvim_buf_get_lines(buf, r - 1, r, false)[1]
+    if current then
+      local charcol = util.byte_to_char(current, col0)
+      solved = vim.fn.strcharpart(current, charcol, 1) == d.target
     end
-
-    if not found then
-      print("FAIL " .. id .. ": target '" .. d.target .. "' not found")
-      results[id] = "FAIL"
-      goto continue
-    end
-
-    local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
-    local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
-    local completed = false
-    if line then
-       local charcol = util.byte_to_char(line, col0)
-      if vim.fn.strcharpart(line, charcol, 1) == d.target then
-        completed = true
-      end
-    end
-
-    if completed then
-      print("PASS " .. id)
-      results[id] = "PASS"
-    else
-      print("FAIL " .. id)
-      results[id] = "FAIL"
-    end
-
-  elseif d.verify == "buffer" or d.verify == "composite" then
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.content)
-    vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, d.result)
-
-    if util.check_buffer(buf, d.result) then
-      print("PASS " .. id)
-      results[id] = "PASS"
-    else
-      local current = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-      print("FAIL " .. id .. " #current=" .. #current .. " #result=" .. #d.result)
-      results[id] = "FAIL"
-    end
+  else
+    solved = util.check_buffer(buf, d.result)
   end
 
-  if results[id] == "PASS" and d.evaluation then
-    if d.evaluation.max_moves <= 0 then
-      print("FAIL " .. id .. ": invalid max_moves=" .. d.evaluation.max_moves)
-      results[id] = "FAIL"
-    end
-    if d.layer == "Trial" and (type(d.derived_from) ~= "table" or #d.derived_from == 0) then
-      print("FAIL " .. id .. ": missing derived_from")
-      results[id] = "FAIL"
-    end
+  if d.layer == "Trial" and (type(d.derived_from) ~= "table" or #d.derived_from == 0) then
+    print("FAIL " .. id .. ": missing derived_from")
+    results[id] = "FAIL"
+  elseif d.par and d.par ~= key_count then
+    print("FAIL " .. id .. ": par " .. d.par .. " does not match trace keys " .. key_count)
+    results[id] = "FAIL"
+  elseif solved then
+    print("PASS " .. id .. " (" .. key_count .. " keys)")
+    results[id] = "PASS"
+  else
+    print("FAIL " .. id .. ": canonical trace did not solve the challenge")
+    results[id] = "FAIL"
   end
 
   ::continue::
@@ -114,14 +93,10 @@ local trial_pass = 0
 local trial_fail = 0
 local utf8_pass = 0
 local utf8_fail = 0
-local training_eval_ok = 0
-local training_eval_total = 0
-local trial_eval_ok = 0
-local trial_eval_total = 0
 local describe_fail = 0
 
 for _, id in ipairs(all_ids) do
-  local d = util.describe(id)
+  local d = descs[id]
   if type(d) ~= "table" then
     describe_fail = describe_fail + 1
     goto next_id
@@ -142,16 +117,6 @@ for _, id in ipairs(all_ids) do
     if is_pass then trial_pass = trial_pass + 1 else trial_fail = trial_fail + 1 end
   end
 
-  if d.evaluation and d.evaluation.max_moves > 0 then
-    if d.layer == "Training" then
-      training_eval_total = training_eval_total + 1
-      if is_pass then training_eval_ok = training_eval_ok + 1 end
-    elseif d.layer == "Trial" then
-      trial_eval_total = trial_eval_total + 1
-      if is_pass then trial_eval_ok = trial_eval_ok + 1 end
-    end
-  end
-
   ::next_id::
 end
 
@@ -163,8 +128,8 @@ print("")
 print("Tutorial (cursor): " .. tutorial_cursor_pass .. "/" .. (tutorial_cursor_pass + tutorial_cursor_fail) .. " PASS")
 print("Tutorial (buffer): " .. tutorial_buffer_pass .. "/" .. (tutorial_buffer_pass + tutorial_buffer_fail) .. " PASS")
 print("Tutorial (utf-8):  " .. utf8_pass .. "/" .. (utf8_pass + utf8_fail) .. " PASS")
-print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS  (evaluation " .. training_eval_ok .. "/" .. training_eval_total .. ")")
-print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS  (evaluation " .. trial_eval_ok .. "/" .. trial_eval_total .. ")")
+print("Training:         " .. training_pass .. "/" .. (training_pass + training_fail) .. " PASS")
+print("Trial:            " .. trial_pass .. "/" .. (trial_pass + trial_fail) .. " PASS")
 print("")
 if describe_fail > 0 then
   print("Describe failures: " .. describe_fail)

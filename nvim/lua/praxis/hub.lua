@@ -58,9 +58,6 @@ function M.open()
       if n then mastery_practiced = n end
       n = line:match("^  Experienced: (%d+)")
       if n then mastery_experienced = n end
-      if line:match("^Most mastered:") then
-        in_mastery = false
-      end
     end
   end
 
@@ -89,7 +86,7 @@ function M.open()
   end
 
   if tutorial_status == "Complete" then
-    table.insert(display, "  Onboarding complete. Training uses a move limit to keep practice deliberate.")
+    table.insert(display, "  Onboarding complete. Training composes what you learned into deliberate edits.")
     table.insert(display, "")
   end
 

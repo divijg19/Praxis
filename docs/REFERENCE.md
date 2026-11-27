@@ -23,7 +23,6 @@ challenge.Challenge{
         "edited content",
     },
     Layer:   "Tutorial",       // "Tutorial", "Training", or "Trial"
-    Evaluation: &challenge.Evaluation{MaxMoves: 10}, // composite only; nil otherwise
 }
 ```
 
@@ -38,19 +37,21 @@ challenge.Challenge{
 | `Content` | STABLE | First line is instruction. Buffer/composite: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
 | `Result` | STABLE | Required for buffer/composite (non-empty slice, exact target state). Nil for cursor. |
 | `Layer` | STABLE | `"Tutorial"`, `"Training"`, or `"Trial"`. |
-| `Evaluation` | STABLE | Non-nil only for `"composite"`. Contains `MaxMoves` threshold. |
 
 ### Canonical Representation
 
-`content.DescriptionFor(id)` is the canonical way to obtain a challenge's full representation. It returns a `Description` struct combining challenge data, curriculum metadata, and (for composite challenges) evaluation:
+`content.DescriptionFor(id)` is the canonical way to obtain a challenge's full representation. It returns a `Description` struct combining challenge data, curriculum metadata, and verified start/par metadata:
 
 ```go
 type Description struct {
-    challenge.Challenge                // embeds ID, Name, Verify, Layer, Target, Content, Result, Evaluation
+    challenge.Challenge                // embeds ID, Name, Verify, Layer, Target, Content, Result
     Stage       string   `json:"stage"`
     Concept     string   `json:"concept"`
     Context     string   `json:"context"`
     DerivedFrom []string `json:"derived_from,omitempty"`
+    StartRow    int      `json:"start_row"` // play-area row for the canonical solution
+    StartCol    int      `json:"start_col"`
+    Par         int      `json:"par"` // verified physical-key count of the canonical solution
 }
 ```
 
@@ -58,7 +59,7 @@ All consumers (CLI, Lua frontend, replay tool) must obtain challenge data
 through `DescriptionFor`. The `Description` struct is the single source of
 truth; JSON is a transport format.
 
-**Stability:** The JSON field names and types are stable for the v0.3.x series (frozen). New fields may be added but existing fields will not be renamed, removed, or have their types changed.
+**Stability:** v0.4.x is a clean-break canonical model. There are no legacy readers or migrations; the progress file has a single strict schema.
 
 Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
@@ -67,7 +68,8 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 1. Add the challenge to the end of `All()` in `internal/content/content.go`
 2. Add metadata entry to `curriculum` map in `internal/content/curriculum.go`
 3. Append the ID to `stableChallengeIDs` in `internal/content/content_test.go` (order guard); names are evolvable and only uniqueness is enforced
-4. Run `go run ./tools/verify`. The replay and journey harnesses derive IDs and counts from `praxis catalog --ids` / `--core` and `praxis stats`; the guards detect drift if that derivation is removed.
+4. Register a canonical keystroke trace in `internal/content/solutions.go`.
+5. Run `go run ./tools/verify`. Harnesses derive IDs from `praxis catalog --ids` / `--core` and verify every trace in a clean Neovim.
 
 ## CLI Surface
 
@@ -75,22 +77,27 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 
 | Command | Output | Exit | Enforced by |
 |---|---|---|---|
-| `praxis help` | CLI reference, all commands listed with descriptions | 0 | TestHelpCommand |
-| `praxis` (bare) | Next challenge ID + `praxis help` hint | 0 | TestBarePraxis |
-| `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + evaluation) | 0 / 1 | TestDescribeCommand, TestDescribeComposite, TestDescribeUnknown |
+| `praxis help` | CLI reference for learner commands | 0 | TestStartAndComplete |
+| `praxis` (bare) | Next challenge ID + `praxis help` hint | 0 | TestStartAndComplete |
+| `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + start position + par) | 0 / 1 | TestDescribeFields |
+| `praxis trace <id>` | Internal (dev-only, `PRAXIS_DEV=1`): canonical keystroke trace for replay | 0 / 1 | TestTraceGate |
 | `praxis catalog` | One name per line, curriculum order | 0 | TestCatalogOutputStable |
-| `praxis catalog --ids` | One challenge ID per line, curriculum order | 0 | TestCatalogIDs |
-| `praxis catalog --core` | One Core Tutorial ID per line, sorted | 0 | TestCatalogCoreIDs |
-| `praxis next` | Next challenge ID; empty if all complete | 0 | TestNextCommand |
-| `praxis stats [id]` | Per-challenge or summary | 0 / 1 | TestStatsCommand, TestStatsSummary, TestRecordStats, TestStatsCommandConfidenceLevels |
-| `praxis reset [--yes]` | Erase all progress; interactive (type `RESET`), or `--yes` for automation | 0 / 1 | TestResetCommand |
+| `praxis catalog --ids` | One challenge ID per line, curriculum order | 0 | TestCatalogFlags |
+| `praxis catalog --core` | One Core Tutorial ID per line, sorted | 0 | TestCatalogFlags |
+| `praxis next` | Next challenge ID; empty if all complete | 0 | TestStartAndComplete |
+| `praxis stats [id]` | Per-challenge or summary; `--json` for full state | 0 / 1 | TestStartAndComplete |
+| `praxis reset [--yes]` | Erase all progress; interactive (type `RESET`), or `--yes` for automation | 0 / 1 | TestReset |
 
 ### Internal (Frontend Transport API)
 
 | Command | Output | Exit | Enforced by |
 |---|---|---|---|
-| `praxis attempt <id>` | Silent (no stdout) | 0 / 1 | TestAttemptCommand, TestAttemptUnknown |
-| `praxis record <id> <moves> <time_ms>` | Silent (no stdout) | 0 | TestRecordStats |
+| `praxis start <id>` | Silent; records effort only | 0 / 1 | TestStartAndComplete |
+| `praxis complete <id>` | stdin key-log JSON → verified verdict + marks JSON | 0 / 1 | TestStartAndComplete, TestTaintedCompletionRejected |
+| `praxis verify <id>` | same replay, diagnostic only, no write | 0 / 1 | TestStartAndComplete |
+| `praxis stats --json` | full canonical progress JSON | 0 | TestCatalogJSONHasNoSpoilers |
+| `praxis catalog --json` | metadata-only catalog JSON | 0 | TestCatalogJSONHasNoSpoilers |
+| `praxis dev mark-complete <id> [count]` | dev-only harness seeding (`PRAXIS_DEV=1`) | 0 / 1 | TestTraceGate |
 
 On unknown ID, stderr is `unknown challenge: <id>`.
 
@@ -100,20 +107,19 @@ On unknown ID, stderr is `unknown challenge: <id>`.
 With an ID, shows per-challenge stats:
 
 ```
-Attempts: 10
+Starts: 10
 Completions: 10
-Success Rate: 100%
-Best Moves: 2
-Best Time: 180 ms
+Best Keys: 5
+Best Edits: 1
+Best Marks: 3/3
 Mastery: Experienced
-Confidence: High
 ```
 
 Without arguments, shows summary with mastery distribution and practice guidance. Exit 0 on success, 1 on unknown challenge ID.
 
 ### `praxis describe <id>`
 
-Returns a canonical JSON representation of the challenge including its metadata and (for composite challenges) evaluation.
+Returns a canonical JSON representation of the challenge including its metadata and verified start position/par.
 
 **Output schema:**
 ```json
@@ -125,18 +131,16 @@ Returns a canonical JSON representation of the challenge including its metadata 
   "target": "",
   "content": ["Delete the word using f<char> and diw", "", "keep delete keep"],
   "result": ["Delete the word using f<char> and diw", "", "keep  keep"],
-  "concept": "f",
+  "concept": "diw",
   "context": "composite deletion",
   "stage": "Text Objects",
-  "evaluation": {
-    "max_moves": 8
-  }
+  "start_row": 3,
+  "start_col": 0,
+  "par": 5
 }
 ```
 
-The `evaluation` field is emitted only for `"composite"` challenges (via `json:"evaluation,omitempty"`). Non-composite challenges omit this field entirely.
-
-Enforced by: `TestDescribeCommand`, `TestDescribeComposite`, `TestDescribeUnknown`.
+Enforced by: `TestDescribeFields`, `TestCatalogOutputStable`.
 
 ### `praxis catalog`
 
@@ -148,7 +152,7 @@ Enforced by: `TestCatalogOutputStable`.
 
 Returns the first challenge in curriculum order that is not Practiced (i.e., completions ≤ `learningMax` (2)). Output is the challenge ID on stdout, or empty if all challenges are Practiced.
 
-Enforced by: `TestNextCommand`, `TestNextCommandAfterCompletion`, `TestNextCommandComplete`
+Enforced by: `TestStartAndComplete`, internal content integrity tests
 
 ## Validators
 
@@ -204,7 +208,7 @@ Where:
 
 **Rule:** Edit the buffer content to exactly match `Result`.
 
-Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and a `TextChangedI` autocommand fires on Insert mode edits; both increment the moves count. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
+Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and a `TextChangedI` autocommand fires on Insert mode edits; both are informational; the verifier owns the result. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
 
 **Used by:** 18 challenges (editing, text objects, registers).
 
@@ -244,15 +248,9 @@ Comparison is byte-exact string equality:
 
 **Verify value:** `"composite"`
 
-**Rule:** Edit the buffer content to exactly match `Result`, within a maximum number of moves.
+**Rule:** Edit the buffer content to exactly match `Result`.
 
-Behaviorally identical to the buffer validator (TextChanged + TextChangedI listeners, byte-exact comparison via `check_buffer()`). Additionally, the Lua frontend enforces a `MaxMoves` threshold:
-
-- On each edit (TextChanged or TextChangedI), the moves counter is incremented
-- If moves exceed `MaxMoves`, the challenge cannot complete and echoes "Over the move limit. Press [r] to retry."
-- Result screen shows `Moves: N / MaxMoves` instead of just `Moves: N`
-
-The `MaxMoves` value is transmitted via the `describe` JSON endpoint as `evaluation.max_moves`.
+Behaviorally identical to the buffer validator (byte-exact comparison via `check_buffer()`). `praxis complete` replays the key log in a clean Neovim and decides success; the frontend does not determine the result. Verified keys, par, and marks are reported with provenance on the result card.
 
 **Used by:** 15 challenges (10 Training + 5 Trial).
 
@@ -262,7 +260,7 @@ The Lua frontend only attaches `CursorMoved` for cursor challenges. Buffer chall
 
 ### Contract Enforcement
 
-Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. Composite challenges always declare a positive `MaxMoves`. These invariants are enforced by runtime `ValidateAll()` and the content test suite (see TESTING.md).
+Every challenge uses one of the three verify values, and each value carries the correct shape: cursor challenges declare a `Target` and no `Result`; buffer and composite challenges declare a `Result` and no `Target`. These invariants are enforced by runtime `ValidateAll()` and the content test suite (see TESTING.md).
 
 ## Stats
 
@@ -270,59 +268,54 @@ Every challenge uses one of the three verify values, and each value carries the 
 
 ```go
 type Stats struct {
-    Attempts    int    // total attempts (including replays and abandoned starts)
-    Completions int    // total successful completions
-    BestMoves   int    // lowest moves across all completions
-    BestTimeMs  int    // fastest time across all completions
+    Starts      int    // times opened
+    Completions int    // verified completions only
+    BestKeys    int    // fewest physical keys in a verified run
+    BestEdits   int    // fewest edit events in a verified run
+    BestMarks   int    // best verified mark, 1..3
     LastPlayed  string // "2006-01-02" format
 }
 ```
 
-Progress is stored in `$XDG_DATA_HOME/praxis/stats.json` (or `~/.local/share/praxis/stats.json`). The current format is a versioned envelope:
+Progress is stored in `$XDG_DATA_HOME/praxis/progress.json` (or `~/.local/share/praxis/progress.json`) as one strict document:
 
 ```json
 {
-  "version": 2,
+  "format": 1,
   "entries": {
     "grid_rush": {
-      "attempts": 1,
+      "starts": 2,
       "completions": 1,
-      "best_moves": 2,
-      "best_time_ms": 180,
-      "last_played": "2026-11-26"
+      "best_keys": 3,
+      "best_edits": 1,
+      "best_marks": 3,
+      "last_played": "2026-11-27"
     }
-  }
+  },
+  "events": []
 }
 ```
 
-Version 1 files — a bare map of challenge IDs to `Stats` — remain readable and gain a version on the next write. Unknown versions are rejected with a distinct error; they are never silently misread and never reported as corruption. Writes are flushed with `fsync` before an atomic rename, so a crash after `praxis record` does not lose the completion.
+There is exactly one format. Legacy formats are not read and are not migrated. Bad JSON, an unknown format, or impossible counters are treated as corruption, backed up to `progress.json.corrupt`, and surfaced as recovery. Writes are flushed with `fsync` before an atomic rename.
 
 | File state | Behavior |
 |---|---|
 | Missing | Fresh, empty progress |
-| Version 1 or 2, valid counters | Loaded normally |
-| Bad JSON or impossible counters | CLI exits 1, writes `stats.json.corrupt`, Lua shows recovery |
-| Unknown version | CLI exits 1 with an unsupported-version error, Lua shows recovery, no backup overwrite |
+| Format 1 with valid counters | Loaded normally |
+| Bad JSON or impossible counters | CLI exits 1, writes `progress.json.corrupt`, Lua shows recovery |
+| Unknown format | Treated as corrupt; CLI exit 1, backup, Lua recovery |
 
 State remains a human-readable JSON file under XDG. A database-backed store was evaluated and rejected: it would add dependencies, migration risk, and new failure modes without serving an educational contract. This is a deliberate architecture decision, not an accident.
 
 | Signal | Meaning |
 |---|---|
-| Attempts | Effort invested |
-| Completions | Raw success count |
-| Success Rate | Reliability metric (Completions / Attempts) |
+| Starts | Times the challenge was opened |
+| Completions | Verified completions only |
+| Best Keys | Fewest physical keys in a verified run |
+| Best Edits | Verified edit count from clean replay |
+| Best Marks | Best verified mark (1-3) |
 | Mastery | Practice depth (derived from Completions) |
-| Confidence | Execution reliability (derived from Success Rate) |
 | Guidance | Next action (derived from Mastery + LastPlayed + curriculum order) |
-
-### Confidence ≠ Mastery
-
-These are orthogonal dimensions. High Confidence does not imply high Mastery, and vice versa.
-
-| | High Confidence | Low Confidence |
-|---|---|---|
-| High Mastery | 20 attempts, 16 completions (80%) | 20 attempts, 10 completions (50%) |
-| Low Mastery | 1 attempt, 1 completion (100%) | 1 attempt, 0 completions (0%) |
 
 ### Mastery Tiers
 
@@ -337,14 +330,11 @@ Derived from `Completions`:
 
 ### Design Decisions
 
-- Stats are recorded only on successful completion
-- Best values track minima (fewest moves, fastest time)
-- First completion always sets the best value
-- Subsequent completions only update if better
-- No per-attempt history. Only the best is preserved
-- Attempts and Completions are tracked independently. Attempts increment on challenge start and replay; Completions increment only on success
-- Confidence is derived from SuccessRate at display time. Not stored in JSON. Thresholds: 80 percent or higher is High, 60 percent or higher is Medium, and below 60 percent is Low. The display shows an em dash when there are no attempts, which is a no-data signal and not the same as Low.
-- Confidence and Mastery are orthogonal. Mastery answers "how much have I practiced?"; Confidence answers "how reliably am I executing?"
+- Only verified completions are recorded. There is no client-reported completion path.
+- Best Keys and Best Edits track minima; Best Marks tracks the maximum.
+- Marks are computed in Go from the verified key log, par, and hint cost; clients cannot supply them.
+- Starts are effort only and never become completions.
+- Events are local, capped, and compacted without dropping aggregates.
 
 ### Practice Guidance
 
@@ -354,10 +344,10 @@ Derived from `Completions`:
 
 ## Reflection (Internal)
 
-Per-challenge tracking is an internal implementation detail. There is no public command or surface for it. Ephemeral per-challenge counters (moves, elapsed time) live in the `state` table inside `challenge.lua` and are aggregated via the `praxis record` CLI on completion.
+Ephemeral per-challenge state (edits, elapsed time, captured keys) lives in `challenge.lua` and is sent to `praxis complete`. Verified results are persisted; unverified runs write nothing.
 
-- **No persistence.** Discarded when the challenge buffer closes.
-- **No public command.** No `:PraxisSession`.
+- Raw key logs are never persisted.
+- Marks are descriptive of one run, not a score.
 
 ## Hub
 
@@ -415,7 +405,7 @@ Three sections:
 2. **IDs are permanent.** Challenge identifiers must never be renamed or removed.
 3. **Verify values are stable.** The set of valid Verify values (`cursor`, `buffer`, `composite`) is fixed and every challenge uses one.
 4. **Curriculum growth is intentional.** New challenges require a documented primary concept and must not duplicate existing content.
-5. **Replay verification is mandatory.** Every challenge must appear in replay coverage and satisfy the describe, target/result, and evaluation contracts. Replay checks data contracts; it does not execute keystroke solutions.
+5. **Replay verification is mandatory.** Every challenge must appear in replay coverage, execute its canonical Vim keystroke trace, reach the goal state.
 6. **Duplicate challenge content is prohibited.** Challenges may share concepts when they teach the concept in a different context or composition.
 
 ### Test Suite

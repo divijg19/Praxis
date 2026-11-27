@@ -1,9 +1,7 @@
 local M = {}
 
 local util = require("praxis.util")
-
--- Completions needed to reach the Practiced tier (mirrors stats.MasteryTier).
-local PRACTICED_THRESHOLD = 3
+local keylog = require("praxis.keylog")
 
 function M.open(id)
   local ui = require('praxis.ui')
@@ -18,10 +16,14 @@ function M.open(id)
 
   local editable = desc.verify == "buffer" or desc.verify == "composite"
   local buf = ui.show("Praxis: " .. desc.name, desc.content, editable)
+  local start_row = desc.start_row and desc.start_row > 0 and desc.start_row or 3
+  local start_col = desc.start_col or 0
+  local first_line = desc.content[start_row] or ""
+  start_col = math.max(0, math.min(start_col, #first_line))
+  vim.api.nvim_win_set_cursor(0, { math.min(start_row, #desc.content), start_col })
 
-  if not util.praxis({ "attempt", id }) then
-    ui.recovery("Praxis couldn't record this attempt.", {
-      "Your progress may not have been saved.",
+  if not util.praxis({ "start", id }) then
+    ui.recovery("Praxis couldn't record this start.", {
       "",
       "[Enter] or [q] Back.",
     })
@@ -30,7 +32,7 @@ function M.open(id)
 
   local state = {
     done            = false,
-    moves           = 0,
+    edits           = 0,
     start_ns        = vim.uv.hrtime(),
     challenge_lines = desc.content,
     target          = desc.target,
@@ -38,100 +40,111 @@ function M.open(id)
     result_lines    = desc.result,
     challenge_id    = id,
     layer           = desc.layer,
-    maxmoves        = desc.evaluation and desc.evaluation.max_moves,
+    start_row       = start_row,
+    start_col       = start_col,
+    par             = desc.par,
     editable        = editable,
+    capture         = keylog.start(),
   }
 
-  local function render_result()
-    local elapsed_ms = math.floor((vim.uv.hrtime() - state.start_ns) / 1e6)
-    if not util.praxis({ "record", id, tostring(state.moves), tostring(elapsed_ms) }) then
-      vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-        "Complete, but your progress wasn't saved.",
-        "",
-        "Praxis reported an error while recording this challenge.",
-        "Your edits are not lost, but stats were not updated.",
-        "",
-        "[Enter] or [q] Back.",
-      })
-      vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-      return
-    end
-    local stats_out = util.systemlist({ "stats", id })
-    if not stats_out then
-      vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-        "Complete, but your progress couldn't be read.",
-        "",
-        "Praxis recorded the completion but could not read it back.",
-        "Run :Praxis again to check your progress.",
-        "",
-        "[Enter] or [q] Back.",
-      })
-      vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-      return
-    end
+  local reset_challenge
+
+  local function show_failure(buf, lines)
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-    local display = {
-      "Complete.", "",
-    }
-    -- Tutorial results stay calm: no speed or move pressure until Training.
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+  end
+
+  local function render_result(verdict)
+    if not verdict.verified then
+      show_failure(buf, {
+        "Not saved - replay failed.",
+        "",
+        "Reason: " .. (verdict.reason or "unknown"),
+        "No completion was recorded. You can retry.",
+        "",
+        "[<leader>r] Retry   [q] Back.",
+      })
+      return
+    end
+
+    local display = { "Run verified.", "" }
     if state.layer ~= "Tutorial" then
-      if state.maxmoves then
-        table.insert(display, "Moves: " .. state.moves .. " / " .. state.maxmoves)
-      else
-        table.insert(display, "Moves: " .. state.moves)
-      end
-      table.insert(display, "Time: " .. elapsed_ms .. " ms")
+      table.insert(display, "Keys: " .. (verdict.keys or 0) .. "   (verified by clean replay)")
+      table.insert(display, "Par: " .. (verdict.par or 0) .. " canonical keys")
+      table.insert(display, "Marks: " .. string.rep("*", verdict.marks or 1) .. string.rep("-", 3 - (verdict.marks or 1)))
       table.insert(display, "")
     end
-    local completions = 0
-    for _, line in ipairs(stats_out) do
-      local n = line:match("^Completions: (%d+)")
-      if n then completions = tonumber(n) end
-    end
-    if completions > 0 then
-      table.insert(display, "Completed " .. completions .. " times.")
-    end
-    if completions < PRACTICED_THRESHOLD then
-      table.insert(display, "Practice this " .. (PRACTICED_THRESHOLD - completions) .. " more times to build mastery.")
-    end
+    table.insert(display, "Completed " .. (verdict.completions or 1) .. " times.")
     table.insert(display, "")
     table.insert(display, "[r] Retry.")
     table.insert(display, "[Enter] Continue.")
     table.insert(display, "[q] Back.")
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, display)
-    vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+    show_failure(buf, display)
+    vim.keymap.set("n", "r", function()
+      reset_challenge()
+    end, { buffer = buf, nowait = true, silent = true })
+  end
+
+  local function complete_challenge()
+    state.done = true
+    vim.api.nvim_echo({ { "Verifying run..." } }, false, {})
+    local captured = state.capture.stop()
+    local payload = {
+      keys = captured.keys,
+      tainted = captured.tainted,
+    }
+    local raw = util.send({ "complete", id }, payload)
+    if not raw then
+      show_failure(buf, {
+        "Could not verify this run.",
+        "",
+        "Praxis did not respond. No completion was recorded.",
+        "",
+        "[<leader>r] Retry   [q] Back.",
+      })
+      return
+    end
+    local ok, verdict = pcall(vim.fn.json_decode, raw)
+    if not ok or type(verdict) ~= "table" then
+      show_failure(buf, { "Could not read the verification result.", "", "[<leader>r] Retry   [q] Back." })
+      return
+    end
+    render_result(verdict)
   end
 
   local function check_buffer()
-    if state.maxmoves then
-      vim.api.nvim_echo({ { "Moves: " .. state.moves .. " / " .. state.maxmoves } }, false, {})
-    end
-    if state.verify == "composite" and state.maxmoves and state.moves > state.maxmoves then
-      vim.api.nvim_echo({ { "Over the move limit. Press [r] to retry." } }, false, {})
-      return
-    end
     if not util.check_buffer(buf, state.result_lines) then return end
-    state.done = true
     vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
-    render_result()
+    complete_challenge()
   end
 
-  local function reset_challenge()
-    state.done     = false
-    state.moves    = 0
+  reset_challenge = function()
+    pcall(vim.keymap.del, "n", "r", { buffer = buf })
+    state.done = false
+    state.edits = 0
     state.start_ns = vim.uv.hrtime()
+    state.capture = keylog.start()
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, state.challenge_lines)
     if not state.editable then
       vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
     end
-    vim.api.nvim_win_set_cursor(0, { 1, 0 })
-    if not util.praxis({ "attempt", state.challenge_id }) then
-      vim.api.nvim_echo({ { "Couldn't record this retry. Press [r] to try again." } }, false, {})
+    local retry_line = state.challenge_lines[state.start_row] or ""
+    local retry_col = math.max(0, math.min(state.start_col, #retry_line))
+    vim.api.nvim_win_set_cursor(0, { math.min(state.start_row, #state.challenge_lines), retry_col })
+    if not util.praxis({ "start", state.challenge_id }) then
+      vim.api.nvim_echo({ { "Couldn't record this retry. Press [<leader>r] to try again." } }, false, {})
     end
+    vim.api.nvim_echo({ { "[<leader>r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
   end
+
+  vim.api.nvim_create_autocmd({ "BufWipeout", "BufDelete" }, {
+    buffer = buf,
+    callback = function()
+      state.capture.stop()
+    end,
+  })
 
   vim.api.nvim_create_autocmd("CursorMoved", {
     buffer = buf,
@@ -140,14 +153,12 @@ function M.open(id)
       if state.verify ~= "cursor" then return end
       local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
       if #state.challenge_lines > 1 and row == 1 then return end
-      state.moves = state.moves + 1
+      state.edits = state.edits + 1
       local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
       if line then
         local charcol = util.byte_to_char(line, col0)
         if vim.fn.strcharpart(line, charcol, 1) == state.target then
-          state.done = true
-          vim.api.nvim_echo({ { "Challenge complete." } }, false, {})
-          render_result()
+          complete_challenge()
         end
       end
     end,
@@ -157,7 +168,7 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
-      state.moves = state.moves + 1
+      state.edits = state.edits + 1
       if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
@@ -168,14 +179,14 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
-      state.moves = state.moves + 1
+      state.edits = state.edits + 1
       if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
     end,
   })
 
-  vim.keymap.set("n", "r", function()
+  vim.keymap.set("n", "<leader>r", function()
     reset_challenge()
   end, { buffer = buf, nowait = true, silent = true })
 
@@ -193,7 +204,7 @@ function M.open(id)
     util.continue("")
   end, { buffer = buf, nowait = true, silent = true })
 
-  vim.api.nvim_echo({ { "[r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
+  vim.api.nvim_echo({ { "[<leader>r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
 end
 
 return M

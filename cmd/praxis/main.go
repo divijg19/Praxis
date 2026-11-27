@@ -8,7 +8,9 @@ import (
 	"strconv"
 
 	"github.com/divijg19/Praxis/internal/content"
+	"github.com/divijg19/Praxis/internal/score"
 	"github.com/divijg19/Praxis/internal/stats"
+	"github.com/divijg19/Praxis/internal/verify"
 )
 
 func usage(msg string) {
@@ -21,15 +23,6 @@ func unknown(id string) {
 	os.Exit(1)
 }
 
-func positiveInt(s, what string) (int, bool) {
-	n, err := strconv.Atoi(s)
-	if err != nil || n <= 0 {
-		fmt.Fprintf(os.Stderr, "praxis: usage: praxis record <id> <moves> <time> (%s must be a positive integer)\n", what)
-		return 0, false
-	}
-	return n, true
-}
-
 func banner() {
 	fmt.Println("Praxis")
 	fmt.Println("Mastery through practice.")
@@ -38,29 +31,36 @@ func banner() {
 func corruptProgress() {
 	fmt.Fprintln(os.Stderr, "praxis: progress file is corrupt")
 	fmt.Println("Your Praxis progress is corrupted.")
-	fmt.Println("If a backup was saved, it is next to the progress file. Run `praxis reset` to start fresh.")
+	fmt.Println("A backup was saved next to it. Run `praxis reset` to start fresh.")
 }
 
-func loadOrFail() map[string]stats.Stats {
-	m, err := stats.Load()
+func loadOrFail() stats.Progress {
+	p, err := stats.Load()
 	if err != nil {
-		if errors.Is(err, stats.ErrCorrupt) {
+		if errors.Is(err, stats.ErrCorrupt) || errors.Is(err, stats.ErrInvalidStats) {
 			corruptProgress()
 		} else {
 			fmt.Fprintln(os.Stderr, "praxis: could not read progress:", err)
 		}
 		os.Exit(1)
 	}
-	return m
+	return p
 }
 
-func mutateOrFail(fn func(map[string]stats.Stats) error) {
+func mutateOrFail(fn func(*stats.Progress) error) {
 	if err := stats.Mutate(fn); err != nil {
-		if errors.Is(err, stats.ErrCorrupt) {
+		if errors.Is(err, stats.ErrCorrupt) || errors.Is(err, stats.ErrInvalidStats) {
 			corruptProgress()
 		} else {
 			fmt.Fprintln(os.Stderr, "praxis: could not update progress:", err)
 		}
+		os.Exit(1)
+	}
+}
+
+func devOnly() {
+	if os.Getenv("PRAXIS_DEV") != "1" {
+		fmt.Fprintln(os.Stderr, "praxis: development command; set PRAXIS_DEV=1")
 		os.Exit(1)
 	}
 }
@@ -87,28 +87,45 @@ func main() {
 		case 2:
 			catalog("")
 		case 3:
-			if os.Args[2] != "--ids" && os.Args[2] != "--core" {
-				usage("praxis catalog [--ids|--core]")
+			if os.Args[2] != "--ids" && os.Args[2] != "--core" && os.Args[2] != "--json" {
+				usage("praxis catalog [--ids|--core|--json]")
 			}
 			catalog(os.Args[2])
 		default:
-			usage("praxis catalog [--ids|--core]")
+			usage("praxis catalog [--ids|--core|--json]")
 		}
 	case "describe":
 		if len(os.Args) != 3 {
 			usage("praxis describe <id>")
 		}
 		describe(os.Args[2])
-	case "attempt":
+	case "trace":
+		devOnly()
 		if len(os.Args) != 3 {
-			usage("praxis attempt <id>")
+			usage("praxis trace <id>")
 		}
-		attempt(os.Args[2])
-	case "record":
-		if len(os.Args) != 5 {
-			usage("praxis record <id> <moves> <time>")
+		trace(os.Args[2])
+	case "start":
+		if len(os.Args) != 3 {
+			usage("praxis start <id>")
 		}
-		record(os.Args[2], os.Args[3], os.Args[4])
+		start(os.Args[2])
+	case "complete":
+		if len(os.Args) != 3 {
+			usage("praxis complete <id>")
+		}
+		complete(os.Args[2], true)
+	case "verify":
+		if len(os.Args) != 3 {
+			usage("praxis verify <id>")
+		}
+		complete(os.Args[2], false)
+	case "dev":
+		devOnly()
+		if len(os.Args) < 4 || os.Args[2] != "mark-complete" {
+			usage("praxis dev mark-complete <id> [count]")
+		}
+		devSeed(os.Args[3])
 	case "reset":
 		switch len(os.Args) {
 		case 2:
@@ -126,19 +143,23 @@ func main() {
 		case 2:
 			statsSummary()
 		case 3:
-			statsForID(os.Args[2])
+			if os.Args[2] == "--json" {
+				statsJSON()
+			} else {
+				statsForID(os.Args[2])
+			}
 		default:
-			usage("praxis stats [<id>]")
+			usage("praxis stats [<id>|--json]")
 		}
 	default:
-		entrypoint()
+		usage("unknown command: " + os.Args[1])
 	}
 }
 
-func tutorialProgress(m map[string]stats.Stats) (done, total int) {
+func tutorialProgress(p stats.Progress) (done, total int) {
 	for _, id := range content.CoreTutorialIDs() {
 		total++
-		if s, ok := m[id]; ok && s.Completions > 0 {
+		if p.Entries[id].Completions > 0 {
 			done++
 		}
 	}
@@ -148,9 +169,8 @@ func tutorialProgress(m map[string]stats.Stats) (done, total int) {
 func entrypoint() {
 	banner()
 	fmt.Println()
-
-	m := loadOrFail()
-	id := stats.NextChallenge(m, content.IDs())
+	p := loadOrFail()
+	id := stats.NextChallenge(p, content.IDs())
 	fmt.Println("Next:")
 	if id != "" {
 		fmt.Printf("  %s\n", id)
@@ -168,20 +188,16 @@ func help() {
 	fmt.Println()
 	fmt.Println("Start:")
 	fmt.Println("  praxis next")
+	fmt.Println("  praxis start <id>")
+	fmt.Println()
+	fmt.Println("Practice:")
+	fmt.Println("  praxis complete <id>   (reads a verified key log on stdin)")
+	fmt.Println("  praxis verify <id>     (replay only, no progress write)")
 	fmt.Println()
 	fmt.Println("Track:")
-	fmt.Println("  praxis attempt <id>")
-	fmt.Println("  praxis record <id> <moves> <time>")
-	fmt.Println()
-	fmt.Println("Progress:")
 	fmt.Println("  praxis stats")
+	fmt.Println("  praxis catalog [--ids|--core|--json]")
 	fmt.Println("  praxis reset")
-	fmt.Println()
-	fmt.Println("Explore:")
-	fmt.Println("  praxis catalog [--ids|--core]")
-	fmt.Println()
-	fmt.Println("Inspect:")
-	fmt.Println("  praxis describe <id>")
 }
 
 func describe(id string) {
@@ -195,21 +211,144 @@ func describe(id string) {
 	}
 }
 
+func trace(id string) {
+	if !content.Exists(id) {
+		unknown(id)
+	}
+	t, ok := content.TraceFor(id)
+	if !ok {
+		fmt.Fprintln(os.Stderr, "no canonical trace for challenge:", id)
+		os.Exit(1)
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(t); err != nil {
+		fmt.Fprintln(os.Stderr, "trace failed:", err)
+		os.Exit(1)
+	}
+}
+
 func catalog(flag string) {
-	switch flag {
-	case "--ids":
-		for _, id := range content.IDs() {
-			fmt.Println(id)
+	if flag == "--json" {
+		type row struct {
+			ID      string `json:"id"`
+			Name    string `json:"name"`
+			Layer   string `json:"layer"`
+			Tier    string `json:"tier"`
+			Stage   string `json:"stage"`
+			Concept string `json:"concept"`
+			Par     int    `json:"par"`
 		}
-	case "--core":
+		rows := make([]row, 0, len(content.All()))
+		for _, c := range content.All() {
+			d, _ := content.DescriptionFor(c.ID)
+			rows = append(rows, row{
+				ID: c.ID, Name: c.Name, Layer: c.Layer, Tier: content.Tier(c.ID),
+				Stage: d.Stage, Concept: d.Concept, Par: d.Par,
+			})
+		}
+		if err := json.NewEncoder(os.Stdout).Encode(rows); err != nil {
+			fmt.Fprintln(os.Stderr, "catalog failed:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if flag == "--core" {
 		for _, id := range content.CoreTutorialIDs() {
 			fmt.Println(id)
 		}
-	default:
-		for _, c := range content.All() {
+		return
+	}
+	for _, c := range content.All() {
+		if flag == "--ids" {
+			fmt.Println(c.ID)
+		} else {
 			fmt.Println(c.Name)
 		}
 	}
+}
+
+func start(id string) {
+	if !content.Exists(id) {
+		unknown(id)
+	}
+	mutateOrFail(func(p *stats.Progress) error {
+		stats.Start(p, id)
+		return nil
+	})
+}
+
+func complete(id string, write bool) {
+	if !content.Exists(id) {
+		unknown(id)
+	}
+	var in verify.Input
+	if err := json.NewDecoder(os.Stdin).Decode(&in); err != nil {
+		usage("praxis complete <id> (invalid JSON on stdin)")
+	}
+	result, err := verify.Run(id, in)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "replay failed:", err)
+		os.Exit(1)
+	}
+	out := struct {
+		Verified    bool   `json:"verified"`
+		Reason      string `json:"reason"`
+		Keys        int    `json:"keys"`
+		Edits       int    `json:"edits"`
+		Par         int    `json:"par"`
+		Marks       int    `json:"marks"`
+		Completions int    `json:"completions"`
+	}{
+		Verified: result.Verified, Reason: result.Reason, Keys: result.Keys,
+		Edits: result.Edits, Par: result.Par,
+	}
+	if result.Verified && !write {
+		out.Marks = score.Marks(result.Keys, result.Par, 0)
+	}
+	if result.Verified && write {
+		mutateOrFail(func(p *stats.Progress) error {
+			s, marks, err := stats.Complete(p, stats.Event{
+				ID: id, Keys: result.Keys, Par: result.Par,
+				Edits: result.Edits, Verified: true,
+			})
+			if err == nil {
+				out.Marks = marks
+				out.Completions = s.Completions
+			}
+			return err
+		})
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(out); err != nil {
+		fmt.Fprintln(os.Stderr, "complete failed:", err)
+		os.Exit(1)
+	}
+}
+
+func devSeed(id string) {
+	if !content.Exists(id) {
+		unknown(id)
+	}
+	count := 3
+	if len(os.Args) > 5 {
+		usage("praxis dev mark-complete <id> [count]")
+	}
+	if len(os.Args) == 5 {
+		parsed, err := strconv.Atoi(os.Args[4])
+		count = parsed
+		if err != nil || count < 1 {
+			usage("praxis dev mark-complete <id> [count]")
+		}
+	}
+	mutateOrFail(func(p *stats.Progress) error {
+		stats.Start(p, id)
+		for i := 0; i < count; i++ {
+			if _, _, err := stats.Complete(p, stats.Event{
+				ID: id, Keys: 1, Par: 1, Edits: 1, Verified: true,
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func next() {
@@ -223,11 +362,7 @@ func reset(confirmed bool) {
 	if !confirmed {
 		fmt.Print("This will erase all Praxis progress.\n\nType RESET to continue: ")
 		var input string
-		if _, err := fmt.Scanln(&input); err != nil {
-			fmt.Println("Reset cancelled.")
-			os.Exit(1)
-		}
-		if input != "RESET" {
+		if _, err := fmt.Scanln(&input); err != nil || input != "RESET" {
 			fmt.Println("Reset cancelled.")
 			os.Exit(1)
 		}
@@ -240,104 +375,65 @@ func reset(confirmed bool) {
 	fmt.Println("Start fresh with: praxis next")
 }
 
-func attempt(id string) {
-	if !content.Exists(id) {
-		unknown(id)
-	}
-	mutateOrFail(func(m map[string]stats.Stats) error {
-		stats.Attempt(m, id)
-		return nil
-	})
-}
-
-func record(id, movesStr, timeStr string) {
-	if !content.Exists(id) {
-		unknown(id)
-	}
-	moves, ok := positiveInt(movesStr, "moves")
-	if !ok {
-		os.Exit(1)
-	}
-	timeMs, ok := positiveInt(timeStr, "time")
-	if !ok {
-		os.Exit(1)
-	}
-	mutateOrFail(func(m map[string]stats.Stats) error {
-		stats.Update(m, id, moves, timeMs)
-		return nil
-	})
-}
-
 func statsForID(id string) {
 	if !content.Exists(id) {
 		unknown(id)
 	}
-	m := loadOrFail()
-	s := m[id]
-	fmt.Printf("Attempts: %d\n", s.Attempts)
+	s := loadOrFail().Entries[id]
+	fmt.Printf("Starts: %d\n", s.Starts)
 	fmt.Printf("Completions: %d\n", s.Completions)
-	fmt.Printf("Success Rate: %.0f%%\n", stats.SuccessRate(s)*100)
-	fmt.Printf("Best Moves: %d\n", s.BestMoves)
-	fmt.Printf("Best Time: %d ms\n", s.BestTimeMs)
+	fmt.Printf("Best Keys: %d\n", s.BestKeys)
+	fmt.Printf("Best Edits: %d\n", s.BestEdits)
+	fmt.Printf("Best Marks: %d/3\n", s.BestMarks)
 	fmt.Printf("Mastery: %s\n", stats.MasteryTier(s))
-	fmt.Printf("Confidence: %s\n", stats.Confidence(s))
+}
+
+func statsJSON() {
+	p := loadOrFail()
+	if err := json.NewEncoder(os.Stdout).Encode(p); err != nil {
+		fmt.Fprintln(os.Stderr, "stats failed:", err)
+		os.Exit(1)
+	}
 }
 
 func statsSummary() {
-	m := loadOrFail()
+	p := loadOrFail()
 	ids := content.IDs()
-	valid := make(map[string]stats.Stats, len(ids))
-	var completed int
-	var totalAttempts int
+	var completed, totalStarts int
 	for _, id := range ids {
-		s, ok := m[id]
+		s, ok := p.Entries[id]
 		if !ok {
 			continue
 		}
-		valid[id] = s
 		if s.Completions > 0 {
 			completed++
 		}
-		totalAttempts += s.Attempts
+		totalStarts += s.Starts
 	}
 	fmt.Printf("Challenges Completed: %d/%d\n", completed, len(ids))
-	fmt.Printf("Total Attempts: %d\n", totalAttempts)
+	fmt.Printf("Total Starts: %d\n", totalStarts)
 	fmt.Println()
-	coreDone, coreTotal := tutorialProgress(m)
+	coreDone, coreTotal := tutorialProgress(p)
 	if coreDone >= coreTotal {
 		fmt.Println("Tutorial: Complete")
 	} else {
 		fmt.Printf("Tutorial: %d/%d core\n", coreDone, coreTotal)
 	}
 	fmt.Println()
-	dist := stats.MasteryDistribution(valid, len(ids))
+	dist := stats.MasteryDistribution(p, len(ids))
 	fmt.Println("Mastery:")
 	fmt.Printf("  Unseen: %d\n", dist["Unseen"])
 	fmt.Printf("  Learning: %d\n", dist["Learning"])
 	fmt.Printf("  Practiced: %d\n", dist["Practiced"])
 	fmt.Printf("  Experienced: %d\n", dist["Experienced"])
-	tiers := []string{"Learning", "Practiced", "Experienced"}
-	highest := ""
-	for _, t := range tiers {
-		if dist[t] > 0 {
-			highest = t
-		}
-	}
-	if highest != "" {
-		fmt.Printf("\nMost mastered: %s\n", highest)
-	}
-
-	next := stats.NextChallenge(m, ids)
 	fmt.Println()
-	if next == "" {
-		fmt.Println("Next:")
-		fmt.Println("  Curriculum complete.")
-	} else {
-		fmt.Println("Next:")
-		fmt.Printf("  %s\n", next)
+	next := stats.NextChallenge(p, ids)
+	fmt.Println("Next:")
+	if next != "" {
+		d, _ := content.DescriptionFor(next)
+		fmt.Printf("  %s\n", d.Name)
 	}
-
-	review := stats.RecommendedReview(m, ids)
+	review := stats.RecommendedReview(p, ids)
 	if review != "" {
 		fmt.Println()
 		fmt.Println("Recommended Review:")

@@ -37,7 +37,7 @@ func TestConceptInstructionAgreement(t *testing.T) {
 }
 
 // H2: replay must derive its ID set from the CLI catalog rather than a
-// hand-maintained list. Replay verifies data contracts, not keystroke solves.
+// hand-maintained list. Replay executes canonical keystroke solutions.
 func TestReplayCoverage(t *testing.T) {
 	data, err := os.ReadFile("../../tools/replay/replay.lua")
 	if err != nil {

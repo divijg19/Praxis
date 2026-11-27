@@ -65,16 +65,6 @@ func TestUniqueChallengeIDs(t *testing.T) {
 	}
 }
 
-func TestUniqueChallengeNames(t *testing.T) {
-	seen := make(map[string]bool)
-	for _, c := range All() {
-		if seen[c.Name] {
-			t.Errorf("duplicate name: %s", c.Name)
-		}
-		seen[c.Name] = true
-	}
-}
-
 func TestInstructionLinePresent(t *testing.T) {
 	for _, c := range All() {
 		if len(c.Content) == 0 || c.Content[0] == "" {

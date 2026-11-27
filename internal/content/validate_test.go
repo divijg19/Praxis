@@ -60,11 +60,7 @@ func TestRejectsInvalidChallenges(t *testing.T) {
 		{"cursor without target", modify(func(c *challenge.Challenge) { c.Target = "" }), baseMetadata, "cursor challenge missing target"},
 		{"buffer without result", modify(func(c *challenge.Challenge) { c.Verify = "buffer" }), baseMetadata, "missing result"},
 		{"unknown verify", modify(func(c *challenge.Challenge) { c.Verify = "bogus" }), baseMetadata, "unknown verify"},
-		{"trial without derived_from", modify(func(c *challenge.Challenge) {
-			c.Layer = "Trial"
-			c.Evaluation = &challenge.Evaluation{MaxMoves: 5}
-		}), baseMetadata, "trial missing derived_from"},
-		{"training without max_moves", modify(func(c *challenge.Challenge) { c.Layer = "Training" }), baseMetadata, "missing positive max_moves"},
+		{"trial without derived_from", modify(func(c *challenge.Challenge) { c.Layer = "Trial" }), baseMetadata, "trial missing derived_from"},
 	}
 
 	for _, tt := range tests {
