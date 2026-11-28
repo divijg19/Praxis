@@ -23,7 +23,7 @@ local function first_time()
 end
 
 -- Close every open Praxis buffer before re-entering, so a fresh screen always
--- starts from a clean slate. Running :Praxis is an explicit return to the entry
+-- starts from a clean slate. Running :praxis is an explicit return to the entry
 -- point; any in-progress challenge is intentionally abandoned at that point.
 local function close_orphans()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
@@ -43,7 +43,7 @@ function M.show(opts)
 
   if not M.available() then
     require("praxis.ui").recovery("Praxis isn't installed.", {
-      "Install or build Praxis, then run :Praxis again.",
+      "Install or build Praxis, then run :praxis again.",
       "",
       "[Enter] or [q] Back.",
     })
@@ -61,6 +61,13 @@ function M.show(opts)
   end
 end
 
-vim.api.nvim_create_user_command("Praxis", M.show, { nargs = "?" })
+vim.api.nvim_create_user_command(util.command(), M.show, { nargs = "?" })
+
+-- Vim forbids lowercase user commands, so `:praxis` is accepted through a
+-- command-line alias. The canonical invocation stays lowercase in the shell and
+-- in documentation; the alias maps it to the required uppercase command name.
+vim.cmd([[
+  cnoreabbrev <expr> praxis getcmdtype() ==# ':' and getcmdline() ==# 'praxis' and 'Praxis' or 'praxis'
+]])
 
 return M

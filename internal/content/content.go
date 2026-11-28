@@ -558,6 +558,10 @@ func All() []challenge.Challenge {
 				"keep  keep",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "A word can be selected from inside without touching its edges.", Cost: 1},
+				{Text: "Move to a word before acting on what is inside it.", Cost: 2},
+			},
 		},
 		{
 			ID:     "find_daw_combo",
@@ -574,6 +578,10 @@ func All() []challenge.Challenge {
 				"keep keep",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "A word can be removed together with the space around it.", Cost: 1},
+				{Text: "Land on the word before choosing the surrounding variant.", Cost: 2},
+			},
 		},
 		{
 			ID:     "find_di_paren_combo",
@@ -590,6 +598,10 @@ func All() []challenge.Challenge {
 				"func()",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "Parentheses define an inside region you can act on.", Cost: 1},
+				{Text: "Move to the parentheses before selecting the region inside.", Cost: 2},
+			},
 		},
 		{
 			ID:     "find_ca_quote_combo",
@@ -606,6 +618,10 @@ func All() []challenge.Challenge {
 				"hello",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "Quotes define a region you can change around.", Cost: 1},
+				{Text: "Land on the quote before changing the surrounding region.", Cost: 2},
+			},
 		},
 		{
 			ID:     "find_ciw_combo",
@@ -622,6 +638,10 @@ func All() []challenge.Challenge {
 				"keep hello keep",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "A word can be changed without selecting it first.", Cost: 1},
+				{Text: "Move to the word before changing it.", Cost: 2},
+			},
 		},
 		{
 			ID:     "dw_dot_combo",
@@ -638,6 +658,10 @@ func All() []challenge.Challenge {
 				"one four",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "One deletion can be repeated for the next word.", Cost: 1},
+				{Text: "Repeat the same change instead of retyping it.", Cost: 2},
+			},
 		},
 		{
 			ID:     "ciw_dot_combo",
@@ -654,6 +678,10 @@ func All() []challenge.Challenge {
 				"hello hello three",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "A change can be repeated on another word.", Cost: 1},
+				{Text: "Repeat the change rather than starting a new one.", Cost: 2},
+			},
 		},
 		{
 			ID:     "yank_paste_combo",
@@ -673,6 +701,10 @@ func All() []challenge.Challenge {
 				"alpha",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "Copying a line and placing it below duplicates it.", Cost: 1},
+				{Text: "Place the copy after the original line.", Cost: 2},
+			},
 		},
 		{
 			ID:     "dd_paste_combo",
@@ -693,6 +725,10 @@ func All() []challenge.Challenge {
 				"TWO",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "Removing a line keeps it available for placement.", Cost: 1},
+				{Text: "Place the removed line after the last remaining line.", Cost: 2},
+			},
 		},
 		{
 			ID:     "dd_paste_before_combo",
@@ -711,6 +747,10 @@ func All() []challenge.Challenge {
 				"first",
 			},
 			Layer: challenge.LayerTraining,
+			Hints: []challenge.Hint{
+				{Text: "Removing a line keeps it available for placement.", Cost: 1},
+				{Text: "Place it before the remaining line instead of after.", Cost: 2},
+			},
 		},
 		// Trial
 		{
@@ -728,6 +768,11 @@ func All() []challenge.Challenge {
 				"apple banana date",
 			},
 			Layer: challenge.LayerTrial,
+			Hints: []challenge.Hint{
+				{Text: "The goal is to remove only one word.", Cost: 1},
+				{Text: "Keep the first two words untouched.", Cost: 2},
+				{Text: "Consider which word the expected text is missing.", Cost: 3},
+			},
 		},
 		{
 			ID:     "trial_find_change",
@@ -744,6 +789,11 @@ func All() []challenge.Challenge {
 				`status = "DONE"`,
 			},
 			Layer: challenge.LayerTrial,
+			Hints: []challenge.Hint{
+				{Text: "The goal replaces a value while keeping its delimiters.", Cost: 1},
+				{Text: "Only the inner value should differ.", Cost: 2},
+				{Text: "Compare the play area with the expected text.", Cost: 3},
+			},
 		},
 		{
 			ID:     "trial_dot_repeat",
@@ -760,6 +810,11 @@ func All() []challenge.Challenge {
 				"",
 			},
 			Layer: challenge.LayerTrial,
+			Hints: []challenge.Hint{
+				{Text: "Every occurrence should disappear.", Cost: 1},
+				{Text: "One edit can be applied repeatedly.", Cost: 2},
+				{Text: "Look for a repeated action rather than repeated typing.", Cost: 3},
+			},
 		},
 		{
 			ID:     "trial_delete_choice",
@@ -776,6 +831,11 @@ func All() []challenge.Challenge {
 				"keep keep",
 			},
 			Layer: challenge.LayerTrial,
+			Hints: []challenge.Hint{
+				{Text: "Only the middle word should disappear.", Cost: 1},
+				{Text: "Decide whether the surrounding space should remain.", Cost: 2},
+				{Text: "Compare the spaces in the expected result.", Cost: 3},
+			},
 		},
 		{
 			ID:     "trial_repeat_choice",
@@ -796,6 +856,11 @@ func All() []challenge.Challenge {
 				"item = done",
 			},
 			Layer: challenge.LayerTrial,
+			Hints: []challenge.Hint{
+				{Text: "Each value should read the same in the end.", Cost: 1},
+				{Text: "A single edit can be applied down the lines.", Cost: 2},
+				{Text: "Look for a way to repeat the change.", Cost: 3},
+			},
 		},
 	}
 }

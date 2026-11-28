@@ -12,6 +12,13 @@ const (
 	LayerTrial    = "Trial"
 )
 
+// Hint is an authored, opt-in nudge. Text is never serialized: Description
+// embeds Challenge, so JSON must expose only the cost of each rung.
+type Hint struct {
+	Text string `json:"-"`
+	Cost int    `json:"cost"`
+}
+
 type Challenge struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
@@ -20,4 +27,5 @@ type Challenge struct {
 	Result  []string `json:"result"`
 	Target  string   `json:"target"`
 	Layer   string   `json:"layer"`
+	Hints   []Hint   `json:"hints,omitempty"`
 }

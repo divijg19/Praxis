@@ -43,6 +43,9 @@ function M.open(id)
     start_row       = start_row,
     start_col       = start_col,
     par             = desc.par,
+    hint_count      = #(desc.hints or {}),
+    hint_shown      = 0,
+    hint_armed      = false,
     editable        = editable,
     capture         = keylog.start(),
   }
@@ -73,6 +76,9 @@ function M.open(id)
       table.insert(display, "Keys: " .. (verdict.keys or 0) .. "   (verified by clean replay)")
       table.insert(display, "Par: " .. (verdict.par or 0) .. " canonical keys")
       table.insert(display, "Marks: " .. string.rep("*", verdict.marks or 1) .. string.rep("-", 3 - (verdict.marks or 1)))
+      if verdict.hint_cost and verdict.hint_cost > 0 then
+        table.insert(display, "Hints: +" .. verdict.hint_cost .. " key-equivalents")
+      end
       table.insert(display, "")
     end
     table.insert(display, "Completed " .. (verdict.completions or 1) .. " times.")
@@ -124,6 +130,8 @@ function M.open(id)
     state.done = false
     state.edits = 0
     state.start_ns = vim.uv.hrtime()
+    state.hint_shown = 0
+    state.hint_armed = false
     state.capture = keylog.start()
     vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, state.challenge_lines)
@@ -136,7 +144,28 @@ function M.open(id)
     if not util.praxis({ "start", state.challenge_id }) then
       vim.api.nvim_echo({ { "Couldn't record this retry. Press [<leader>r] to try again." } }, false, {})
     end
-    vim.api.nvim_echo({ { "[<leader>r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
+    local hint_hint = state.hint_count > 0 and "   [<leader>h] Hint" or ""
+    vim.api.nvim_echo({ { "[<leader>r] Retry" .. hint_hint .. "   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
+  end
+
+  local function show_hint()
+    if state.done or state.hint_count == 0 then return end
+    local next_rung = state.hint_shown + 1
+    if next_rung > state.hint_count then return end
+    if not state.hint_armed then
+      local preview = util.hint(state.challenge_id, next_rung, true)
+      if preview then
+        vim.api.nvim_echo({ { table.concat(preview, " "), "MsgArea" } }, false, {})
+      end
+      state.hint_armed = true
+      return
+    end
+    local revealed = util.hint(state.challenge_id, next_rung, false)
+    if revealed then
+      state.hint_shown = next_rung
+      vim.api.nvim_echo({ { table.concat(revealed, " "), "MsgArea" } }, false, {})
+    end
+    state.hint_armed = false
   end
 
   vim.api.nvim_create_autocmd({ "BufWipeout", "BufDelete" }, {
@@ -190,6 +219,10 @@ function M.open(id)
     reset_challenge()
   end, { buffer = buf, nowait = true, silent = true })
 
+  if state.hint_count > 0 then
+    vim.keymap.set("n", "<leader>h", show_hint, { buffer = buf, nowait = true, silent = true })
+  end
+
   vim.keymap.set("n", "<CR>", function()
     if state.done then
       local next_lines = util.systemlist({ "next" })
@@ -204,7 +237,8 @@ function M.open(id)
     util.continue("")
   end, { buffer = buf, nowait = true, silent = true })
 
-  vim.api.nvim_echo({ { "[<leader>r] Retry   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
+  local hint_hint = state.hint_count > 0 and "   [<leader>h] Hint" or ""
+  vim.api.nvim_echo({ { "[<leader>r] Retry" .. hint_hint .. "   [Enter] Continue   [q] Back.", "MsgArea" } }, false, {})
 end
 
 return M

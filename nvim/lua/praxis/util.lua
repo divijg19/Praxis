@@ -1,5 +1,22 @@
 local M = {}
 
+-- Canonical invocation name. The CLI binary and the Neovim entry point share
+-- this lowercase name. Vim requires user commands to start with an uppercase
+-- letter, so the Neovim command is derived from it at that single boundary.
+M.name = "praxis"
+
+function M.command()
+  local name = M.name:gsub("^%l", string.upper)
+  return name
+end
+
+-- Run the Neovim entry point. All internal invocations go through here so the
+-- command name cannot drift from the canonical lowercase name.
+function M.invoke(args)
+  local suffix = args and args ~= "" and (" " .. args) or ""
+  vim.cmd(M.command() .. suffix)
+end
+
 -- The certification gate injects an absolute binary path; interactive use
 -- falls back to `praxis` on $PATH. Every CLI call must go through here.
 function M.bin()
@@ -32,6 +49,15 @@ function M.describe(id)
   local ok, desc = pcall(vim.fn.json_decode, table.concat(raw, ""))
   if not ok or type(desc) ~= "table" then return nil end
   return desc
+end
+
+-- Preview a hint (cost only) or reveal it. Reveal persists the rung in progress.
+function M.hint(id, level, preview)
+  local args = { M.bin(), "hint", id, tostring(level) }
+  if preview then table.insert(args, "--preview") end
+  local out = vim.fn.systemlist(args)
+  if vim.v.shell_error ~= 0 then return nil end
+  return out
 end
 
 -- Byte-exact buffer comparison shared by the product validator and replay.
@@ -84,15 +110,11 @@ function M.praxis(args)
 end
 
 -- Close the current Praxis buffer and open `id` (or the hub when id is empty)
--- through the Praxis command, so navigation state resets cleanly. This is the
+-- through the praxis command, so navigation state resets cleanly. This is the
 -- single open-next/back path shared by the hub and the challenge screen.
 function M.continue(id)
   M.close_current()
-  if id and id ~= "" then
-    vim.cmd("Praxis " .. id)
-  else
-    vim.cmd("Praxis")
-  end
+  M.invoke(id)
 end
 
 -- Return to the buffer that was active before Praxis opened (the "return
@@ -104,7 +126,7 @@ function M.return_to_previous()
   if rb and vim.api.nvim_buf_is_valid(rb) then
     vim.api.nvim_set_current_buf(rb)
   else
-    vim.cmd("Praxis")
+    M.invoke("")
   end
 end
 

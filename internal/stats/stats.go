@@ -58,6 +58,7 @@ type Progress struct {
 	Entries       map[string]Stats `json:"entries"`
 	Events        []Event          `json:"events,omitempty"`
 	EventsTrimmed int              `json:"events_trimmed,omitempty"`
+	RevealedHints map[string]int   `json:"revealed_hints,omitempty"`
 }
 
 func path() string {
@@ -126,8 +127,13 @@ func validate(p Progress) error {
 			return fmt.Errorf("%w: challenge %q has negative values", ErrInvalidStats, id)
 		}
 	}
+	for _, level := range p.RevealedHints {
+		if level < 0 {
+			return fmt.Errorf("%w: negative revealed hint level", ErrInvalidStats)
+		}
+	}
 	for _, e := range p.Events {
-		if !e.Verified || e.Keys <= 0 || e.Marks < 1 || e.Marks > 3 {
+		if !e.Verified || e.Keys <= 0 || e.Marks < 1 || e.Marks > 3 || e.HintCost < 0 {
 			return fmt.Errorf("%w: invalid completion event", ErrInvalidStats)
 		}
 	}
@@ -228,6 +234,28 @@ func Start(p *Progress, id string) {
 	s := p.Entries[id]
 	s.Starts++
 	p.Entries[id] = s
+	// Each attempt starts clean: hints from a previous try do not carry over.
+	if p.RevealedHints != nil {
+		delete(p.RevealedHints, id)
+	}
+}
+
+// RevealHint records the highest hint level revealed for an id.
+func RevealHint(p *Progress, id string, level int) {
+	if level < 0 {
+		return
+	}
+	if p.RevealedHints == nil {
+		p.RevealedHints = make(map[string]int)
+	}
+	if level > p.RevealedHints[id] {
+		p.RevealedHints[id] = level
+	}
+}
+
+// RevealedHintLevel returns the stored hint level for an id.
+func RevealedHintLevel(p Progress, id string) int {
+	return p.RevealedHints[id]
 }
 
 // Complete records a verified completion. Marks are recomputed here; clients

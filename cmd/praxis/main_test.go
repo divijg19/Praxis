@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/divijg19/Praxis/internal/content"
+	"github.com/divijg19/Praxis/internal/stats"
 )
 
 var binPath string
@@ -193,5 +194,144 @@ func TestReset(t *testing.T) {
 	out, code := runPraxis(t, "reset", "--yes")
 	if code != 0 || !strings.Contains(out, "reset") {
 		t.Errorf("reset output %q code %d", out, code)
+	}
+}
+
+func freshProgress(t *testing.T) {
+	t.Helper()
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(d, "praxis", "progress.json"), []byte(`{"format":1,"entries":{}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDescribeHintsCostOnly(t *testing.T) {
+	out, code := runPraxis(t, "describe", "find_diw_combo")
+	if code != 0 {
+		t.Fatalf("exit code %d", code)
+	}
+	if strings.Contains(out, content.HintText("find_diw_combo", 1)) {
+		t.Fatal("describe leaked hint text")
+	}
+	if !strings.Contains(out, `"hints":`) || !strings.Contains(out, `"cost":1`) {
+		t.Fatalf("describe lacks hint costs: %s", out)
+	}
+}
+
+func TestHintPreviewAndReveal(t *testing.T) {
+	freshProgress(t)
+	preview, code := runPraxis(t, "hint", "find_diw_combo", "1", "--preview")
+	if code != 0 {
+		t.Fatalf("preview exit %d: %s", code, preview)
+	}
+	if strings.Contains(preview, content.HintText("find_diw_combo", 1)) {
+		t.Fatal("preview leaked hint text")
+	}
+	p, err := stats.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.RevealedHintLevel(p, "find_diw_combo") != 0 {
+		t.Fatal("preview wrote progress")
+	}
+	revealed, code := runPraxis(t, "hint", "find_diw_combo", "1")
+	if code != 0 || !strings.Contains(revealed, content.HintText("find_diw_combo", 1)) {
+		t.Fatalf("reveal failed: %s", revealed)
+	}
+	p, _ = stats.Load()
+	if stats.RevealedHintLevel(p, "find_diw_combo") != 1 {
+		t.Fatal("reveal was not persisted")
+	}
+}
+
+func TestHintCostDerivedAndSpoofProof(t *testing.T) {
+	freshProgress(t)
+	if _, code := runPraxis(t, "start", "find_diw_combo"); code != 0 {
+		t.Fatal("start failed")
+	}
+	if _, code := runPraxis(t, "hint", "find_diw_combo", "2"); code != 0 {
+		t.Fatal("reveal failed")
+	}
+	payload := canonicalInput(t, "find_diw_combo")
+	out, code := runPraxisStdin(t, payload, "complete", "find_diw_combo")
+	if code != 0 {
+		t.Fatalf("complete exit %d: %s", code, out)
+	}
+	var verdict struct {
+		HintCost int `json:"hint_cost"`
+		Marks    int `json:"marks"`
+	}
+	if err := json.Unmarshal([]byte(out), &verdict); err != nil {
+		t.Fatal(err)
+	}
+	if verdict.HintCost != 3 {
+		t.Fatalf("hint cost = %d, want 3", verdict.HintCost)
+	}
+	p, _ := stats.Load()
+	if len(p.Events) != 1 || p.Events[0].HintCost != 3 {
+		t.Fatalf("event hint cost wrong: %+v", p.Events)
+	}
+	// Send a *valid* payload containing spoofed fields. A malformed payload
+	// would be silently truncated by json.Decoder and prove nothing.
+	var input map[string]any
+	if err := json.Unmarshal([]byte(payload), &input); err != nil {
+		t.Fatal(err)
+	}
+	input["hint_cost"] = 0
+	input["hint_level"] = 99
+	input["marks"] = 3
+	spoof, err := json.Marshal(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, code = runPraxisStdin(t, string(spoof), "verify", "find_diw_combo")
+	if code != 0 {
+		t.Fatalf("verify exit %d: %s", code, out)
+	}
+	var spoofed struct {
+		HintCost int `json:"hint_cost"`
+		Marks    int `json:"marks"`
+	}
+	if err := json.Unmarshal([]byte(out), &spoofed); err != nil {
+		t.Fatal(err)
+	}
+	if spoofed.HintCost != 3 || spoofed.Marks != 1 {
+		t.Fatalf("client fields not ignored: %s", out)
+	}
+}
+
+func TestHintNotRetroactiveAndClearedOnStart(t *testing.T) {
+	freshProgress(t)
+	if _, code := runPraxis(t, "start", "find_diw_combo"); code != 0 {
+		t.Fatal("start failed")
+	}
+	out, code := runPraxisStdin(t, canonicalInput(t, "find_diw_combo"), "complete", "find_diw_combo")
+	if code != 0 {
+		t.Fatalf("first complete failed: %s", out)
+	}
+	var first struct {
+		Marks       int `json:"marks"`
+		Completions int `json:"completions"`
+	}
+	if err := json.Unmarshal([]byte(out), &first); err != nil {
+		t.Fatal(err)
+	}
+	if _, code := runPraxis(t, "hint", "find_diw_combo", "1"); code != 0 {
+		t.Fatal("reveal failed")
+	}
+	p, _ := stats.Load()
+	if len(p.Events) != 1 || p.Events[0].Marks != first.Marks {
+		t.Fatal("reveal changed a stored mark")
+	}
+	if _, code := runPraxis(t, "start", "find_diw_combo"); code != 0 {
+		t.Fatal("retry start failed")
+	}
+	p, _ = stats.Load()
+	if stats.RevealedHintLevel(p, "find_diw_combo") != 0 {
+		t.Fatal("start did not clear revealed hints")
 	}
 }

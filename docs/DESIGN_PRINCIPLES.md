@@ -94,3 +94,16 @@ without improving any educational outcome; simpler alternatives were preferred.
 ## 8. Guidance Never Restricts
 
 Every suggestion (NextChallenge, RecommendedReview) is optional. The learner can open any challenge by ID at any time. Nothing is gated. Progression is count-based, not stage-gated. The catalog is flat, ungated, and ordered by curriculum progression. Control mechanisms (forced orders, skill trees, difficulty ratings) are anti-goals.
+
+---
+
+## 9. Hints Are Opt-In, Never Adaptive
+
+Training and Trial challenges may carry authored, finite hint ladders. Tutorials
+use the instruction line alone. A hint is revealed only by explicit learner
+action, is never generated or adaptive, is never auto-revealed (including on
+failure), and never gates progress. Previewing a rung shows only its cost;
+revealing it charges key-equivalents against that attempt's marks without
+changing any previously recorded result. This principle is enforced by content
+validation, the persisted reveal state in `progress.json`, and the certification
+gate; see `SCORING.md` for the cost model.

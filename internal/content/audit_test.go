@@ -212,10 +212,15 @@ func TestTrialInstructionDoesNotPrescribe(t *testing.T) {
 		if len(c.Content) == 0 {
 			continue
 		}
-		line := c.Content[0]
-		for _, term := range prescriptiveTerms {
-			if strings.Contains(line, term) {
-				t.Errorf("Trial %q instruction %q contains prescriptive term %q; Trials must not prescribe keystrokes", c.ID, line, term)
+		stringsToCheck := []string{c.Content[0]}
+		for _, h := range c.Hints {
+			stringsToCheck = append(stringsToCheck, h.Text)
+		}
+		for _, text := range stringsToCheck {
+			for _, term := range prescriptiveTerms {
+				if strings.Contains(text, term) {
+					t.Errorf("Trial %q text %q contains prescriptive term %q; Trials must not prescribe keystrokes", c.ID, text, term)
+				}
 			}
 		}
 	}
