@@ -124,6 +124,17 @@ func TestAllChallengesHaveLayer(t *testing.T) {
 	}
 }
 
+func TestLayerFor(t *testing.T) {
+	for _, c := range All() {
+		if got := LayerFor(c.ID); got != c.Layer {
+			t.Errorf("LayerFor(%s) = %q, want %q", c.ID, got, c.Layer)
+		}
+	}
+	if got := LayerFor("does_not_exist"); got != "" {
+		t.Errorf("LayerFor(unknown) = %q, want empty", got)
+	}
+}
+
 func TestLayerValidValues(t *testing.T) {
 	allowed := map[string]bool{
 		"Tutorial": true,

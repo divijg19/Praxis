@@ -13,7 +13,7 @@ function M.start()
   local tainted = false
   vim.on_key(function(key, typed)
     if typed == reveal or typed == retry or key == reveal or key == retry then return end
-    if typed == "" or typed == nil then
+    if typed == false or typed == "" or typed == nil then
       if vim.env.PRAXIS_DEV == "1" then
         table.insert(keys, key)
       else

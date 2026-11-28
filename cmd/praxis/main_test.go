@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ import (
 var binPath string
 
 func TestMain(m *testing.M) {
-	binPath = filepath.Join(os.TempDir(), "praxis_test_v040")
+	binPath = filepath.Join(os.TempDir(), "praxis_test")
 	build := exec.Command("go", "build", "-o", binPath, ".")
 	build.Stderr = os.Stderr
 	if err := build.Run(); err != nil {
@@ -143,10 +144,7 @@ func TestTraceGate(t *testing.T) {
 }
 
 func TestStartAndComplete(t *testing.T) {
-	d := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", d)
-	_ = os.MkdirAll(filepath.Join(d, "praxis"), 0o755)
-	_ = os.WriteFile(filepath.Join(d, "praxis", "progress.json"), []byte(`{"format":1,"entries":{}}`), 0o644)
+	freshProgress(t)
 	if _, code := runPraxis(t, "start", "grid_rush"); code != 0 {
 		t.Fatalf("start exit %d", code)
 	}
@@ -168,10 +166,7 @@ func TestStartAndComplete(t *testing.T) {
 }
 
 func TestTaintedCompletionRejected(t *testing.T) {
-	d := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", d)
-	_ = os.MkdirAll(filepath.Join(d, "praxis"), 0o755)
-	_ = os.WriteFile(filepath.Join(d, "praxis", "progress.json"), []byte(`{"format":1,"entries":{}}`), 0o644)
+	freshProgress(t)
 	input := `{"keys":["j"],"tainted":true}`
 	out, code := runPraxisStdin(t, input, "complete", "grid_rush")
 	if code != 0 {
@@ -333,5 +328,139 @@ func TestHintNotRetroactiveAndClearedOnStart(t *testing.T) {
 	p, _ = stats.Load()
 	if stats.RevealedHintLevel(p, "find_diw_combo") != 0 {
 		t.Fatal("start did not clear revealed hints")
+	}
+}
+
+func TestReportEmpty(t *testing.T) {
+	freshProgress(t)
+	out, code := runPraxis(t, "report")
+	if code != 0 {
+		t.Fatalf("report exit %d: %s", code, out)
+	}
+	for _, want := range []string{"Private practice report", "Total: 0", "Tutorial: 0", "none"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("empty report missing %q: %s", want, out)
+		}
+	}
+	jsonOut, code := runPraxis(t, "report", "--json")
+	if code != 0 {
+		t.Fatalf("report --json exit %d: %s", code, jsonOut)
+	}
+	var data struct {
+		Runs   int `json:"runs"`
+		Recent []struct {
+			ID string `json:"id"`
+		} `json:"recent"`
+	}
+	if err := json.Unmarshal([]byte(jsonOut), &data); err != nil {
+		t.Fatal(err)
+	}
+	if data.Runs != 0 || len(data.Recent) != 0 {
+		t.Fatalf("empty report has runs: %s", jsonOut)
+	}
+	if _, code := runPraxis(t, "report", "--bogus"); code != 1 {
+		t.Error("report must reject unknown flags")
+	}
+}
+
+func TestReportDescriptiveAndReadOnly(t *testing.T) {
+	freshProgress(t)
+	for _, id := range []string{"find_diw_combo", "grid_rush"} {
+		if _, code := runPraxis(t, "start", id); code != 0 {
+			t.Fatalf("start %s failed", id)
+		}
+	}
+	if _, code := runPraxis(t, "hint", "find_diw_combo", "2"); code != 0 {
+		t.Fatal("hint reveal failed")
+	}
+	for _, id := range []string{"find_diw_combo", "grid_rush", "grid_rush"} {
+		out, code := runPraxisStdin(t, canonicalInput(t, id), "complete", id)
+		if code != 0 || !strings.Contains(out, `"verified":true`) {
+			t.Fatalf("complete %s failed: %s", id, out)
+		}
+	}
+	before, err := stats.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	jsonOut, code := runPraxis(t, "report", "--json")
+	if code != 0 {
+		t.Fatalf("report --json exit %d: %s", code, jsonOut)
+	}
+	var data struct {
+		CompletionsByLayer map[string]int `json:"completions_by_layer"`
+		Runs               int            `json:"runs"`
+		Marks              map[string]int `json:"marks"`
+		HintRuns           int            `json:"hint_runs"`
+		HintKeyEquivalents int            `json:"hint_key_equivalents"`
+		Recent             []struct {
+			ID           string `json:"id"`
+			VerifiedKeys int    `json:"verified_keys"`
+			Par          int    `json:"par"`
+			Marks        int    `json:"marks"`
+			HintCost     int    `json:"hint_cost"`
+		} `json:"recent"`
+	}
+	if err := json.Unmarshal([]byte(jsonOut), &data); err != nil {
+		t.Fatal(err)
+	}
+	if data.Runs != 3 || len(data.Recent) != 3 {
+		t.Fatalf("runs = %d, recent = %d: %s", data.Runs, len(data.Recent), jsonOut)
+	}
+	if data.CompletionsByLayer["Tutorial"] != 2 || data.CompletionsByLayer["Training"] != 1 || data.CompletionsByLayer["Trial"] != 0 {
+		t.Errorf("layer distribution = %v", data.CompletionsByLayer)
+	}
+	if data.Marks["3"] != 2 || data.Marks["1"] != 1 {
+		t.Errorf("marks distribution = %v", data.Marks)
+	}
+	if data.HintRuns != 1 || data.HintKeyEquivalents != 3 {
+		t.Errorf("hint usage = %d runs, %d key-equivalents", data.HintRuns, data.HintKeyEquivalents)
+	}
+	first := data.Recent[0]
+	if first.ID != "find_diw_combo" || first.VerifiedKeys != 5 || first.Par != 5 || first.Marks != 1 || first.HintCost != 3 {
+		t.Errorf("recent run = %+v", first)
+	}
+
+	out, code := runPraxis(t, "report")
+	if code != 0 {
+		t.Fatalf("report exit %d: %s", code, out)
+	}
+	for _, want := range []string{"Runs with hints: 1", "Hint key-equivalents: 3", "3 marks: 2   2 marks: 0   1 mark: 1"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("report missing %q: %s", want, out)
+		}
+	}
+	lower := strings.ToLower(out + jsonOut)
+	for _, banned := range []string{"score", "rank", "leaderboard", "achievement", "xp"} {
+		if strings.Contains(lower, banned) {
+			t.Errorf("report contains score-like term %q", banned)
+		}
+	}
+	if strings.Contains(out+jsonOut, content.HintText("find_diw_combo", 1)) {
+		t.Error("report leaked hint text")
+	}
+
+	after, err := stats.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("report mutated progress")
+	}
+}
+
+func TestReportCorruptProgress(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", d)
+	if err := os.MkdirAll(filepath.Join(d, "praxis"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(d, "praxis", "progress.json"), []byte("{broken"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, code := runPraxis(t, "report")
+	if code != 1 || !strings.Contains(out, "corrupt") {
+		t.Fatalf("corrupt report exit %d: %s", code, out)
 	}
 }

@@ -22,7 +22,7 @@ Replay validates **content correctness**. The learner journey validates the **ex
 
 ## Correctness
 
-Unit-level behavior: `start`, `complete`, `verify`, `next`, `stats`, `describe`, `reset`, mastery and review selection, and mark computation.
+Unit-level behavior: `start`, `complete`, `verify`, `next`, `stats`, `report`, `describe`, `reset`, mastery and review selection, and mark computation.
 
 Run:
 

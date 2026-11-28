@@ -156,11 +156,9 @@ ok("trial_result", has(snap(), "Run verified%."))
 press("q")
 ok("trial_escape", has(snap(), "So far:"))
 
--- 5b. move-counter determinism: cursor navigation must not inflate the move
---     count for composite challenges. Real keystrokes fire CursorMoved, so
---     navigation alone must not inflate the edit count
---     it. Under the old logic, moving the cursor on a composite challenge
---     inflated the edit count.
+-- 5b. cursor navigation alone must not inflate the verified edit count on
+--     composite challenges. Real keystrokes fire CursorMoved; the verifier
+--     counts edits from the replayed buffer change, not from cursor motion.
 util.invoke("find_diw_combo")
 ok("edits_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Run verified%."))
 press("q")

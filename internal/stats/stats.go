@@ -1,5 +1,5 @@
 // Package stats owns progress persistence and all derived progress facts.
-// v0.4.0 uses one canonical, strict schema: no legacy readers, no migrations.
+// v0.4.x uses one canonical, strict schema: no legacy readers, no migrations.
 package stats
 
 import (

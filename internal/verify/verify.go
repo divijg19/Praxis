@@ -32,6 +32,13 @@ type Result struct {
 	FinalLines []string `json:"final_lines,omitempty"`
 }
 
+// namedKeys is immutable and shared by every replay; keep it off the hot path.
+var namedKeys = map[string]string{
+	"<Esc>": "\x1b", "<CR>": "\r", "<BS>": "\x08", "<Tab>": "\t",
+	"<Left>": "\x1b[D", "<Right>": "\x1b[C", "<Up>": "\x1b[A", "<Down>": "\x1b[B",
+	"<Home>": "\x1b[H", "<End>": "\x1b[F", "<Del>": "\x1b[3~",
+}
+
 func Run(id string, in Input) (Result, error) {
 	if in.Tainted {
 		return Result{Reason: "input was tainted by non-typed keys", Par: content.ParFor(id)}, nil
@@ -42,14 +49,9 @@ func Run(id string, in Input) (Result, error) {
 	if len(in.Keys) > 10000 {
 		return Result{Reason: "key log too large", Par: content.ParFor(id)}, nil
 	}
-	named := map[string]string{
-		"<Esc>": "\x1b", "<CR>": "\r", "<BS>": "\x08", "<Tab>": "\t",
-		"<Left>": "\x1b[D", "<Right>": "\x1b[C", "<Up>": "\x1b[A", "<Down>": "\x1b[B",
-		"<Home>": "\x1b[H", "<End>": "\x1b[F", "<Del>": "\x1b[3~",
-	}
 	keys := make([]string, len(in.Keys))
 	for i, k := range in.Keys {
-		if normalized, ok := named[k]; ok {
+		if normalized, ok := namedKeys[k]; ok {
 			keys[i] = normalized
 			continue
 		}
