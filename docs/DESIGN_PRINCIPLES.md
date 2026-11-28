@@ -107,3 +107,15 @@ revealing it charges key-equivalents against that attempt's marks without
 changing any previously recorded result. This principle is enforced by content
 validation, the persisted reveal state in `progress.json`, and the certification
 gate; see `SCORING.md` for the cost model.
+
+---
+
+## 10. Reports Are Private and Descriptive
+
+A report is an opt-in, read-only view over data already derived from verified
+runs. It stays in the CLI: there is no report surface in the Hub, no session
+object, and no new progress state. It shows counts, distributions, and recent
+runs — never an aggregate score, percentage, rank, comparison, or reward. Every
+displayed number comes from `progress.json` events and aggregates, so a report
+cannot fabricate success or imply false precision. Reports never gate, suggest,
+or prescribe practice.

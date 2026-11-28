@@ -28,7 +28,7 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI: `describe`, `catalog` (`--ids`/`--core`/`--json`), `next`, `stats` (`--json`), `start`, `hint`, `complete`, `verify`, `reset`, `help`; `trace`/`dev mark-complete` are dev-only |
+| `cmd/praxis` | CLI: `describe`, `catalog` (`--ids`/`--core`/`--json`), `next`, `stats` (`--json`), `report` (`--json`), `start`, `hint`, `complete`, `verify`, `reset`, `help`; `trace`/`dev mark-complete` are dev-only |
 | `internal/challenge` | `Challenge` struct plus `Layer` and `Verify` constants: the core data model |
 | `internal/score` | Only mark computation, from verified keys, par, and hint cost |
 | `internal/verify` | Config-free clean-Neovim replay of key logs |
@@ -110,8 +110,8 @@ Challenge distribution across stages and layers. Enforced by tests in `internal/
 
 | Layer | Purpose (contract) | Scaffolding | Challenges |
 |---|---|---|---|
-| Tutorial (Core) | teach the essentials; finish onboarding | hinted, ordered | 11 |
-| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | hinted, free | 22 |
+| Tutorial (Core) | teach the essentials; finish onboarding | instruction-led, ordered | 11 |
+| Tutorial (Additional Lessons) | teach more; never blocks (internally the `optional` tier) | instruction-led, free | 22 |
 | Training | never teaches mechanics; refines fluency | combine primitives | 10 |
 | Trial | integrate; solve your own way | select composition | 5 |
 

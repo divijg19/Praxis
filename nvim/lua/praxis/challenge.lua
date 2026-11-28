@@ -32,8 +32,6 @@ function M.open(id)
 
   local state = {
     done            = false,
-    edits           = 0,
-    start_ns        = vim.uv.hrtime(),
     challenge_lines = desc.content,
     target          = desc.target,
     verify          = desc.verify,
@@ -128,8 +126,6 @@ function M.open(id)
   reset_challenge = function()
     pcall(vim.keymap.del, "n", "r", { buffer = buf })
     state.done = false
-    state.edits = 0
-    state.start_ns = vim.uv.hrtime()
     state.hint_shown = 0
     state.hint_armed = false
     state.capture = keylog.start()
@@ -182,7 +178,6 @@ function M.open(id)
       if state.verify ~= "cursor" then return end
       local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
       if #state.challenge_lines > 1 and row == 1 then return end
-      state.edits = state.edits + 1
       local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
       if line then
         local charcol = util.byte_to_char(line, col0)
@@ -197,7 +192,6 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
-      state.edits = state.edits + 1
       if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end
@@ -208,7 +202,6 @@ function M.open(id)
     buffer = buf,
     callback = function()
       if state.done then return end
-      state.edits = state.edits + 1
       if state.verify == "buffer" or state.verify == "composite" then
         check_buffer()
       end

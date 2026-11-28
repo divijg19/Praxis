@@ -97,6 +97,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 | `praxis catalog --core` | One Core Tutorial ID per line, sorted | 0 | TestCatalogFlags |
 | `praxis next` | Next challenge ID; empty if all complete | 0 | TestStartAndComplete |
 | `praxis stats [id]` | Per-challenge or summary; `--json` for full state | 0 / 1 | TestStartAndComplete |
+| `praxis report [--json]` | Private, read-only descriptive summary derived from verified runs | 0 / 1 | TestReportEmpty, TestReportDescriptiveAndReadOnly |
 | `praxis reset [--yes]` | Erase all progress; interactive (type `RESET`), or `--yes` for automation | 0 / 1 | TestReset |
 
 ### Internal (Frontend Transport API)
@@ -159,6 +160,25 @@ Enforced by: `TestDescribeFields`, `TestCatalogOutputStable`.
 Returns the name of every registered challenge, one per line, in curriculum order.
 
 Enforced by: `TestCatalogOutputStable`.
+
+### `praxis report`
+
+Returns a **private, descriptive** view of practice. It is derived entirely from
+the verified events and aggregates already in `progress.json`; it writes
+nothing, opens no new surface, and never gates or ranks practice.
+
+- Completions by layer (Tutorial, Training, Trial), from verified aggregates.
+- Verified-run count and marks distribution (1–3), from the event log.
+- Runs that used hints and their total hint key-equivalents.
+- The five most recent verified runs: challenge ID, verified keys, par, marks,
+  and hint cost.
+
+There is no aggregate score, percentage, rank, comparison, or mastery
+recalculation. `--json` emits the same data as a stable schema; map keys are
+sorted by the JSON encoder. Corrupt progress follows the normal recovery path.
+
+Enforced by: `TestReportEmpty`, `TestReportDescriptiveAndReadOnly`,
+`TestReportCorruptProgress`.
 
 ### `praxis next`
 

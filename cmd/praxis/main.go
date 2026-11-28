@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/divijg19/Praxis/internal/challenge"
 	"github.com/divijg19/Praxis/internal/content"
 	"github.com/divijg19/Praxis/internal/score"
 	"github.com/divijg19/Praxis/internal/stats"
@@ -133,7 +134,7 @@ func main() {
 		if len(os.Args) < 4 || os.Args[2] != "mark-complete" {
 			usage("praxis dev mark-complete <id> [count]")
 		}
-		devSeed(os.Args[3])
+		devMarkComplete(os.Args[3])
 	case "reset":
 		switch len(os.Args) {
 		case 2:
@@ -146,6 +147,11 @@ func main() {
 		default:
 			usage("praxis reset [--yes]")
 		}
+	case "report":
+		if len(os.Args) != 2 && (len(os.Args) != 3 || os.Args[2] != "--json") {
+			usage("praxis report [--json]")
+		}
+		report(len(os.Args) == 3)
 	case "stats":
 		switch len(os.Args) {
 		case 2:
@@ -205,6 +211,7 @@ func help() {
 	fmt.Println()
 	fmt.Println("Track:")
 	fmt.Println("  praxis stats")
+	fmt.Println("  praxis report [--json]")
 	fmt.Println("  praxis catalog [--ids|--core|--json]")
 	fmt.Println("  praxis reset")
 }
@@ -371,7 +378,7 @@ func complete(id string, write bool) {
 	}
 }
 
-func devSeed(id string) {
+func devMarkComplete(id string) {
 	if !content.Exists(id) {
 		unknown(id)
 	}
@@ -486,5 +493,99 @@ func statsSummary() {
 		fmt.Println()
 		fmt.Println("Recommended Review:")
 		fmt.Printf("  %s\n", review)
+	}
+}
+
+// A report is a private, descriptive view over verified runs. It adds no
+// score, ranking, comparison, or progress state, and never gates practice.
+type reportRun struct {
+	ID           string `json:"id"`
+	VerifiedKeys int    `json:"verified_keys"`
+	Par          int    `json:"par"`
+	Marks        int    `json:"marks"`
+	HintCost     int    `json:"hint_cost"`
+}
+
+type reportData struct {
+	CompletionsByLayer map[string]int `json:"completions_by_layer"`
+	Runs               int            `json:"runs"`
+	Marks              map[string]int `json:"marks"`
+	HintRuns           int            `json:"hint_runs"`
+	HintKeyEquivalents int            `json:"hint_key_equivalents"`
+	Recent             []reportRun    `json:"recent"`
+}
+
+const recentRuns = 5
+
+func buildReport(p stats.Progress) reportData {
+	data := reportData{
+		CompletionsByLayer: map[string]int{
+			challenge.LayerTutorial: 0,
+			challenge.LayerTraining: 0,
+			challenge.LayerTrial:    0,
+		},
+		Marks:  map[string]int{"1": 0, "2": 0, "3": 0},
+		Recent: []reportRun{},
+	}
+	for _, id := range content.IDs() {
+		if layer := content.LayerFor(id); layer != "" {
+			data.CompletionsByLayer[layer] += p.Entries[id].Completions
+		}
+	}
+	for _, e := range p.Events {
+		if !e.Verified {
+			continue
+		}
+		data.Runs++
+		if e.Marks >= 1 && e.Marks <= 3 {
+			data.Marks[strconv.Itoa(e.Marks)]++
+		}
+		if e.HintCost > 0 {
+			data.HintRuns++
+			data.HintKeyEquivalents += e.HintCost
+		}
+	}
+	start := len(p.Events) - recentRuns
+	if start < 0 {
+		start = 0
+	}
+	for _, e := range p.Events[start:] {
+		data.Recent = append(data.Recent, reportRun{
+			ID: e.ID, VerifiedKeys: e.Keys, Par: e.Par,
+			Marks: e.Marks, HintCost: e.HintCost,
+		})
+	}
+	return data
+}
+
+func report(jsonOutput bool) {
+	data := buildReport(loadOrFail())
+	if jsonOutput {
+		if err := json.NewEncoder(os.Stdout).Encode(data); err != nil {
+			fmt.Fprintln(os.Stderr, "report failed:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	fmt.Println("Private practice report")
+	fmt.Println()
+	fmt.Println("Completions by layer:")
+	for _, layer := range []string{challenge.LayerTutorial, challenge.LayerTraining, challenge.LayerTrial} {
+		fmt.Printf("  %s: %d\n", layer, data.CompletionsByLayer[layer])
+	}
+	fmt.Println()
+	fmt.Println("Verified runs:")
+	fmt.Printf("  Total: %d\n", data.Runs)
+	fmt.Printf("  3 marks: %d   2 marks: %d   1 mark: %d\n", data.Marks["3"], data.Marks["2"], data.Marks["1"])
+	fmt.Printf("  Runs with hints: %d\n", data.HintRuns)
+	fmt.Printf("  Hint key-equivalents: %d\n", data.HintKeyEquivalents)
+	fmt.Println()
+	fmt.Println("Recent verified runs:")
+	if len(data.Recent) == 0 {
+		fmt.Println("  none")
+		return
+	}
+	for _, r := range data.Recent {
+		fmt.Printf("  %s: %d/%d keys, %d marks, +%d hint\n", r.ID, r.VerifiedKeys, r.Par, r.Marks, r.HintCost)
 	}
 }

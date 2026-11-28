@@ -893,3 +893,12 @@ func Exists(id string) bool {
 	_, ok := byID[id]
 	return ok
 }
+
+// LayerFor returns the layer of a registered challenge, or "" if unknown.
+func LayerFor(id string) string {
+	c, ok := byID[id]
+	if !ok {
+		return ""
+	}
+	return c.Layer
+}

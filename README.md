@@ -27,6 +27,9 @@ offer `[<leader>h]` for an opt-in hint: the first press previews the cost, the
 second reveals the text. Revealed hints add key-equivalents to that attempt's
 marks and are cleared on retry.
 
+Run `praxis report` for a private, read-only summary of verified practice. It
+writes nothing and produces no score or ranking.
+
 ## Documentation
 
 - [CURRICULUM.md](docs/CURRICULUM.md): what Praxis teaches
