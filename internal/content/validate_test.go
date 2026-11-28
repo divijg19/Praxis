@@ -61,6 +61,36 @@ func TestRejectsInvalidChallenges(t *testing.T) {
 		{"buffer without result", modify(func(c *challenge.Challenge) { c.Verify = "buffer" }), baseMetadata, "missing result"},
 		{"unknown verify", modify(func(c *challenge.Challenge) { c.Verify = "bogus" }), baseMetadata, "unknown verify"},
 		{"trial without derived_from", modify(func(c *challenge.Challenge) { c.Layer = "Trial" }), baseMetadata, "trial missing derived_from"},
+		{"tutorial with hints", modify(func(c *challenge.Challenge) {
+			c.Hints = []challenge.Hint{{Text: "Look closer.", Cost: 1}}
+		}), baseMetadata, "tutorial must not declare hints"},
+		{"empty hint text", modify(func(c *challenge.Challenge) {
+			c.Layer = "Training"
+			c.Hints = []challenge.Hint{{Text: "", Cost: 1}}
+		}), baseMetadata, "empty text"},
+		{"invalid hint cost", modify(func(c *challenge.Challenge) {
+			c.Layer = "Training"
+			c.Hints = []challenge.Hint{{Text: "Look closer.", Cost: 0}}
+		}), baseMetadata, "invalid cost"},
+		{"too many hint rungs", modify(func(c *challenge.Challenge) {
+			c.Layer = "Training"
+			c.Hints = []challenge.Hint{
+				{Text: "a", Cost: 1}, {Text: "b", Cost: 1},
+				{Text: "c", Cost: 1}, {Text: "d", Cost: 1},
+			}
+		}), baseMetadata, "1..3 rungs"},
+		{"non-increasing hint costs", modify(func(c *challenge.Challenge) {
+			c.Layer = "Training"
+			c.Hints = []challenge.Hint{
+				{Text: "a", Cost: 2}, {Text: "b", Cost: 1},
+			}
+		}), baseMetadata, "costs must increase"},
+		{"duplicate hint text", modify(func(c *challenge.Challenge) {
+			c.Layer = "Training"
+			c.Hints = []challenge.Hint{
+				{Text: "Look closer.", Cost: 1}, {Text: "Look closer.", Cost: 2},
+			}
+		}), baseMetadata, "duplicate hint text"},
 	}
 
 	for _, tt := range tests {

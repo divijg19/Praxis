@@ -16,11 +16,16 @@ Add this repository's `nvim/` directory to Neovim's `runtimepath`, for example:
 ln -sfn /path/to/Praxis/nvim "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 ```
 
-> **Upgrading from v0.3.x:** progress files are not migrated. `praxis reset --yes` starts fresh; a backup of the old file is kept as `progress.json.corrupt`.
+> **Upgrading from v0.3.x:** progress files are not migrated. `praxis reset --yes` starts fresh; a backup may be kept as `progress.json.corrupt` until you reset.
 
 ## Quick Start
 
-Open Neovim and run `:Praxis`.
+Open Neovim and run `:praxis`.
+
+Inside a challenge, `[<leader>r]` retries. Training and Trial challenges also
+offer `[<leader>h]` for an opt-in hint: the first press previews the cost, the
+second reveals the text. Revealed hints add key-equivalents to that attempt's
+marks and are cleared on retry.
 
 ## Documentation
 

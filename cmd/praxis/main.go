@@ -110,6 +110,14 @@ func main() {
 			usage("praxis start <id>")
 		}
 		start(os.Args[2])
+	case "hint":
+		if len(os.Args) != 4 && len(os.Args) != 5 {
+			usage("praxis hint <id> <level> [--preview]")
+		}
+		if len(os.Args) == 5 && os.Args[4] != "--preview" {
+			usage("praxis hint <id> <level> [--preview]")
+		}
+		hint(os.Args[2], os.Args[3], len(os.Args) == 5)
 	case "complete":
 		if len(os.Args) != 3 {
 			usage("praxis complete <id>")
@@ -193,6 +201,7 @@ func help() {
 	fmt.Println("Practice:")
 	fmt.Println("  praxis complete <id>   (reads a verified key log on stdin)")
 	fmt.Println("  praxis verify <id>     (replay only, no progress write)")
+	fmt.Println("  praxis hint <id> <level> [--preview]")
 	fmt.Println()
 	fmt.Println("Track:")
 	fmt.Println("  praxis stats")
@@ -209,6 +218,34 @@ func describe(id string) {
 		fmt.Fprintln(os.Stderr, "describe failed:", err)
 		os.Exit(1)
 	}
+}
+
+// hintCostFor derives the cost from persisted reveal state only; stdin is never
+// trusted for hint cost, level, or marks.
+func hintCostFor(id string, p stats.Progress) int {
+	return content.HintCostThrough(id, stats.RevealedHintLevel(p, id))
+}
+
+func hint(id, levelArg string, preview bool) {
+	if !content.Exists(id) {
+		unknown(id)
+	}
+	level, err := strconv.Atoi(levelArg)
+	if err != nil || level < 1 || level > content.HintCount(id) {
+		usage("praxis hint <id> <level> [--preview]")
+	}
+	text := content.HintText(id, level)
+	cost := content.HintCostThrough(id, level)
+	if preview {
+		fmt.Printf("Hint %d of %d costs +%d key-equivalents (total +%d).\n", level, content.HintCount(id), content.HintCost(id, level), cost)
+		return
+	}
+	mutateOrFail(func(p *stats.Progress) error {
+		stats.RevealHint(p, id, level)
+		return nil
+	})
+	fmt.Println(text)
+	fmt.Printf("Cost: +%d key-equivalents (total +%d).\n", content.HintCost(id, level), cost)
 }
 
 func trace(id string) {
@@ -282,7 +319,11 @@ func complete(id string, write bool) {
 	}
 	var in verify.Input
 	if err := json.NewDecoder(os.Stdin).Decode(&in); err != nil {
-		usage("praxis complete <id> (invalid JSON on stdin)")
+		verb := "complete"
+		if !write {
+			verb = "verify"
+		}
+		usage("praxis " + verb + " <id> (invalid JSON on stdin)")
 	}
 	result, err := verify.Run(id, in)
 	if err != nil {
@@ -294,6 +335,7 @@ func complete(id string, write bool) {
 		Reason      string `json:"reason"`
 		Keys        int    `json:"keys"`
 		Edits       int    `json:"edits"`
+		HintCost    int    `json:"hint_cost"`
 		Par         int    `json:"par"`
 		Marks       int    `json:"marks"`
 		Completions int    `json:"completions"`
@@ -301,18 +343,24 @@ func complete(id string, write bool) {
 		Verified: result.Verified, Reason: result.Reason, Keys: result.Keys,
 		Edits: result.Edits, Par: result.Par,
 	}
+	hintCost := 0
 	if result.Verified && !write {
-		out.Marks = score.Marks(result.Keys, result.Par, 0)
+		p := loadOrFail()
+		hintCost = hintCostFor(id, p)
+		out.Marks = score.Marks(result.Keys, result.Par, hintCost)
+		out.HintCost = hintCost
 	}
 	if result.Verified && write {
 		mutateOrFail(func(p *stats.Progress) error {
+			hintCost = hintCostFor(id, *p)
 			s, marks, err := stats.Complete(p, stats.Event{
 				ID: id, Keys: result.Keys, Par: result.Par,
-				Edits: result.Edits, Verified: true,
+				Edits: result.Edits, HintCost: hintCost, Verified: true,
 			})
 			if err == nil {
 				out.Marks = marks
 				out.Completions = s.Completions
+				out.HintCost = hintCost
 			}
 			return err
 		})

@@ -30,6 +30,38 @@ func ValidateAll() error {
 	return nil
 }
 
+// validateHints enforces authored, finite, costed ladders. Tutorial lessons
+// rely on the instruction line and must not declare hints.
+func validateHints(c challenge.Challenge, problems *[]string) {
+	if c.Layer == challenge.LayerTutorial {
+		if len(c.Hints) > 0 {
+			*problems = append(*problems, fmt.Sprintf("%s: tutorial must not declare hints", c.ID))
+		}
+		return
+	}
+	if len(c.Hints) == 0 || len(c.Hints) > 3 {
+		*problems = append(*problems, fmt.Sprintf("%s: hint ladder must have 1..3 rungs", c.ID))
+		return
+	}
+	seen := make(map[string]bool, len(c.Hints))
+	prevCost := 0
+	for i, h := range c.Hints {
+		if h.Text == "" {
+			*problems = append(*problems, fmt.Sprintf("%s: hint %d has empty text", c.ID, i+1))
+		}
+		if seen[h.Text] {
+			*problems = append(*problems, fmt.Sprintf("%s: duplicate hint text", c.ID))
+		}
+		seen[h.Text] = true
+		if h.Cost <= 0 || h.Cost > 3 {
+			*problems = append(*problems, fmt.Sprintf("%s: hint %d has invalid cost %d", c.ID, i+1, h.Cost))
+		} else if h.Cost <= prevCost {
+			*problems = append(*problems, fmt.Sprintf("%s: hint costs must increase", c.ID))
+		}
+		prevCost = h.Cost
+	}
+}
+
 // validate reports well-formedness problems for a single challenge. It is the
 // single source of challenge-model validation; the gate runs it over every
 // challenge in tests and the CLI runs ValidateAll at startup so a
@@ -72,5 +104,6 @@ func validate(c challenge.Challenge, m Metadata) []string {
 		problems = append(problems, fmt.Sprintf("%s: trial missing derived_from", c.ID))
 	}
 
+	validateHints(c, &problems)
 	return problems
 }

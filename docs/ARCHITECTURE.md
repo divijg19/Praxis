@@ -28,19 +28,21 @@ The engine is a single-module Go project under `github.com/divijg19/Praxis`.
 
 | Package | Responsibility |
 |---|---|---|
-| `cmd/praxis` | CLI: `describe`, `catalog` (`--ids`/`--core`/`--json`), `next`, `stats` (`--json`), `start`, `complete`, `verify`, `reset`, `help`; `trace`/`dev mark-complete` are dev-only |
+| `cmd/praxis` | CLI: `describe`, `catalog` (`--ids`/`--core`/`--json`), `next`, `stats` (`--json`), `start`, `hint`, `complete`, `verify`, `reset`, `help`; `trace`/`dev mark-complete` are dev-only |
 | `internal/challenge` | `Challenge` struct plus `Layer` and `Verify` constants: the core data model |
 | `internal/score` | Only mark computation, from verified keys, par, and hint cost |
 | `internal/verify` | Config-free clean-Neovim replay of key logs |
-| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStage()`, `IDs()`, `Exists()`, `ValidateAll()`: challenge registry and curriculum metadata |
-| `internal/stats` | `Stats`/`Event`, `Load`, `Save`, `Complete`: sole owner of progress aggregates and review selection |
+| `internal/content` | `All()`, `DescriptionFor()`, `metadataFor()`, `validStage()`, `IDs()`, `Exists()`, `HintCount`/`HintCost`/`HintCostThrough`/`HintText`, `ValidateAll()`: challenge registry, authored hint ladders, and curriculum metadata |
+| `internal/stats` | `Stats`/`Event`, `Load`, `Save`, `Start`, `RevealHint`/`RevealedHintLevel`, `Complete`: sole owner of progress aggregates, revealed hint state, and review selection |
 
 ### Ownership notes
 
 - **`internal/stats`** is the only package that computes progress, mastery
   tiers, and review recommendations, and the only owner of the versioned JSON
-  file and its validation. `cmd/praxis` (`stats` command) is the **sole CLI
-  renderer** of that data.
+  file and its validation. It also owns revealed hint state: `RevealHint`
+  persists the highest rung, `Start` clears it, and the persisted level is the
+  only authority for hint cost when `complete`/`verify` derive marks.
+  `cmd/praxis` (`stats` command) is the **sole CLI renderer** of that data.
 - **`internal/content`** owns challenge-model validity: `validate()` defines
   it, `ValidateAll()` runs it at CLI startup, and `TestValidateAll` enforces it
   in the gate.
@@ -61,7 +63,7 @@ cmd/praxis/main.go
     ├── internal/content.All()      →  challenge.Challenge[]
     ├── internal/content.DescriptionFor(id)  →  (Description, bool)
      ├── internal/content.metadataFor(id)  →  content.Metadata{Concept, Context, Stage}
-    ├── internal/stats.Load()       →  map[string]Stats
+    ├── internal/stats.Load()       →  Progress
     |
     v
 stdout (CLI response)
@@ -78,8 +80,13 @@ type Challenge struct {
     Content    []string    // buffer content lines
     Result     []string    // for buffer/composite: target buffer state
     Layer      string      // "Tutorial", "Training", or "Trial"
+    Hints      []Hint      // authored, opt-in ladder; Text is json:"-"
 }
 
+type Hint struct {
+    Text string `json:"-"` // never serialized or shown in the challenge buffer
+    Cost int    `json:"cost"`
+}
 ```
 
 ### Curriculum Metadata
@@ -137,7 +144,7 @@ Enforced by `TestTrialIntegrity` (all targets exist) and `TestDerivedFromAcyclic
 
 ## Neovim Frontend (Lua)
 
-The Neovim frontend is loaded at startup: `plugin/praxis.lua` calls `require('praxis')`, which registers `:Praxis`. No plugin manager is required, but the repository's `nvim/` directory must be on `runtimepath`.
+The Neovim frontend is loaded at startup: `plugin/praxis.lua` calls `require('praxis')`, which registers the entry point. The canonical invocation name is lowercase (`praxis` in the shell, `:praxis` in Nvim through a command-line alias); Vim requires the underlying user command to start uppercase, so `util.command()` derives it from `util.name`. No plugin manager is required, but the repository's `nvim/` directory must be on `runtimepath`.
 
 ### Module layout
 
@@ -186,7 +193,7 @@ table.
 A challenge is a scratch (`nofile`) buffer; exactly one "Praxis" surface
 is visible at a time. The loop:
 
-1. `:Praxis [<id>]` (or onboarding `s` / hub `<CR>`) → `challenge.open(id)`.
+1. `:praxis [<id>]` (or onboarding `s` / hub `<CR>`) → `challenge.open(id)`.
 2. `challenge.open` fetches the description from the `praxis` CLI, renders
    `content`, and arms an autocmd: `CursorMoved` for cursor challenges,
    or `TextChanged` / `TextChangedI` for buffer / composite challenges.

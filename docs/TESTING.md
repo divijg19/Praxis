@@ -38,6 +38,8 @@ Curriculum-wide invariants. If these fail, the product is fundamentally broken:
 - curriculum reachability (`praxis next` walks every challenge)
 - `DerivedFrom` acyclicity (no cycles)
 - every target and result exists
+- authored hints: ladder size/cost/text rules, no Tutorial hints, no trace or
+  result leakage, and no hint text in serialized `Description`
 
 These live in `internal/content/integrity_test.go` and must never be removed.
 
@@ -48,6 +50,9 @@ Behavior that once broke and must stay fixed. Each has a dedicated regression te
 - no two challenges share an ID
 - `describe` on an unknown id returns a clean error (not a crash)
 - corrupted, missing, or unsupported-version `progress.json` degrades gracefully
+- hint preview is inert, client-supplied hint fields are ignored, revealed hints
+  are non-retroactive and cleared on `start`, and the journey drives a real
+  two-press `<Leader>h` preview→reveal
 
 ## Replay
 
@@ -61,7 +66,7 @@ PRAXIS_DEV=1 nvim --headless -u NONE -l tools/replay/replay.lua
 
 ## Learner Journey
 
-Executes the real product, namely `:Praxis`, `:Praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `go run ./tools/verify` as one command covering all five test categories.
+Executes the real product, namely `:praxis`, `:praxis <id>`, and real keystrokes, from first launch to completion and back. It validates recovery paths, voice, and navigation. It runs inside `go run ./tools/verify` as one command covering all five test categories.
 
 ```bash
 PRAXIS_DEV=1 nvim --headless -u NONE -l tools/journey/journey.lua

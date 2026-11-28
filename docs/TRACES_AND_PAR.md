@@ -3,7 +3,10 @@
 Every challenge has exactly one canonical solution trace in
 `internal/content/solutions.go`. A trace is **internal harness data**: it is
 never shown to a learner. `praxis trace <id>` exposes it only when
-`PRAXIS_DEV=1`.
+`PRAXIS_DEV=1`. Authored hint text obeys the same rule: it is revealed only by
+explicit `praxis hint`, is `json:"-"` in `Description`, is never written into
+the challenge buffer, and must never contain the trace keys or the expected
+result.
 
 A trace contains:
 

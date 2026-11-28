@@ -61,7 +61,7 @@ end
 
 -- 1. reset -> onboarding (fresh learner)
 vim.fn.system({ bin, "reset", "--yes" })
-vim.cmd("Praxis")
+util.invoke("")
 ok("onboarding", has(snap(), "Welcome to Praxis%."))
 ok("onboarding_single_action", has(snap(), "%[Enter%] Start Onboarding%.") and not has(snap(), "%[e%] Explore%."))
 press("e")
@@ -70,7 +70,7 @@ press("q")
 ok("catalog_return", has(snap(), "Welcome to Praxis%."))
 
 -- 2. cursor Tutorial: solve via real keystrokes, then continue
-vim.cmd("Praxis grid_rush")
+util.invoke("grid_rush")
 ok("cursor_tutorial_open", has(snap(), "Use h, j, k and l to move"))
 ok("cursor_tutorial_solved", solve("grid_rush"))
 ok("cursor_tutorial_result", has(snap(), "Run verified%."))
@@ -79,7 +79,7 @@ press("<CR>")
 ok("cursor_tutorial_continue", not has(snap(), "Unknown challenge") and not has(snap(), "executable not found"))
 
 -- 3. buffer Tutorial: solve via real validation path, then escape
-vim.cmd("Praxis delete_character_hunter")
+util.invoke("delete_character_hunter")
 ok("buffer_tutorial_open", has(snap(), "Use x to delete the extra letter"))
 ok("buffer_tutorial_solved", solve("delete_character_hunter"))
 ok("buffer_tutorial_result", has(snap(), "Run verified%."))
@@ -101,15 +101,47 @@ end
 ok("hub_tutorial_status", has(snap(), "Tutorial: %d+/" .. core_total .. " core%. Finish Core"))
 
 -- 3b. `r` must remain available as a taught Vim command, not a retry key.
-vim.cmd("Praxis replace_character_hunter")
+util.invoke("replace_character_hunter")
 ok("replace_key_not_intercepted", solve("replace_character_hunter"))
 -- Retry from the result screen must release `r` back to Vim.
 press("r")
 ok("retry_releases_r", solve("replace_character_hunter"))
 press("q")
 
+-- 3c. authored hints: cost-only preview, explicit reveal, and the reveal
+-- mapping must not alter the challenge buffer.
+util.invoke("find_diw_combo")
+local preview = util.hint("find_diw_combo", 1, true) or {}
+ok("hint_preview", table.concat(preview, " "):find("costs") ~= nil
+  and not table.concat(preview, " "):find("A word can be selected", 1, true))
+local revealed = util.hint("find_diw_combo", 1, false) or {}
+ok("hint_reveal", table.concat(revealed, " "):find("A word can be selected", 1, true) ~= nil
+  and vim.fn.maparg("<Leader>h", "n", false, true) ~= "")
+local hinted_desc = util.describe("find_diw_combo")
+ok("hint_solve_par", solve("find_diw_combo") and has(snap(), "Keys: " .. hinted_desc.par))
+press("r")
+local state_json = table.concat(vim.fn.systemlist({ bin, "stats", "--json" }) or {}, "")
+ok("hint_reset_on_retry", not state_json:find("revealed_hints", 1, true))
+press("q")
+
+-- 3d. real <Leader>h presses: two taps reveal a rung, and neither tap may
+-- pollute the key log that the verifier replays.
+util.invoke("find_diw_combo")
+local leader_h = vim.api.nvim_replace_termcodes("<Leader>h", true, true, true)
+vim.api.nvim_feedkeys(leader_h, "mxt", false)
+vim.wait(150)
+vim.api.nvim_feedkeys(leader_h, "mxt", false)
+vim.wait(150)
+local keyed_state = table.concat(vim.fn.systemlist({ bin, "stats", "--json" }) or {}, "")
+ok("hint_key_reveal_persisted", keyed_state:find('"find_diw_combo":1', 1, true) ~= nil)
+local keyed_desc = util.describe("find_diw_combo")
+ok("hint_key_solve_par", solve("find_diw_combo") and has(snap(), "Keys: " .. keyed_desc.par))
+ok("hint_key_cost_in_result", has(snap(), "Hints: %+1 key%-equivalents"))
+press("r")
+press("q")
+
 -- 4. Training (composite): solve, then escape
-vim.cmd("Praxis find_diw_combo")
+util.invoke("find_diw_combo")
 ok("training_open", has(snap(), "Use f{char} then diw to delete the word%."))
 ok("training_solved", solve("find_diw_combo"))
 ok("training_result", has(snap(), "Run verified%."))
@@ -117,7 +149,7 @@ press("q")
 ok("training_escape", has(snap(), "So far:"))
 
 -- 5. Trial: solve, then escape
-vim.cmd("Praxis trial_find_delete")
+util.invoke("trial_find_delete")
 ok("trial_open", has(snap(), "Remove the third word%."))
 ok("trial_solved", solve("trial_find_delete"))
 ok("trial_result", has(snap(), "Run verified%."))
@@ -129,23 +161,23 @@ ok("trial_escape", has(snap(), "So far:"))
 --     navigation alone must not inflate the edit count
 --     it. Under the old logic, moving the cursor on a composite challenge
 --     inflated the edit count.
-vim.cmd("Praxis find_diw_combo")
+util.invoke("find_diw_combo")
 ok("edits_nav_no_inflate", solve("find_diw_combo") and has(snap(), "Run verified%."))
 press("q")
 
 -- 5c. insert-mode edits are counted as local effort.
-vim.cmd("Praxis find_ciw_combo")
+util.invoke("find_ciw_combo")
 ok("insert_mode_edits_counted", solve("find_ciw_combo") and has(snap(), "Run verified%."))
 press("q")
 
 -- 6. mid-challenge escape from a fresh challenge (recovery)
-vim.cmd("Praxis grid_rush")
+util.invoke("grid_rush")
 press("q")
 ok("mid_challenge_escape", has(snap(), "So far:"))
 
 -- 6b. interrupted session: re-entering Praxis must not orphan buffers
-vim.cmd("Praxis grid_rush")
-vim.cmd("Praxis")
+util.invoke("grid_rush")
+util.invoke("")
 ok("no_orphan_buffers", count_praxis() == 1)
 
 -- 6c. a real file whose name contains "Praxis" must never be force-deleted.
@@ -154,7 +186,7 @@ vim.api.nvim_buf_set_name(user_buf, "/tmp/PraxisNotes.md")
 vim.api.nvim_buf_set_lines(user_buf, 0, -1, false, { "unsaved user work" })
 vim.api.nvim_set_option_value("modified", true, { buf = user_buf })
 vim.api.nvim_set_current_buf(user_buf)
-vim.cmd("Praxis")
+util.invoke("")
 ok("user_buffer_preserved", vim.api.nvim_buf_is_valid(user_buf)
   and vim.api.nvim_get_option_value("modified", { buf = user_buf }))
 
@@ -162,7 +194,7 @@ ok("user_buffer_preserved", vim.api.nvim_buf_is_valid(user_buf)
 local clean_buf = vim.api.nvim_create_buf(false, false)
 vim.api.nvim_buf_set_name(clean_buf, "/tmp/praxis-clean/Praxis")
 vim.api.nvim_set_current_buf(clean_buf)
-vim.cmd("Praxis")
+util.invoke("")
 local unique_scratch = false
 for _, b in ipairs(vim.api.nvim_list_bufs()) do
   if vim.fn.fnamemodify(vim.api.nvim_buf_get_name(b), ":t") == "Praxis 2" then
@@ -173,7 +205,7 @@ ok("clean_user_buffer_preserved", vim.api.nvim_buf_is_valid(clean_buf) and uniqu
 pcall(vim.api.nvim_buf_delete, clean_buf, { force = true })
 
 -- 7. invalid challenge id -> recovery screen, not Lua error
-vim.cmd("Praxis does_not_exist")
+util.invoke("does_not_exist")
 ok("invalid_id_recovery", has(snap(), "That challenge doesn't exist%."))
 
 -- 7b. completing Core produces the Training transition message.
@@ -182,7 +214,7 @@ local core_ids = vim.fn.systemlist({ bin, "catalog", "--core" })
 for _, id in ipairs(core_ids) do
   vim.fn.system({ bin, "dev", "mark-complete", id, "3" })
 end
-vim.cmd("Praxis")
+util.invoke("")
 ok("training_transition", has(snap(), "Onboarding complete%. Training composes what you learned"))
 
 -- 8. force completion of the full catalog, then completion screen
@@ -193,7 +225,7 @@ while guard < 300 do
   vim.fn.system({ bin, "dev", "mark-complete", nid, "3" })
   guard = guard + 1
 end
-vim.cmd("Praxis")
+util.invoke("")
 ok("completion_shown", has(snap(), "Curriculum complete%."))
 local completed_total = "0"
 for _, line in ipairs(util.systemlist({ "stats" }) or {}) do
@@ -210,13 +242,13 @@ ok("completion_escape", has(snap(), "So far:") or not has(vim.fn.bufname("%"), "
 
 -- 9b. corrupt progress -> recovery, never a false "complete" Hub.
 vim.fn.writefile({ "{broken" }, data_home .. "/praxis/progress.json")
-vim.cmd("Praxis")
+util.invoke("")
 ok("corrupt_progress_recovery", has(snap(), "couldn't read your progress%."))
 vim.fn.system({ bin, "reset", "--yes" })
 
 -- 9c. unsupported version -> recovery, never a false "complete" Hub.
-vim.fn.writefile({ '{"version":99,"entries":{}}' }, data_home .. "/praxis/progress.json")
-vim.cmd("Praxis")
+vim.fn.writefile({ '{"format":99,"entries":{}}' }, data_home .. "/praxis/progress.json")
+util.invoke("")
 ok("unknown_version_recovery", has(snap(), "couldn't read your progress%."))
 vim.fn.system({ bin, "reset", "--yes" })
 
@@ -224,7 +256,7 @@ vim.fn.system({ bin, "reset", "--yes" })
 vim.fn.system({ bin, "reset", "--yes" })
 vim.env.PRAXIS_BIN = nil
 vim.env.PATH = "/usr/local/bin:/usr/bin:/bin"
-vim.cmd("Praxis")
+util.invoke("")
 ok("missing_binary_recovery", has(snap(), "Praxis isn't installed%."))
 
 local failed = false

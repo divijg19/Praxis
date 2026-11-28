@@ -22,7 +22,7 @@ func TestMarksMonotone(t *testing.T) {
 	}
 }
 
-func TestMarksNeverGatesCompletion(t *testing.T) {
+func TestMarksAlwaysInRange(t *testing.T) {
 	for keys := 0; keys < 50; keys++ {
 		m := Marks(keys, 5, 0)
 		if m < 1 || m > 3 {

@@ -77,7 +77,7 @@ where they stand:
   This is the only milestone the system announces as "complete."
 - **Practice Ongoing**: Training and Trials never truly finish. Fluency is a
   process, not a checkbox.
-- **Curriculum Complete**: every exercise has been experienced at least once.
+- **Curriculum Complete**: every exercise has been completed three times.
   This is an achievement, not the educational goal.
 
 ### Why Additional Lessons exist
@@ -95,8 +95,8 @@ and never a separate mode.
 Praxis has one entry point and a flat set of surfaces. There is no nested
 menu hierarchy.
 
-- **`:Praxis`** is the universal (re)entry point. On first launch it opens
-  the Onboarding; on later launches it opens the Hub. `:Praxis <id>`
+- **`:praxis`** is the universal (re)entry point. On first launch it opens
+  the Onboarding; on later launches it opens the Hub. `:praxis <id>`
   opens a specific challenge directly.
 - **Onboarding** (first launch only) offers one primary action: `[Enter] Start
   Onboarding` → opens the next uncompleted challenge. Once progress exists,

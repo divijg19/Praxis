@@ -135,3 +135,27 @@ func TestResetRemovesBackup(t *testing.T) {
 		}
 	}
 }
+
+func TestRevealHintAndStartClears(t *testing.T) {
+	p := empty()
+	RevealHint(&p, "grid_rush", 2)
+	if got := RevealedHintLevel(p, "grid_rush"); got != 2 {
+		t.Fatalf("level = %d, want 2", got)
+	}
+	RevealHint(&p, "grid_rush", 1)
+	if got := RevealedHintLevel(p, "grid_rush"); got != 2 {
+		t.Fatalf("level regressed to %d", got)
+	}
+	Start(&p, "grid_rush")
+	if got := RevealedHintLevel(p, "grid_rush"); got != 0 {
+		t.Fatalf("Start did not clear level: %d", got)
+	}
+}
+
+func TestRejectsNegativeHintCost(t *testing.T) {
+	p := empty()
+	p.Events = []Event{{ID: "grid_rush", Keys: 1, Par: 1, Marks: 3, HintCost: -1, Verified: true}}
+	if err := validate(p); err == nil {
+		t.Fatal("negative hint cost accepted")
+	}
+}

@@ -23,6 +23,15 @@ challenge.Challenge{
         "edited content",
     },
     Layer:   "Tutorial",       // "Tutorial", "Training", or "Trial"
+    Hints:   []challenge.Hint{ // optional authored ladder; Tutorials declare none
+        {Text: "A word can be selected from inside.", Cost: 1},
+        {Text: "Move to the word before acting.", Cost: 2},
+    },
+}
+
+type Hint struct {
+    Text string `json:"-"`  // never serialized; revealed only by `praxis hint`
+    Cost int    `json:"cost"`
 }
 ```
 
@@ -37,6 +46,7 @@ challenge.Challenge{
 | `Content` | STABLE | First line is instruction. Buffer/composite: 3+ lines (instruction, blank, play area). Cursor: 1+ lines. |
 | `Result` | STABLE | Required for buffer/composite (non-empty slice, exact target state). Nil for cursor. |
 | `Layer` | STABLE | `"Tutorial"`, `"Training"`, or `"Trial"`. |
+| `Hints` | EVOLVABLE | Optional authored ladder of 1–3 rungs; Tutorials declare none. Costs must increase; `Text` is `json:"-"` and never crosses the CLI boundary. |
 
 ### Canonical Representation
 
@@ -52,6 +62,7 @@ type Description struct {
     StartRow    int      `json:"start_row"` // play-area row for the canonical solution
     StartCol    int      `json:"start_col"`
     Par         int      `json:"par"` // verified physical-key count of the canonical solution
+    // Description embeds Challenge, so hint costs appear in JSON but Text never does.
 }
 ```
 
@@ -79,7 +90,7 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 |---|---|---|---|
 | `praxis help` | CLI reference for learner commands | 0 | TestStartAndComplete |
 | `praxis` (bare) | Next challenge ID + `praxis help` hint | 0 | TestStartAndComplete |
-| `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + start position + par) | 0 / 1 | TestDescribeFields |
+| `praxis describe <id>` | JSON: `Description` struct (challenge + metadata + start position + par + hint costs) | 0 / 1 | TestDescribeFields, TestDescribeHintsCostOnly |
 | `praxis trace <id>` | Internal (dev-only, `PRAXIS_DEV=1`): canonical keystroke trace for replay | 0 / 1 | TestTraceGate |
 | `praxis catalog` | One name per line, curriculum order | 0 | TestCatalogOutputStable |
 | `praxis catalog --ids` | One challenge ID per line, curriculum order | 0 | TestCatalogFlags |
@@ -94,10 +105,11 @@ Enforced by: `TestDescriptionForCompleteness`, `TestDescriptionForUnknown`.
 |---|---|---|---|
 | `praxis start <id>` | Silent; records effort only | 0 / 1 | TestStartAndComplete |
 | `praxis complete <id>` | stdin key-log JSON → verified verdict + marks JSON | 0 / 1 | TestStartAndComplete, TestTaintedCompletionRejected |
-| `praxis verify <id>` | same replay, diagnostic only, no write | 0 / 1 | TestStartAndComplete |
+| `praxis verify <id>` | same replay, diagnostic only, no write | 0 / 1 | TestStartAndComplete, TestHintCostDerivedAndSpoofProof |
 | `praxis stats --json` | full canonical progress JSON | 0 | TestCatalogJSONHasNoSpoilers |
 | `praxis catalog --json` | metadata-only catalog JSON | 0 | TestCatalogJSONHasNoSpoilers |
 | `praxis dev mark-complete <id> [count]` | dev-only harness seeding (`PRAXIS_DEV=1`) | 0 / 1 | TestTraceGate |
+| `praxis hint <id> <level> [--preview]` | Authored hint: cost-only preview or explicit text + cost reveal | 0 / 1 | TestHintPreviewAndReveal, TestHintCostDerivedAndSpoofProof |
 
 On unknown ID, stderr is `unknown challenge: <id>`.
 
@@ -166,7 +178,7 @@ Validators determine how a challenge's success condition is evaluated. Praxis ha
 
 Buffer is set to `Content` with `modifiable=false`. A `CursorMoved` autocommand checks if the character under the cursor matches `Target`. Uses `byte_to_char()` normalization to handle multi-byte content correctly. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 15 challenges (movement, search, navigation, UTF-8 proof).
+**Used by:** 11 challenges (movement, search, navigation, UTF-8 proof).
 
 **Formal specification:**
 
@@ -210,7 +222,7 @@ Where:
 
 Buffer is set to `Content` with `modifiable=true`. A `TextChanged` autocommand fires on Normal mode edits and a `TextChangedI` autocommand fires on Insert mode edits; both are informational; the verifier owns the result. `check_buffer()` compares every line of the current buffer against `Result` using byte-exact string equality. On match: sets `state.done = true`, echoes success.
 
-**Used by:** 18 challenges (editing, text objects, registers).
+**Used by:** 22 challenges (editing, text objects, registers).
 
 **Formal specification:**
 
@@ -292,7 +304,8 @@ Progress is stored in `$XDG_DATA_HOME/praxis/progress.json` (or `~/.local/share/
       "last_played": "2026-11-27"
     }
   },
-  "events": []
+  "events": [],
+  "revealed_hints": { "grid_rush": 2 }
 }
 ```
 
@@ -333,8 +346,13 @@ Derived from `Completions`:
 - Only verified completions are recorded. There is no client-reported completion path.
 - Best Keys and Best Edits track minima; Best Marks tracks the maximum.
 - Marks are computed in Go from the verified key log, par, and hint cost; clients cannot supply them.
+- `revealed_hints` (optional) holds the highest revealed rung per challenge. It
+  is the sole authority for hint cost; `praxis hint <id> <level> --preview` is
+  inert, reveal persists the level, and `praxis start` clears it on retry.
 - Starts are effort only and never become completions.
 - Events are local, capped, and compacted without dropping aggregates.
+- `Event.Seed` is **reserved for future rounds**; the current CLI never reads
+  or writes it, so it must not be treated as part of the v0.4.x contract.
 
 ### Practice Guidance
 
@@ -351,7 +369,7 @@ Ephemeral per-challenge state (edits, elapsed time, captured keys) lives in `cha
 
 ## Hub
 
-The Hub is the primary surface for returning users. It answers "where am I and what should I do next?" and is opened automatically on `:Praxis` for non-first-time users.
+The Hub is the primary surface for returning users. It answers "where am I and what should I do next?" and is opened automatically on `:praxis` for non-first-time users.
 
 ### Layout
 
